@@ -14,13 +14,10 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { StackScreenProps } from "@react-navigation/stack"
 import { observer } from "mobx-react-lite"
 import React from "react"
-import { useColorScheme } from "react-native"
+import { useColorScheme, Text } from "react-native"
 import Config from "../config"
 import { useStores } from "../models" // @demo remove-current-line
-import {
-  LoginScreen, // @demo remove-current-line
-  WelcomeScreen,
-} from "../screens"
+import { LoginScreen, PolicyScreen, RegisterScreen, WelcomeScreen, ResetPasswordScreen } from "../screens"
 import { DemoNavigator, DemoTabParamList } from "./DemoNavigator" // @demo remove-current-line
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 
@@ -40,6 +37,9 @@ import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 export type AppStackParamList = {
   Welcome: undefined
   Login: undefined // @demo remove-current-line
+  Register: undefined
+  Policy: undefined
+  ResetPassword: undefined
   Demo: NavigatorScreenParams<DemoTabParamList> // @demo remove-current-line
   // 🔥 Your screens go here
 }
@@ -67,7 +67,8 @@ const AppStack = observer(function AppStack() {
   // @demo remove-block-end
   return (
     <Stack.Navigator
-      screenOptions={{ headerShown: false }}
+      // screenOptions={{ headerShown: false }}
+      screenOptions={{ headerStyle: { backgroundColor: 'lightblue' }, headerTintColor: 'white' }}
       initialRouteName={isAuthenticated ? "Welcome" : "Login"} // @demo remove-current-line
     >
       {/* @demo remove-block-start */}
@@ -80,7 +81,10 @@ const AppStack = observer(function AppStack() {
         </>
       ) : (
         <>
-          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Login" component={LoginScreen} options={({ navigation }) => ({ headerRight: () => (<Text style={$registerButton} onPress={() => navigation.navigate("Register")}>Register</Text>)})} />
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          <Stack.Screen name="Policy" component={PolicyScreen} options={{ title: "Privacy Policy" }} />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} options={{ title: "Reset Password" }} />
         </>
       )}
       {/* @demo remove-block-end */}
@@ -106,3 +110,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
     </NavigationContainer>
   )
 })
+
+const $registerButton = {
+  color: 'white',
+}
