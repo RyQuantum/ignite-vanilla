@@ -2,8 +2,10 @@ package com.ignitevanilla;
 
 import com.facebook.react.ReactActivity;
 import com.facebook.react.ReactActivityDelegate;
+import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
+import com.reactnativettlock.TtlockModule;
 
 public class MainActivity extends ReactActivity {
 
@@ -32,4 +34,13 @@ public class MainActivity extends ReactActivity {
         DefaultNewArchitectureEntryPoint.getConcurrentReactEnabled() // concurrentRootEnabled
         );
   }
+
+  @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+      super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+      ReactInstanceManager mReactInstanceManager = getReactNativeHost().getReactInstanceManager();
+
+      TtlockModule ttlockModule = mReactInstanceManager.getCurrentReactContext().getNativeModule(TtlockModule.class);
+      ttlockModule.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
 }
