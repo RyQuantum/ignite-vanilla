@@ -1,19 +1,20 @@
 import React, { FC, useMemo, useRef, useState } from "react"
 import { observer } from "mobx-react-lite"
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Button, Icon as Icon2, Screen, TextField, Toggle, TextFieldAccessoryProps } from "../components"
+import { Icon as Icon2, Screen, TextField, Toggle, TextFieldAccessoryProps, MyButton } from "../components"
 import { Image, ImageStyle, TextInput, Text, TextStyle, ViewStyle, View } from "react-native"
 import { colors, spacing } from "../theme"
 import { useStores } from "../models"
 import { DemoDivider } from "./DemoShowroomScreen/DemoDivider"
+import Spinner from "react-native-loading-spinner-overlay"
 
 const reactNativeRadioLogo = require("../../assets/images/logo2nd.png")
 // TODO use correct logo image
 
-export const LoginScreen: FC<any> = observer(function LoginScreen(_props) {
+export const LoginScreen: FC<any> = observer(function LoginScreen(props) {
   const authPasswordInput = useRef<TextInput>()
   const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState(true)
-  const [value, setValue] = useState(false)
+  const [agreed, setAgreed] = useState(false)
 
   const {
     authenticationStore: {
@@ -23,6 +24,8 @@ export const LoginScreen: FC<any> = observer(function LoginScreen(_props) {
       setAuthPassword,
       // setAuthToken,
       // validationErrors,
+      isLoading,
+      login,
     },
   } = useStores()
 
@@ -41,14 +44,14 @@ export const LoginScreen: FC<any> = observer(function LoginScreen(_props) {
     [isAuthPasswordHidden],
   )
 
-  function login () {}
-
   return (
     <Screen
       preset="scroll"
       safeAreaEdges={["top", "bottom"]}
       contentContainerStyle={$screenContentContainer}
     >
+      <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
+
       <Image source={reactNativeRadioLogo} style={$logo}  resizeMode="contain"/>
 
       <TextField
@@ -84,7 +87,7 @@ export const LoginScreen: FC<any> = observer(function LoginScreen(_props) {
         placeholder="Password"
         // helper={errors?.authPassword}
         // status={errors?.authPassword ? "error" : undefined}
-        onSubmitEditing={login}
+        onSubmitEditing={agreed ? login : () => null}
         RightAccessory={PasswordRightAccessory}
         LeftAccessory={(props) => (
           <View style={props.style}>
@@ -96,22 +99,22 @@ export const LoginScreen: FC<any> = observer(function LoginScreen(_props) {
       <View style={$textContainer}>
         <Toggle
           variant="checkbox"
-          value={value}
-          onPress={() => setValue(!value)}
+          value={agreed}
+          onPress={() => setAgreed(!agreed)}
         />
-        <Text onPress={() => setValue(!value)}>  I've read and agreed </Text>
-        <Text style={$link} onPress={() => _props.navigation.navigate("Policy")}>
+        <Text onPress={() => setAgreed(!agreed)}>  I've read and agreed </Text>
+        <Text style={$link} onPress={() => props.navigation.navigate("Policy")}>
           <Text>User Terms Privacy Policy</Text>
         </Text>
       </View>
 
       <DemoDivider size={24} />
 
-      <Button preset="filled" style={$button} textStyle={{ color: 'white' }}>Login</Button>
+      <MyButton style={$button} disabled={!agreed} onPress={login}>Login</MyButton>
 
       <DemoDivider size={24} />
 
-      <Text style={$link} onPress={() => _props.navigation.navigate("ResetPassword")}>Forgot Password?</Text>
+      <Text style={$link} onPress={() => props.navigation.navigate("ResetPassword")}>Forgot Password?</Text>
 
     </Screen>
   )
@@ -138,10 +141,10 @@ const $textContainer: ViewStyle = {
   alignItems: "center"
 }
 
-const $button: ViewStyle = {
-  borderRadius: 30
-}
-
 const $link: TextStyle = {
   color: 'lightblue'
+}
+
+const $button: ViewStyle = {
+  borderRadius: 30
 }

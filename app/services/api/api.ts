@@ -10,11 +10,14 @@ import {
   ApisauceInstance,
   create,
 } from "apisauce"
+import { stringMd5 } from "react-native-quick-md5"
+import qs from 'qs';
+
 import Config from "../../config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem" // @demo remove-current-line
 import type {
   ApiConfig,
-  ApiFeedResponse, // @demo remove-current-line
+  ApiFeedResponse, ApiLoginResponse, // @demo remove-current-line
 } from "./api.types"
 import type { EpisodeSnapshotIn } from "../../models/Episode" // @demo remove-current-line
 
@@ -84,6 +87,30 @@ export class Api {
     }
   }
   // @demo remove-block-end
+
+  async login(username: string, password: string) {
+    const response: ApiResponse<ApiLoginResponse> = await this.apisauce.post(
+      "user/login",
+      qs.stringify({
+        account: username,
+        password: stringMd5(password),
+        date: Date.now()
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    console.log(response)
+    if (!response.ok) {
+      const problem = getGeneralApiProblem(response)
+      if (problem) {
+        return problem
+      }
+    }
+    return { kind: "ok", data: response.data }
+  }
 }
 
 // Singleton instance of the API for convenience

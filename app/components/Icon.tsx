@@ -9,6 +9,7 @@ import {
   View,
   ViewStyle,
 } from "react-native"
+import { default as Icon2 } from "react-native-vector-icons/AntDesign"
 
 export type IconTypes = keyof typeof iconRegistry
 
@@ -107,6 +108,8 @@ export const iconRegistry = {
   slack: require("../../assets/icons/slack.png"),
   view: require("../../assets/icons/view.png"),
   x: require("../../assets/icons/x.png"),
+  exclamation: Icon2.getImageSourceSync('exclamationcircleo', 48, 'lightgrey'),
+  plus: Icon2.getImageSourceSync('plus', 48, 'black')
 }
 
 const $imageStyle: ImageStyle = {

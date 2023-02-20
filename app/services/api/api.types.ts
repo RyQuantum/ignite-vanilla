@@ -34,6 +34,20 @@ export interface ApiFeedResponse {
   items: EpisodeItem[]
 }
 
+export interface ApiLoginResponse {
+  // status: string // TODO needs verify
+  uid: number,
+  countryCode: string
+  isSecurityQuestionSetted: boolean
+  nickname: string
+  mobile: string
+  headimgurl: string
+  accessToken: string
+  account: string
+  email: string
+  errmsg?: string
+  errcode?: string
+}
 /**
  * The options used to configure apisauce.
  */
