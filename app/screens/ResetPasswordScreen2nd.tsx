@@ -59,10 +59,7 @@ export const ResetPasswordScreen: FC<any> = observer(function ResetPasswordScree
         autoCapitalize="none"
         autoCorrect={false}
         keyboardType="email-address"
-        // label="Phone"
         placeholder="Phone number or email"
-        // helper={errors?.authEmail}
-        // status={errors?.authEmail ? "error" : undefined}
         LeftAccessory={(props) => (
           <View style={props.style}>
             <Icon name="account" size={24} color="grey"/>
@@ -77,10 +74,7 @@ export const ResetPasswordScreen: FC<any> = observer(function ResetPasswordScree
         autoComplete="password"
         autoCorrect={false}
         secureTextEntry={isAuthPasswordHidden}
-        // label="Password"
         placeholder="Password"
-        // helper={errors?.authEmail}
-        // status={errors?.authEmail ? "error" : undefined}
         RightAccessory={PasswordRightAccessory}
         LeftAccessory={(props) => (
           <View style={props.style}>
@@ -97,10 +91,7 @@ export const ResetPasswordScreen: FC<any> = observer(function ResetPasswordScree
         autoComplete="password"
         autoCorrect={false}
         secureTextEntry={isConfirmPasswordHidden}
-        // label="Confirm password"
         placeholder="Confirm password"
-        // helper={errors?.authPassword}
-        // status={errors?.authPassword ? "error" : undefined}
         RightAccessory={PasswordRightAccessory2}
         LeftAccessory={(props) => (
           <View style={props.style}>
@@ -119,7 +110,7 @@ export const ResetPasswordScreen: FC<any> = observer(function ResetPasswordScree
           keyboardType="number-pad"
           placeholder="Verification code"
         />
-        <Button preset="filled" textStyle={{ color: 'white' }}>Get code</Button>
+        <Button preset="filled" style={{ width: 100 }} textStyle={{ color: 'white' }}>Get code</Button>
       </View>
 
       <DemoDivider size={24} />
@@ -150,8 +141,4 @@ const $textContainer: ViewStyle = {
 
 const $button: ViewStyle = {
   borderRadius: 30
-}
-
-const $link: TextStyle = {
-  color: 'lightblue'
 }

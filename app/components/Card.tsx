@@ -1,5 +1,6 @@
 import React, { ComponentType, Fragment, ReactElement } from "react"
 import {
+  Text as OriginalText,
   StyleProp,
   TextStyle,
   TouchableOpacity,
@@ -7,8 +8,11 @@ import {
   View,
   ViewStyle,
 } from "react-native"
+import moment from "moment-timezone"
 import { colors, spacing } from "../theme"
 import { Text, TextProps } from "./Text"
+import Icon from "react-native-vector-icons/Ionicons"
+import { parseFeatureValueWithIndex } from "../utils/ttlock2nd"
 
 type Presets = keyof typeof $containerPresets
 
@@ -190,6 +194,75 @@ export function Card(props: CardProps) {
   )
 }
 
+export const LockCard = ({
+  lockAlias,
+  electricQuantity,
+  featureValue,
+  startDate,
+  endDate,
+  userType,
+  keyRight,
+}) => {
+  const remoteUnlock = parseFeatureValueWithIndex(featureValue, 10) ? "Remote Unlock" : " "
+  const currentTimezone = moment.tz.guess()
+  let info: string
+  let dayLeft = Infinity
+  if (startDate === 0 && endDate === 0) {
+    info = "Permanent"
+  } else {
+    info = `${moment(startDate).tz(currentTimezone).format("YYYY-MM-DD HH:mm")} - ${moment(endDate)
+      .tz(currentTimezone)
+      .format("YYYY-MM-DD HH:mm")}`
+  }
+  if (info !== "Permanent") {
+    dayLeft = Math.floor((endDate - Date.now()) / 1000 / 3600 / 24)
+  }
+  if (userType === "110301") {
+    info += "/Admin"
+  } else if (userType === "110302") {
+    if (keyRight === 1) {
+      info += "/Authorized Admin"
+    }
+  }
+  return (
+    <Card
+      HeadingComponent={
+        <View style={$titleContainer}>
+          <Text style={$lockAlias}>{lockAlias}</Text>
+          <View style={$batteryContainer}>
+            <Text>{electricQuantity}%</Text>
+            <Text> </Text>
+            {electricQuantity >= 90 && <Icon name="battery-full-sharp" size={20} />}
+            {electricQuantity > 0 && electricQuantity < 90 && (
+              <Icon name="battery-half-sharp" size={20} />
+            )}
+            {electricQuantity === 0 && <Icon name="battery-dead" size={20} />}
+          </View>
+        </View>
+      }
+      ContentComponent={
+        <>
+          <OriginalText style={$remoteUnlock}>{remoteUnlock}</OriginalText>
+          <View style={$TimePeriodContainer}>
+            {info.slice(0, 9) !== "Permanent" ? (
+              dayLeft >= 0 ? (
+                <OriginalText style={$dayLeft}>{dayLeft} day(s)</OriginalText>
+              ) : (
+                <OriginalText style={$expired}>Expired</OriginalText>
+              )
+            ) : (
+              <OriginalText style={$placeholder}> </OriginalText>
+            )}
+          </View>
+        </>
+      }
+      footer={info} // footer="2023.02.16 17:31 - 2023.03.17 17:31/Authorized Admin"
+      footerStyle={$footer}
+      style={$customContainer}
+    />
+  )
+}
+
 const $containerBase: ViewStyle = {
   borderRadius: spacing.medium,
   padding: spacing.extraSmall,
@@ -243,4 +316,65 @@ const $contentPresets: Record<Presets, TextStyle> = {
 const $footerPresets: Record<Presets, TextStyle> = {
   default: {},
   reversed: { color: colors.palette.neutral100 },
+}
+
+const $titleContainer: ViewStyle = {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+}
+
+const $lockAlias: TextStyle = {
+  fontFamily: "SpaceGrotesk-Bold",
+  fontSize: 18,
+}
+
+const $batteryContainer: ViewStyle = {
+  flexDirection: "row",
+  alignItems: "center",
+}
+
+const $remoteUnlock: TextStyle = {
+  fontFamily: "System",
+  color: colors.palette.neutral400,
+  fontSize: 10,
+  marginTop: 2,
+}
+
+const $TimePeriodContainer: ViewStyle = {
+  flexDirection: "row",
+  marginTop: 5
+}
+
+const $dayLeft: TextStyle = {
+  fontFamily: "System",
+  backgroundColor: "orange",
+  color: colors.palette.neutral100,
+  fontSize: 10,
+  paddingHorizontal: 2,
+}
+
+const $placeholder: TextStyle = {
+  fontFamily: "System",
+  color: "white",
+  fontSize: 10
+}
+
+const $expired: TextStyle = {
+  fontFamily: "System",
+  backgroundColor: "red",
+  color: colors.palette.neutral100,
+  fontSize: 10,
+  paddingHorizontal: 2,
+}
+
+const $footer: TextStyle = {
+  fontSize: 11,
+  fontFamily: "System",
+  color: colors.palette.neutral600,
+}
+
+const $customContainer: ViewStyle = {
+  shadowOpacity: 0.1,
+  padding: 15,
 }

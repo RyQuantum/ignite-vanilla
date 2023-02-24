@@ -29,6 +29,7 @@ import { DemoNavigator, DemoTabParamList } from "./DemoNavigator" // @demo remov
 import HomeNavigator from "./HomeNavigator2nd" // TODO "export default" of "export" needs consistent?
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { LoginNavigator2nd } from "./LoginNavigator2nd"
+import { api } from "../services/api"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -111,8 +112,10 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
   useBackButtonHandler((routeName) => exitRoutes.includes(routeName))
 
   const {
-    authenticationStore: { isAuthenticated },
+    authenticationStore: { isAuthenticated, authToken },
   } = useStores()
+
+  if (isAuthenticated) api.setAuthorizationToken(authToken!)
 
   return (
     <NavigationContainer

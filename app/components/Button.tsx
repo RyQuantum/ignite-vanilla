@@ -112,7 +112,7 @@ export function Button(props: ButtonProps) {
   )
 }
 
-export const MyButton = (props) => <Button preset="filled" style={[props.disabled ? $disabledButton : $button, props.style]} textStyle={[$buttonText, props.textStyle]} onPress={props.onPress} disabled={props.disabled}>{props.children}</Button>
+export const CustomButton = (props) => <Button preset="filled" style={[props.disabled ? $disabledButton : $button, props.style]} textStyle={[$buttonText, props.textStyle]} onPress={props.onPress} disabled={props.disabled}>{props.children}</Button>
 
 const $baseViewStyle: ViewStyle = {
   minHeight: 56,
@@ -175,7 +175,7 @@ const $pressedTextPresets: Record<Presets, StyleProp<TextStyle>> = {
 }
 
 const $button: ViewStyle = {
-  backgroundColor: "lightblue"
+  backgroundColor: "skyblue"
 }
 
 const $disabledButton: ViewStyle = {

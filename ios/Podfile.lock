@@ -428,6 +428,8 @@ PODS:
     - React-Core
   - RNCMaskedView (0.2.8):
     - React-Core
+  - RNDeviceInfo (10.4.0):
+    - React-Core
   - RNGestureHandler (2.9.0):
     - React-Core
   - RNReanimated (2.14.4):
@@ -534,6 +536,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
+  - RNDeviceInfo (from `../node_modules/react-native-device-info`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
@@ -637,6 +640,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCMaskedView:
     :path: "../node_modules/@react-native-masked-view/masked-view"
+  RNDeviceInfo:
+    :path: "../node_modules/react-native-device-info"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNReanimated:
@@ -702,6 +707,7 @@ SPEC CHECKSUMS:
   ReactCommon: 6f65ea5b7d84deb9e386f670dd11ce499ded7b40
   RNCAsyncStorage: 8616bd5a58af409453ea4e1b246521bb76578d60
   RNCMaskedView: bc0170f389056201c82a55e242e5d90070e18e5a
+  RNDeviceInfo: 749f2e049dcd79e2e44f134f66b73a06951b5066
   RNGestureHandler: 071d7a9ad81e8b83fe7663b303d132406a7d8f39
   RNReanimated: cc5e3aa479cb9170bcccf8204291a6950a3be128
   RNScreens: ea4cd3a853063cda19a4e3c28d2e52180c80f4eb

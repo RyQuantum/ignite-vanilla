@@ -1,5 +1,5 @@
 import React, { FC, useMemo, useState } from "react"
-import { TextStyle, View, ViewStyle } from "react-native"
+import { Text, TextStyle, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react-lite"
 import { Button, Icon as Icon2, Screen, Text as Text2, TextField, TextFieldAccessoryProps } from "../components"
 import { colors, spacing } from "../theme"
@@ -33,7 +33,6 @@ export const ForgetPasswordScreen: FC<any> = observer(function ForgetPasswordScr
         // helper={errors?.authEmail}
         // status={errors?.authEmail ? "error" : undefined}
         LeftAccessory={(props) => {
-          console.log('style', props.style)
           return <View style={props.style}>
             <Icon name="account" size={24} color="grey"/>
           </View>
@@ -49,12 +48,16 @@ export const ForgetPasswordScreen: FC<any> = observer(function ForgetPasswordScr
           keyboardType="number-pad"
           placeholder="Verification code"
         />
-        <Button preset="filled" textStyle={{ color: 'white' }}>Get code</Button>
+        <Button preset="filled" style={{ width: 100 }} textStyle={{ color: 'white' }}>Get code</Button>
       </View>
 
       <DemoDivider size={24} />
 
       <Button preset="filled" style={$button} textStyle={{ color: 'white' }}>Login</Button>
+
+      <DemoDivider size={24} />
+
+      <Text style={$link} onPress={() => _props.navigation.navigate("ResetPassword")}>Reset Password</Text>
 
     </Screen>
   )
@@ -83,5 +86,5 @@ const $button: ViewStyle = {
 }
 
 const $link: TextStyle = {
-  color: 'lightblue'
+  color: 'skyblue'
 }

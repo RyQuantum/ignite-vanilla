@@ -35,18 +35,19 @@ export interface ApiFeedResponse {
 }
 
 export interface ApiLoginResponse {
-  // status: string // TODO needs verify
-  uid: number,
-  countryCode: string
-  isSecurityQuestionSetted: boolean
-  nickname: string
-  mobile: string
-  headimgurl: string
-  accessToken: string
-  account: string
-  email: string
-  errmsg?: string
-  errcode?: string
+  code: number, // TODO needs to find a way to utilize the definition for other response
+  msg: string,
+  data: {
+    uid: number,
+    countryCode: string
+    isSecurityQuestionSetted: boolean
+    nickname: string
+    mobile: string
+    headimgurl: string
+    accessToken: string
+    account: string
+    email: string
+  }
 }
 /**
  * The options used to configure apisauce.

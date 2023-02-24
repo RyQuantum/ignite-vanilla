@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { ViewStyle } from "react-native"
+import { TextStyle, ViewStyle } from "react-native"
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BluetoothState, ScanLockModal, Ttlock } from "react-native-ttlock"
 import Spinner from "react-native-loading-spinner-overlay"
@@ -8,7 +8,7 @@ import { colors, spacing } from "../../theme"
 
 
 type RootStackParamList = {
-  "Assign Name": { lockName: string };
+  "Assign Name": { lockData: string, lockName: string };
 };
 
 interface IProps {
@@ -40,7 +40,6 @@ export class NearbyLocksScreen extends Component<IProps, IState> {
 
   startScan = () => {
     Ttlock.startScan((lockModal: LockModal) => {
-      // scanLockModal.lockMac === "D2:F2:9B:92:5E:D5" &&
       console.log(lockModal)
       const lockList = this.state.lockList
       const index = lockList.findIndex((lock) => lock.lockMac === lockModal.lockMac)
@@ -81,7 +80,7 @@ export class NearbyLocksScreen extends Component<IProps, IState> {
           return isInited ?
             <ListItem
               text={lockName}
-              textStyle={{ color: colors.palette.neutral400 }}
+              textStyle={$text}
               bottomSeparator
               leftIcon="lock"
               rightIcon="exclamation"
@@ -109,7 +108,7 @@ export class NearbyLocksScreen extends Component<IProps, IState> {
                 Ttlock.initLock({ lockMac, lockVersion }, (lockData) => {
                   console.log(lockData)
                   this.setState({ isLoading: false })
-                  this.props.navigation.navigate("Assign Name", { lockName })
+                  this.props.navigation.navigate("Assign Name", { lockData, lockName })
                 }, (err, errMessage) => {
                   alert(errMessage) // TODO complete the title and body format
                   console.log(err, errMessage)
@@ -217,4 +216,8 @@ export class NearbyLocksScreen extends Component<IProps, IState> {
 const $screenContentContainer: ViewStyle = {
   paddingHorizontal: spacing.large,
   height: "100%",
+}
+
+const $text: TextStyle = {
+  color: colors.palette.neutral400
 }

@@ -9,14 +9,17 @@ import { NavigatorScreenParams } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { StackScreenProps } from "@react-navigation/stack"
 import { observer } from "mobx-react-lite"
+import Spinner from "react-native-loading-spinner-overlay"
 import {
   LoginScreen,
   PolicyScreen,
   RegisterScreen,
   ForgetPasswordScreen,
+  ResetPasswordScreen,
 } from "../screens"
 import { DemoTabParamList } from "./DemoNavigator" // @demo remove-current-line
 import { HeaderButtons, Item } from "react-navigation-header-buttons" // TODO "export default" of "export" needs consistent?
+import { useStores } from "../models"
 
 /**
  * This type allows TypeScript to know what routes are defined in this navigator
@@ -36,6 +39,7 @@ export type AppStackParamList = {
   Login: undefined // @demo remove-current-line
   Register: undefined
   Policy: undefined
+  ForgetPassword: undefined
   ResetPassword: undefined
   Demo: NavigatorScreenParams<DemoTabParamList> // @demo remove-current-line
   // 🔥 Your screens go here
@@ -57,21 +61,24 @@ const Stack = createNativeStackNavigator<AppStackParamList>()
 
 export const LoginNavigator2nd = observer(function LoginNavigator() {
   // @demo remove-block-start
-  // const {
-  //   authenticationStore: { isAuthenticated },
-  // } = useStores()
+  const {
+    authenticationStore: { isLoading },
+  } = useStores()
 
   // @demo remove-block-end
   return (
-    <Stack.Navigator
-      screenOptions={{ headerStyle: { backgroundColor: 'lightblue' }, headerTintColor: 'white' }}
-    >
-      <Stack.Screen name="Login" component={LoginScreen} options={options} />
-      <Stack.Screen name="Register" component={RegisterScreen} />
-      <Stack.Screen name="Policy" component={PolicyScreen} options={{ title: "Privacy Policy" }} />
-      {/* <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} options={{ title: "Reset Password" }} /> */}
-      <Stack.Screen name="ResetPassword" component={ForgetPasswordScreen} options={{ title: "Forget Password" }} />
-    </Stack.Navigator>
+    <>
+      <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
+      <Stack.Navigator
+        screenOptions={{ headerStyle: { backgroundColor: 'skyblue' }, headerTintColor: 'white' }}
+      >
+        <Stack.Screen name="Login" component={LoginScreen} options={options} />
+        <Stack.Screen name="Register" component={RegisterScreen} />
+        <Stack.Screen name="Policy" component={PolicyScreen} options={{ title: "Privacy Policy" }} />
+        <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} options={{ title: "Reset Password" }} />
+        <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} options={{ title: "Forget Password" }} />
+      </Stack.Navigator>
+    </>
   )
 })
 

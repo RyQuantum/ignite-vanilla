@@ -106,8 +106,8 @@ function App() {
       <ErrorBoundary catchErrors={Config.catchErrors}>
         <AppNavigator
           // linking={linking}
-          initialState={initialNavigationState}
-          onStateChange={onNavigationStateChange}
+          // initialState={initialNavigationState}
+          // onStateChange={onNavigationStateChange}
         />
       </ErrorBoundary>
     </SafeAreaProvider>

@@ -10,9 +10,8 @@ import {
   ApisauceInstance,
   create,
 } from "apisauce"
-import { stringMd5 } from "react-native-quick-md5"
 import qs from 'qs';
-
+import { getUniqueId } from 'react-native-device-info';
 import Config from "../../config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem" // @demo remove-current-line
 import type {
@@ -49,6 +48,21 @@ export class Api {
         Accept: "application/json",
       },
     })
+    this.apisauce.axiosInstance.interceptors.request.use(({ baseURL, url, data, method, ...rest }) => {
+      console.log(`Request:[${method}] ${baseURL}${url} data:${JSON.stringify(data)}`)
+      return { baseURL, url, data, method, ...rest };
+    })
+    this.apisauce.axiosInstance.interceptors.response.use((res) => {
+      console.log(`Response: ${res.request.responseURL} data:${JSON.stringify(res.data)}`)
+      return res;
+    }, (error) => {
+      console.log("error:", error)
+      return error
+    })
+  }
+
+  setAuthorizationToken(accessToken: string) {
+    this.apisauce.setHeaders({ Authorization: accessToken })
   }
 
   // @demo remove-block-start
@@ -88,13 +102,52 @@ export class Api {
   }
   // @demo remove-block-end
 
+  @parseResult()
+  async sendVerificationCode(countryCode: string, contactInfo: { email?: string; mobile?: string }) {
+    const body = { countryCode, twilioType: "1", ...contactInfo }
+    const response = await this.apisauce.post( // TODO ApiGetVerificationCodeResponse
+      "user/sendValidationCode",
+      // formData,
+      qs.stringify(body, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return response
+  }
+
+  @parseResult()
+  async register(contactInfo: { mobile?: string; phone?: string }, countryCode: string, password: string, verificationCode: string) {
+    const uniqueid = await getUniqueId() // TODO uid should be discussed
+    const body: { countryCode: string, password: string, verificationCode: string, uniqueid: string, date: number, mobile?: string, email?: string } = {
+      countryCode,
+      password,
+      verificationCode,
+      uniqueid,
+      ...contactInfo,
+      date: Date.now()
+    }
+    const response = await this.apisauce.post( // TODO ApiRegisterResponse
+      "user/register",
+      qs.stringify(body, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return response
+  }
+
+  @parseResult()
   async login(username: string, password: string) {
     const response: ApiResponse<ApiLoginResponse> = await this.apisauce.post(
       "user/login",
       qs.stringify({
         account: username,
-        password: stringMd5(password),
-        date: Date.now()
+        password,
       }, { encode: true }),
       {
         headers: {
@@ -102,14 +155,59 @@ export class Api {
         }
       }
     )
-    console.log(response)
-    if (!response.ok) {
-      const problem = getGeneralApiProblem(response)
-      if (problem) {
-        return problem
+    return response
+  }
+
+  @parseResult()
+  async getKeyList(pageNo = 1, pageSize = 20) {
+    const formData = new FormData()
+    formData.append("pageNo", pageNo.toString())
+    formData.append("pageSize", pageSize.toString())
+    formData.append("date", Date.now().toString())
+    const response = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
+      "key/list",
+      formData
+    )
+    return response
+  }
+
+  @parseResult()
+  async initialize(lockData: string, lockAlias: string) {
+    const response = await this.apisauce.post(
+      "lock/initialize",
+      // formData,
+      qs.stringify({
+        lockData,
+        lockAlias,
+        date: Date.now() // TODO new system is not needed
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return response
+  }
+}
+
+function parseResult() {
+  return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(... params: any[])=> Promise<any>>) => {
+    const oldFunc = descriptor.value;
+    descriptor.value = async function (){
+      const response = await oldFunc.apply(this, arguments);
+      if (!response.ok) {
+        const problem = getGeneralApiProblem(response)
+        if (problem) {
+          return { ...problem, msg: response.originalError.message }
+        }
+      }
+      if (response.data?.code === 200) {
+        return { kind: "ok", data: response.data.data }
+      } else {
+        return { kind: "bad", ...response.data }
       }
     }
-    return { kind: "ok", data: response.data }
   }
 }
 

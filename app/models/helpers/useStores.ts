@@ -21,7 +21,7 @@ const _rootStore = RootStoreModel.create({})
  * The RootStoreContext provides a way to access
  * the RootStore in any screen or component.
  */
-const RootStoreContext = createContext<RootStore>(_rootStore)
+export const RootStoreContext = createContext<RootStore>(_rootStore)
 
 /**
  * You can use this Provider to specify a *different* RootStore

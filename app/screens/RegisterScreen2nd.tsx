@@ -2,35 +2,56 @@ import React, { FC, useMemo, useState } from "react"
 import { observer } from "mobx-react-lite"
 import { Text, TextStyle, ViewStyle, View } from "react-native"
 import { ButtonGroup } from "@rneui/themed"
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import CountryPicker, { Country, CountryCode } from "react-native-country-picker-modal"
-import { Button, Icon as Icon2, Screen, TextField, Toggle, TextFieldAccessoryProps, Text as Text2 } from "../components"
+import {
+  Icon as StyledIcon,
+  Screen,
+  TextField,
+  Toggle,
+  TextFieldAccessoryProps,
+  Text as StyledText,
+  CustomButton,
+} from "../components"
 import { colors, spacing } from "../theme"
 import { DemoDivider } from "./DemoShowroomScreen/DemoDivider"
+import { useStores } from "../models"
 
-export const RegisterScreen: FC<any> = observer(function RegisterScreen(_props) {
+export const RegisterScreen: FC<any> = observer(function RegisterScreen(props) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [countryCode, setCountryCode] = useState<CountryCode>('US')
-  const [_country, setCountry] = useState<Country | null>(null) // TODO if it's null => US
-  const onSelect = (country: Country) => {
-    setCountryCode(country.cca2)
-    setCountry(country)
-  }
-  const [authEmail, setAuthEmail] = useState("")
-  const [authPhone, setAuthPhone] = useState("")
-  const [authPassword, setAuthPassword] = useState("")
-  const [authConfirmPassword, setAuthConfirmPassword] = useState("")
+  const [country, setCountry] = useState<Country | null>(null)
+
   const [isAuthPasswordHidden, setIsAuthPasswordHidden] = useState(true)
   const [isConfirmPasswordHidden, setIsConfirmPasswordHidden] = useState(true)
-  // const [value, setValue] = useState(false)
-  const [text, onChangeText] = useState("");
-  const [value, setValue] = useState(false)
+
+  const [agreed, setAgreed] = useState(false)
+
+  const {
+    authenticationStore: {
+      validationErrors,
+      registerEmail,
+      registerPhone,
+      registerPassword,
+      registerConfirmPassword,
+      verificationCode,
+      setRegisterEmail,
+      setRegisterPhone,
+      setRegisterPassword,
+      setRegisterConfirmPassword,
+      setCode,
+      sendVerificationCode,
+      register,
+      count,
+    },
+  } = useStores()
+
 
   const PasswordRightAccessory = useMemo(
     () =>
       function PasswordRightAccessory(props: TextFieldAccessoryProps) {
         return (
-          <Icon2
+          <StyledIcon
             icon={isAuthPasswordHidden ? "view" : "hidden"}
             color={colors.palette.neutral800}
             containerStyle={props.style}
@@ -45,7 +66,7 @@ export const RegisterScreen: FC<any> = observer(function RegisterScreen(_props) 
     () =>
       function PasswordRightAccessory(props: TextFieldAccessoryProps) {
         return (
-          <Icon2
+          <StyledIcon
             icon={isConfirmPasswordHidden ? "view" : "hidden"}
             color={colors.palette.neutral800}
             containerStyle={props.style}
@@ -55,6 +76,10 @@ export const RegisterScreen: FC<any> = observer(function RegisterScreen(_props) 
       },
     [isConfirmPasswordHidden],
   )
+
+  const isButtonDisabled = useMemo(() => {
+    return (registerPassword.length === 0 || registerConfirmPassword.length === 0 || (selectedIndex === 0 ? (registerEmail.length === 0 || validationErrors.registerEmail !== "") : (registerPhone.length === 0 || validationErrors.registerPhone !== "")) || validationErrors.registerPassword !== "" || validationErrors.registerConfirmPassword !== "")
+  }, [registerPassword, registerConfirmPassword, selectedIndex, registerEmail, registerPhone])
 
   return (
     <Screen
@@ -82,24 +107,27 @@ export const RegisterScreen: FC<any> = observer(function RegisterScreen(_props) 
         withCallingCode
         withEmoji
         withCallingCodeButton
-        onSelect={onSelect}
+        onSelect={(country: Country) => {
+          setCountryCode(country.cca2)
+          setCountry(country)
+        }}
       />
 
       <DemoDivider size={24} />
 
       {selectedIndex === 0 ?
         <TextField
-          value={authEmail}
-          onChangeText={setAuthEmail}
+          value={registerEmail}
+          onChangeText={setRegisterEmail}
+          status={validationErrors.registerEmail ? "error" : undefined}
+          helper={validationErrors.registerEmail || undefined}
+          HelperTextProps={{ style: { color: "red" } }}
           containerStyle={$textField}
           autoCapitalize="none"
           autoComplete="email"
           autoCorrect={false}
           keyboardType="email-address"
-          // label="Email"
           placeholder="Enter your email address"
-          // helper={errors?.authEmail}
-          // status={errors?.authEmail ? "error" : undefined}
           LeftAccessory={(props) => (
             <View style={props.style}>
               <Icon name="email" size={24} color="grey"/>
@@ -107,16 +135,16 @@ export const RegisterScreen: FC<any> = observer(function RegisterScreen(_props) 
           )}
         /> :
         <TextField
-          value={authPhone}
-          onChangeText={setAuthPhone}
+          value={registerPhone}
+          onChangeText={setRegisterPhone}
+          status={validationErrors.registerPhone ? "error" : undefined}
+          helper={validationErrors.registerPhone || undefined}
+          HelperTextProps={{ style: { color: "red" } }}
           containerStyle={$textField}
           autoCapitalize="none"
           autoCorrect={false}
           keyboardType="number-pad"
-          // label="Phone"
           placeholder="Enter your phone number"
-          // helper={errors?.authEmail}
-          // status={errors?.authEmail ? "error" : undefined}
           LeftAccessory={(props) => (
             <View style={props.style}>
               <Icon name="phone" size={24} color="grey"/>
@@ -126,17 +154,17 @@ export const RegisterScreen: FC<any> = observer(function RegisterScreen(_props) 
       }
 
       <TextField
-        value={authPassword}
-        onChangeText={setAuthPassword}
+        value={registerPassword}
+        onChangeText={setRegisterPassword}
+        status={validationErrors.registerPassword ? "error" : undefined}
+        helper={validationErrors.registerPassword || undefined}
+        HelperTextProps={{ style: { color: "red" } }}
         containerStyle={$textField}
         autoCapitalize="none"
         autoComplete="password"
         autoCorrect={false}
         secureTextEntry={isAuthPasswordHidden}
-        // label="Password"
         placeholder="Password"
-        // helper={errors?.authEmail}
-        // status={errors?.authEmail ? "error" : undefined}
         RightAccessory={PasswordRightAccessory}
         LeftAccessory={(props) => (
           <View style={props.style}>
@@ -146,17 +174,17 @@ export const RegisterScreen: FC<any> = observer(function RegisterScreen(_props) 
       />
 
       <TextField
-        value={authConfirmPassword}
-        onChangeText={setAuthConfirmPassword}
+        value={registerConfirmPassword}
+        onChangeText={setRegisterConfirmPassword}
+        status={validationErrors.registerConfirmPassword ? "error" : undefined}
+        helper={validationErrors.registerConfirmPassword || undefined}
+        HelperTextProps={{ style: { color: "red" } }}
         containerStyle={$textField}
         autoCapitalize="none"
         autoComplete="password"
         autoCorrect={false}
         secureTextEntry={isConfirmPasswordHidden}
-        // label="Confirm password"
         placeholder="Confirm password"
-        // helper={errors?.authPassword}
-        // status={errors?.authPassword ? "error" : undefined}
         RightAccessory={PasswordRightAccessory2}
         LeftAccessory={(props) => (
           <View style={props.style}>
@@ -165,33 +193,33 @@ export const RegisterScreen: FC<any> = observer(function RegisterScreen(_props) 
         )}
       />
 
-      <Text2 style={{ color: 'gray', fontSize: 14 }}>Your password must have 8-20 characters, and include a minimum of two types of numbers, letters and symbols</Text2>
+      <StyledText style={$tip}>Your password must have 8-20 characters, and include a minimum of two types of numbers, letters and symbols</StyledText>
 
-      <View style={$textContainer}>
+      <View style={$verificationCodeContainer}>
         <TextField
-          value={text}
-          onChangeText={onChangeText}
-          containerStyle={{ width: "100%", maxWidth: '60%' }}
+          value={verificationCode}
+          onChangeText={setCode}
+          containerStyle={$verificationCode}
           keyboardType="number-pad"
           placeholder="Verification code"
         />
-        <Button preset="filled" textStyle={{ color: 'white' }}>Get code</Button>
+        <CustomButton style={$getCodeButton} onPress={() => sendVerificationCode(country, selectedIndex)} disabled={isButtonDisabled || count !== -1}>{count === -1 ? "Get code" : count}</CustomButton>
       </View>
 
       <DemoDivider size={24} />
 
-      <Button preset="filled" style={$button} textStyle={{ color: 'white' }}>Register</Button>
+      <CustomButton style={$registerButton} onPress={() => register(country, selectedIndex)} disabled={isButtonDisabled || !agreed || verificationCode.length < 4}>Register</CustomButton>
 
       <DemoDivider size={24} />
 
-      <View style={{ flexDirection: "row", alignItems: 'center' }}>
+      <View style={$checkBoxContainer}>
         <Toggle
           variant="checkbox"
-          value={value}
-          onPress={() => setValue(!value)}
+          value={agreed}
+          onPress={() => setAgreed(!agreed)}
         />
-        <Text onPress={() => setValue(!value)}>  I've read and agreed </Text>
-        <Text style={$link} onPress={() => _props.navigation.navigate("Policy")}>
+        <Text onPress={() => setAgreed(!agreed)}>  I've read and agreed </Text>
+        <Text style={$link} onPress={() => props.navigation.navigate("Policy")}>
           <Text>User Terms Privacy Policy</Text>
         </Text>
       </View>
@@ -209,7 +237,12 @@ const $textField: ViewStyle = {
   marginBottom: spacing.large,
 }
 
-const $textContainer: ViewStyle = {
+const $tip: TextStyle = {
+  color: 'gray',
+  fontSize: 14
+}
+
+const $verificationCodeContainer: ViewStyle = {
   display: "flex",
   flexDirection: "row",
   justifyContent: "space-between",
@@ -217,10 +250,24 @@ const $textContainer: ViewStyle = {
   width: "100%",
 }
 
-const $button: ViewStyle = {
+const $verificationCode: ViewStyle = {
+  width: "100%",
+  maxWidth: '60%'
+}
+
+const $getCodeButton: ViewStyle = {
+  width: 100,
+}
+
+const $registerButton: ViewStyle = {
   borderRadius: 30
 }
 
 const $link: TextStyle = {
-  color: 'lightblue'
+  color: 'skyblue'
+}
+
+const $checkBoxContainer: ViewStyle = {
+  flexDirection: "row",
+  alignItems: "center",
 }
