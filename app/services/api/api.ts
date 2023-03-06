@@ -49,16 +49,16 @@ export class Api {
       },
     })
     this.apisauce.axiosInstance.interceptors.request.use(({ baseURL, url, data, method, ...rest }) => {
-      console.log(`Request:[${method}] ${baseURL}${url} data:${JSON.stringify(data)}`)
+      console.log(`Request:[${method}] ${baseURL}${url} data:${JSON.stringify(data)} Authorization:${rest.headers.Authorization}`)
       return { baseURL, url, data, method, ...rest };
     })
-    this.apisauce.axiosInstance.interceptors.response.use((res) => {
-      console.log(`Response: ${res.request.responseURL} data:${JSON.stringify(res.data)}`)
-      return res;
-    }, (error) => {
-      console.log("error:", error)
+    this.apisauce.axiosInstance.interceptors.response.use(null, (error) => {
+      console.log("Error:", error)
       return error
     })
+    this.apisauce.addMonitor((res) => {
+      console.log(`Response: ${res.config.baseURL + res.config.url} data:${JSON.stringify(res.data)} duration:${res.duration}ms`)
+    });
   }
 
   setAuthorizationToken(accessToken: string) {
@@ -159,7 +159,7 @@ export class Api {
   }
 
   @parseResult()
-  async getKeyList(pageNo = 1, pageSize = 20) {
+  async getKeyList(pageNo = 1, pageSize = 20) { // TODO support pagination
     const formData = new FormData()
     formData.append("pageNo", pageNo.toString())
     formData.append("pageSize", pageSize.toString())
@@ -180,6 +180,112 @@ export class Api {
         lockData,
         lockAlias,
         date: Date.now() // TODO new system is not needed
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return response
+  }
+
+  @parseResult()
+  async rename(lockId: number, lockAlias: string) {
+    const response = await this.apisauce.post(
+      "lock/rename",
+      // formData,
+      qs.stringify({
+        lockId,
+        lockAlias,
+        date: Date.now() // TODO new system is not needed
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return response
+  }
+
+  @parseResult()
+  async getCodeList(lockId: number, pageNo = 1, pageSize = 20) {
+    const formData = new FormData()
+    formData.append("lockId", lockId.toString())
+    formData.append("pageNo", pageNo.toString())
+    formData.append("pageSize", pageSize.toString())
+    formData.append("date", Date.now().toString())
+    const response = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
+      "lock/listKeyboardPwd",
+      formData
+    )
+    return response
+  }
+
+  @parseResult()
+  async addCode(lockId: number, keyboardPwd: string, keyboardPwdName: string, startDate: number, endDate: number, addType: number) {
+    const body: { lockId: number, keyboardPwd: string, keyboardPwdName?: string, startDate: number, endDate: number, addType: number, date: number } = {
+      lockId,
+      keyboardPwd,
+      startDate,
+      endDate,
+      addType,
+      date: Date.now()
+    }
+    if (keyboardPwdName) {
+      body.keyboardPwdName = keyboardPwdName
+    }
+    const response = await this.apisauce.post(
+      "keyboardPwd/add",
+      // formData,
+      qs.stringify(body, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return response
+  }
+
+  @parseResult()
+  async generateCode(lockId: number, keyboardPwdType: number, keyboardPwdName: string, startDate: number, endDate?: number) {
+    const body: { lockId: number, keyboardPwdType: number, keyboardPwdName?: string, startDate: number, endDate?: number, date: number } = {
+      lockId,
+      keyboardPwdType,
+      startDate,
+      date: Date.now()
+    }
+    if (keyboardPwdName) {
+      body.keyboardPwdName = keyboardPwdName
+    }
+    if (endDate) {
+      body.endDate = endDate
+    }
+    const response = await this.apisauce.post(
+      "keyboardPwd/get",
+      // formData,
+      qs.stringify(body, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return response
+  }
+
+  @parseResult()
+  async deleteCode(lockId: number, keyboardPwdId: number, deleteType: number) {
+    const response = await this.apisauce.post(
+      "keyboardPwd/delete",
+      // formData,
+      qs.stringify({
+        lockId,
+        keyboardPwdId,
+        deleteType,
+        date: Date.now()
       }, { encode: true }),
       {
         headers: {

@@ -1,8 +1,8 @@
-import React, { FC, useMemo, useState } from "react"
+import React, { FC, useState } from "react"
 import { Text, TextStyle, View, ViewStyle } from "react-native"
-import { observer } from "mobx-react-lite"
-import { Button, Icon as Icon2, Screen, Text as Text2, TextField, TextFieldAccessoryProps } from "../components"
-import { colors, spacing } from "../theme"
+import { observer } from "mobx-react"
+import { Button, Screen, Text as Text2, TextField } from "../components"
+import { spacing } from "../theme"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
 import { DemoDivider } from "./DemoShowroomScreen/DemoDivider"
 

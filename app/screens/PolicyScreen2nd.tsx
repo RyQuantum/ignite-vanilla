@@ -1,6 +1,6 @@
 import React, { FC } from "react"
 import { ViewStyle } from "react-native"
-import { observer } from "mobx-react-lite"
+import { observer } from "mobx-react"
 import { Text, Screen } from "../components"
 import { spacing } from "../theme"
 import { DemoDivider } from "./DemoShowroomScreen/DemoDivider"

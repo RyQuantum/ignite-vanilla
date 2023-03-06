@@ -1,5 +1,4 @@
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, react-native/no-inline-styles */
 import React from "react"
 import { TextStyle, View, ViewStyle } from "react-native"
 import { Text, Toggle, ToggleProps } from "../../../components"
@@ -143,8 +142,10 @@ export const DemoToggle: Demo = {
       <ControlledToggle
         variant="radio"
         value
-        label="demoShowroomScreen.demoViaSpecifiedTxProp"
-        helper="demoShowroomScreen.demoViaSpecifiedTxProp"
+        labelTx="demoShowroomScreen.demoViaSpecifiedTxProp"
+        labelTxOptions={{ prop: "label" }}
+        helperTx="demoShowroomScreen.demoViaSpecifiedTxProp"
+        helperTxOptions={{ prop: "helper" }}
       />
       <DemoDivider size={24} />
       <ControlledToggle

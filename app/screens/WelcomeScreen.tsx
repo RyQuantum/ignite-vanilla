@@ -1,10 +1,11 @@
-import { observer } from "mobx-react-lite"
 import React, { FC } from "react"
 import { Image, ImageStyle, TextStyle, View, ViewStyle } from "react-native"
+import { observer } from "mobx-react"
 import {
   Button, // @demo remove-current-line
   Text,
 } from "../components"
+import { isRTL } from "../i18n"
 import { useStores } from "../models" // @demo remove-current-line
 import { AppStackScreenProps } from "../navigators" // @demo remove-current-line
 import { colors, spacing } from "../theme"
@@ -30,7 +31,7 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeSc
   }
 
   useHeader({
-    rightText: "Log Out",
+    rightTx: "common.logOut",
     onRightPress: logout,
   })
   // @demo remove-block-end
@@ -44,20 +45,22 @@ export const WelcomeScreen: FC<WelcomeScreenProps> = observer(function WelcomeSc
         <Text
           testID="welcome-heading"
           style={$welcomeHeading}
-          text="Your app, almost ready for launch!"
+          tx="welcomeScreen.readyForLaunch"
           preset="heading"
         />
-        <Text text="(ohh, this is exciting!)" preset="subheading" />
+        <Text tx="welcomeScreen.exciting" preset="subheading" />
         <Image style={$welcomeFace} source={welcomeFace} resizeMode="contain" />
       </View>
 
       <View style={[$bottomContainer, $bottomContainerInsets]}>
-        <Text
-          text="psst  — This probably isn't what your app looks like. (Unless your designer handed you these screens, and in that case, ship it!)"
-          size="md"
-        />
+        <Text tx="welcomeScreen.postscript" size="md" />
         {/* @demo remove-block-start */}
-        <Button testID="next-screen-button" preset="reversed" text="Let's go!" onPress={goNext} />
+        <Button
+          testID="next-screen-button"
+          preset="reversed"
+          tx="welcomeScreen.letsGo"
+          onPress={goNext}
+        />
         {/* @demo remove-block-end */}
       </View>
     </View>
@@ -99,7 +102,7 @@ const $welcomeFace: ImageStyle = {
   position: "absolute",
   bottom: -47,
   right: -80,
-  transform: [{ scaleX: 1 }],
+  transform: [{ scaleX: isRTL ? -1 : 1 }],
 }
 
 const $welcomeHeading: TextStyle = {

@@ -1,5 +1,6 @@
 import React from "react"
 import { Image, ImageProps, ImageStyle, StyleProp, TextStyle, View, ViewStyle } from "react-native"
+import { translate } from "../i18n"
 import { spacing } from "../theme"
 import { Button, ButtonProps } from "./Button"
 import { Text, TextProps } from "./Text"
@@ -32,6 +33,15 @@ interface EmptyStateProps {
    */
   heading?: TextProps["text"]
   /**
+   * Heading text which is looked up via i18n.
+   */
+  headingTx?: TextProps["tx"]
+  /**
+   * Optional heading options to pass to i18n. Useful for interpolation
+   * as well as explicitly setting locale or translation fallbacks.
+   */
+  headingTxOptions?: TextProps["txOptions"]
+  /**
    * Style overrides for heading text.
    */
   headingStyle?: StyleProp<TextStyle>
@@ -44,6 +54,15 @@ interface EmptyStateProps {
    */
   content?: TextProps["text"]
   /**
+   * Content text which is looked up via i18n.
+   */
+  contentTx?: TextProps["tx"]
+  /**
+   * Optional content options to pass to i18n. Useful for interpolation
+   * as well as explicitly setting locale or translation fallbacks.
+   */
+  contentTxOptions?: TextProps["txOptions"]
+  /**
    * Style overrides for content text.
    */
   contentStyle?: StyleProp<TextStyle>
@@ -55,6 +74,15 @@ interface EmptyStateProps {
    * The button text to display if not using `buttonTx`.
    */
   button?: TextProps["text"]
+  /**
+   * Button text which is looked up via i18n.
+   */
+  buttonTx?: TextProps["tx"]
+  /**
+   * Optional button options to pass to i18n. Useful for interpolation
+   * as well as explicitly setting locale or translation fallbacks.
+   */
+  buttonTxOptions?: TextProps["txOptions"]
   /**
    * Style overrides for button.
    */
@@ -76,9 +104,9 @@ interface EmptyStateProps {
 const EmptyStatePresets = {
   generic: {
     imageSource: sadFace,
-    heading: "emptyStateComponent.generic.heading",
-    content: "emptyStateComponent.generic.content",
-    button: "emptyStateComponent.generic.button",
+    heading: translate("emptyStateComponent.generic.heading"),
+    content: translate("emptyStateComponent.generic.content"),
+    button: translate("emptyStateComponent.generic.button"),
   },
 } as const
 
@@ -92,9 +120,15 @@ export function EmptyState(props: EmptyStateProps) {
 
   const {
     button = preset?.button,
+    buttonTx,
     buttonOnPress,
+    buttonTxOptions,
     content = preset?.content,
+    contentTx,
+    contentTxOptions,
     heading = preset?.heading,
+    headingTx,
+    headingTxOptions,
     imageSource = preset?.imageSource,
     style: $containerStyleOverride,
     buttonStyle: $buttonStyleOverride,
@@ -109,9 +143,9 @@ export function EmptyState(props: EmptyStateProps) {
   } = props
 
   const isImagePresent = !!imageSource
-  const isHeadingPresent = !!heading
-  const isContentPresent = !!content
-  const isButtonPresent = !!button
+  const isHeadingPresent = !!(heading || headingTx)
+  const isContentPresent = !!(content || contentTx)
+  const isButtonPresent = !!(button || buttonTx)
 
   const $containerStyles = [$containerStyleOverride]
   const $imageStyles = [
@@ -145,15 +179,32 @@ export function EmptyState(props: EmptyStateProps) {
       {isImagePresent && <Image source={imageSource} {...ImageProps} style={$imageStyles} />}
 
       {isHeadingPresent && (
-        <Text preset="subheading" text={heading} {...HeadingTextProps} style={$headingStyles} />
+        <Text
+          preset="subheading"
+          text={heading}
+          tx={headingTx}
+          txOptions={headingTxOptions}
+          {...HeadingTextProps}
+          style={$headingStyles}
+        />
       )}
 
-      {isContentPresent && <Text text={content} {...ContentTextProps} style={$contentStyles} />}
+      {isContentPresent && (
+        <Text
+          text={content}
+          tx={contentTx}
+          txOptions={contentTxOptions}
+          {...ContentTextProps}
+          style={$contentStyles}
+        />
+      )}
 
       {isButtonPresent && (
         <Button
           onPress={buttonOnPress}
           text={button}
+          tx={buttonTx}
+          txOptions={buttonTxOptions}
           textStyle={$buttonTextStyleOverride}
           {...ButtonProps}
           style={$buttonStyles}

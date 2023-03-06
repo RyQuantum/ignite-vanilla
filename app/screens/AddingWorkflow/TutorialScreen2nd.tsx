@@ -1,11 +1,11 @@
 import React, { FC } from "react"
-import { observer } from "mobx-react-lite"
+import { observer } from "mobx-react"
 import { CustomButton, Screen, Text as StyledText } from "../../components"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import { Image, ImageStyle, TextStyle, ViewStyle } from "react-native"
 import { spacing } from "../../theme"
 
-const TouchImage = require("../../../assets/images/Touch.png")
+const TouchImage = require("../../../assets/images/Touch2nd.png")
 
 export const TutorialScreen: FC<any> = observer(function TutorialScreen(props) {
   return (

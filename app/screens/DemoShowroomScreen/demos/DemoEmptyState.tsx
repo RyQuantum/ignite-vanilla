@@ -1,5 +1,4 @@
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, react-native/no-inline-styles */
 import React from "react"
 import { EmptyState } from "../../../components"
 import { colors } from "../../../theme"
@@ -40,9 +39,12 @@ export const DemoEmptyState: Demo = {
       <DemoDivider size={30} line />
 
       <EmptyState
-        heading="demoShowroomScreen.demoViaSpecifiedTxProp"
-        content="demoShowroomScreen.demoViaSpecifiedTxProp"
-        button="demoShowroomScreen.demoViaSpecifiedTxProp"
+        headingTx="demoShowroomScreen.demoViaSpecifiedTxProp"
+        headingTxOptions={{ prop: "heading" }}
+        contentTx="demoShowroomScreen.demoViaSpecifiedTxProp"
+        contentTxOptions={{ prop: "content" }}
+        buttonTx="demoShowroomScreen.demoViaSpecifiedTxProp"
+        buttonTxOptions={{ prop: "button" }}
       />
     </DemoUseCase>,
 

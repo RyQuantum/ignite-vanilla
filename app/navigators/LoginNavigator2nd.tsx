@@ -8,7 +8,7 @@ import React from "react"
 import { NavigatorScreenParams } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { StackScreenProps } from "@react-navigation/stack"
-import { observer } from "mobx-react-lite"
+import { observer } from "mobx-react"
 import Spinner from "react-native-loading-spinner-overlay"
 import {
   LoginScreen,
@@ -65,24 +65,45 @@ export const LoginNavigator2nd = observer(function LoginNavigator() {
     authenticationStore: { isLoading },
   } = useStores()
 
-  // @demo remove-block-end
   return (
     <>
       <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
       <Stack.Navigator
-        screenOptions={{ headerStyle: { backgroundColor: 'skyblue' }, headerTintColor: 'white' }}
+        screenOptions={{ headerStyle: { backgroundColor: "skyblue" }, headerTintColor: "white" }}
       >
         <Stack.Screen name="Login" component={LoginScreen} options={options} />
         <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Policy" component={PolicyScreen} options={{ title: "Privacy Policy" }} />
-        <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} options={{ title: "Reset Password" }} />
-        <Stack.Screen name="ForgetPassword" component={ForgetPasswordScreen} options={{ title: "Forget Password" }} />
+        <Stack.Screen
+          name="Policy"
+          component={PolicyScreen}
+          options={{ title: "Privacy Policy" }}
+        />
+        <Stack.Screen
+          name="ResetPassword"
+          component={ResetPasswordScreen}
+          options={{ title: "Reset Password" }}
+        />
+        <Stack.Screen
+          name="ForgetPassword"
+          component={ForgetPasswordScreen}
+          options={{ title: "Forget Password" }}
+        />
       </Stack.Navigator>
     </>
   )
 })
 
-const options = ({ navigation }) => ({ headerRight: () => (<HeaderButtons><Item title="Register" buttonStyle={{ color: "white" }} onPress={() => navigation.navigate("Register")}/></HeaderButtons>)})
+const options = ({ navigation }) => ({
+  headerRight: () => (
+    <HeaderButtons>
+      <Item
+        title="Register"
+        buttonStyle={{ color: "white" }}
+        onPress={() => navigation.navigate("Register")}
+      />
+    </HeaderButtons>
+  ),
+})
 
 // interface NavigationProps extends Partial<React.ComponentProps<typeof NavigationContainer>> {}
 //

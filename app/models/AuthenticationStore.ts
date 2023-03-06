@@ -171,42 +171,6 @@ export const AuthenticationStoreModel = types
       }
     },
 
-    async getKeyList(): Promise<object[]> {
-      store.isLoading = true
-      const res: any = await api.getKeyList() // TODO add pagination
-      store.setProp("isLoading", false)
-      switch (res.kind) {
-        case "ok":
-          if (res.data?.list) {
-            return res.data.list
-          } else {
-            alert(JSON.stringify(res))
-          }
-          break
-        case "bad":
-          Alert.alert(`code: ${res.code}`, res.msg)
-          break
-        default:
-          Alert.alert(res.kind, res.msg)
-      }
-      return []
-    },
-
-    async initialize(lockData: string, name: string): Promise<{ lockId: number; keyId: number } | null> {
-      store.isLoading = true
-      const res: any = await api.initialize(lockData, name)
-      store.setProp("isLoading", false)
-      switch (res.kind) {
-        case "ok":
-          return res.data
-        case "bad":
-          Alert.alert(`code: ${res.code}`, res.msg)
-          break
-        default:
-          Alert.alert(res.kind, res.msg)
-      }
-      return null
-    },
     logout() {
       store.authToken = undefined
       api.setAuthorizationToken("")
@@ -217,7 +181,7 @@ export const AuthenticationStoreModel = types
   .preProcessSnapshot((snapshot) => {
     // remove sensitive data from snapshot to avoid secrets
     // being stored in AsyncStorage in plain text if backing up store
-    const { authPassword, isLoading, authToken, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { isLoading, authToken, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
 
     // see the following for strategies to consider storing secrets on device
     // https://reactnative.dev/docs/security#storing-sensitive-info

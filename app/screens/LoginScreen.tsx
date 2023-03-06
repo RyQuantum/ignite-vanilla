@@ -1,6 +1,6 @@
-import { observer } from "mobx-react-lite"
 import React, { FC, useEffect, useMemo, useRef, useState } from "react"
 import { TextInput, TextStyle, ViewStyle } from "react-native"
+import { observer } from "mobx-react"
 import { Button, Icon, Screen, Text, TextField, TextFieldAccessoryProps } from "../components"
 import { useStores } from "../models"
 import { AppStackScreenProps } from "../navigators"
@@ -37,9 +37,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
     setIsSubmitted(true)
     setAttemptsCount(attemptsCount + 1)
 
-    if (Object.values(validationErrors).some((v) => !!v)) {
-      return
-    }
+    if (Object.values(validationErrors).some((v) => !!v)) return
 
     // Make a request to your server to get an authentication token.
     // If successful, reset the fields and set the token.
@@ -79,20 +77,9 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
       contentContainerStyle={$screenContentContainer}
       safeAreaEdges={["top", "bottom"]}
     >
-      <Text testID="login-heading" text="Sign In" preset="heading" style={$signIn} />
-      <Text
-        text="Enter your details below to unlock top secret info. You'll never guess what we've got waiting. Or maybe you will; it's not rocket science here."
-        preset="subheading"
-        style={$enterDetails}
-      />
-      {attemptsCount > 2 && (
-        <Text
-          text="Hint: you can use any email address and your favorite password :)"
-          size="sm"
-          weight="light"
-          style={$hint}
-        />
-      )}
+      <Text testID="login-heading" tx="loginScreen.signIn" preset="heading" style={$signIn} />
+      <Text tx="loginScreen.enterDetails" preset="subheading" style={$enterDetails} />
+      {attemptsCount > 2 && <Text tx="loginScreen.hint" size="sm" weight="light" style={$hint} />}
 
       <TextField
         value={authEmail}
@@ -102,8 +89,8 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
         autoComplete="email"
         autoCorrect={false}
         keyboardType="email-address"
-        label="Email"
-        placeholder="Enter your email address"
+        labelTx="loginScreen.emailFieldLabel"
+        placeholderTx="loginScreen.emailFieldPlaceholder"
         helper={errors?.authEmail}
         status={errors?.authEmail ? "error" : undefined}
         onSubmitEditing={() => authPasswordInput.current?.focus()}
@@ -118,8 +105,8 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
         autoComplete="password"
         autoCorrect={false}
         secureTextEntry={isAuthPasswordHidden}
-        label="Password"
-        placeholder="Super secret password here"
+        labelTx="loginScreen.passwordFieldLabel"
+        placeholderTx="loginScreen.passwordFieldPlaceholder"
         helper={errors?.authPassword}
         status={errors?.authPassword ? "error" : undefined}
         onSubmitEditing={login}
@@ -128,7 +115,7 @@ export const LoginScreen: FC<LoginScreenProps> = observer(function LoginScreen(_
 
       <Button
         testID="login-button"
-        text="Tap to sign in!"
+        tx="loginScreen.tapToSignIn"
         style={$tapButton}
         preset="reversed"
         onPress={login}

@@ -1,64 +1,56 @@
-import React, { Component } from "react"
-import { View, ViewStyle, BackHandler, TextStyle } from "react-native"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import React, { FC, useEffect, useState } from "react"
+import { BackHandler, TextStyle, View, ViewStyle } from "react-native"
+import { observer } from "mobx-react"
+import Spinner from "react-native-loading-spinner-overlay"
 import { CustomButton, Screen, Text, TextField } from "../../components"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import { spacing } from "../../theme"
-import { RootStoreContext } from "../../models"
+import { useStores } from "../../models"
 
+export const AssignNameScreen: FC<any> = observer(function AssignNameScreen(props) {
 
-type RootStackParamList = {
-  "Assign Name": { lockName: string };
-};
+  const { lockStore: { rename, isLoading } } = useStores()
+  const [lockAlias, setLockAlias] = useState(props.route.params.lockName)
 
-interface IProps {
-  navigation: NativeStackNavigationProp<RootStackParamList, "main">;
-}
+  useEffect(() => {
+    const handler = BackHandler.addEventListener("hardwareBackPress", () => true)
+    return () => {
+      handler.remove()
+    }
+  }, [])
 
-interface IState {
-  name: string
-}
-
-export class AssignNameScreen extends Component<IProps, IState> {
-  static contextType = RootStoreContext
-  state: IState = {
-    lockData: this.props.route.params.lockData,
-    name: this.props.route.params.lockName,
-  }
-
-  componentDidMount() {
-    this.backHandler = BackHandler.addEventListener("hardwareBackPress", () => true)
-  }
-
-  componentWillUnmount() {
-    this.backHandler.remove()
-  }
-
-  render() {
-    const { authenticationStore: { initialize } } = this.context
-    return (
-      <Screen
-        preset="scroll"
-        safeAreaEdges={["top", "bottom"]}
-        contentContainerStyle={$screenContentContainer}
+  return (
+    <Screen
+      preset="scroll"
+      safeAreaEdges={["top", "bottom"]}
+      contentContainerStyle={$screenContentContainer}
+    >
+      <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
+      <View>
+        <Text style={$text}>Success. Assign a name</Text>
+        <DemoDivider size={48} />
+        <TextField
+          value={lockAlias}
+          onChangeText={setLockAlias}
+          autoCapitalize="none"
+          containerStyle={$textField}
+        />
+      </View>
+      <DemoDivider size={24} />
+      <CustomButton
+        onPress={async () => {
+          await rename(props.route.params.lockId, lockAlias)
+          props.navigation.reset({
+            index: 1,
+            routes: [{ name: 'Adding' }],
+          })
+        }}
       >
-        <View>
-          <Text style={$text}>Success. Assign a name</Text>
-          <DemoDivider size={48} />
-          <TextField
-            value={this.state.name}
-            onChangeText={(name) => this.setState({ name })}
-            autoCapitalize="none"
-            containerStyle={$textField}
-          />
-        </View>
-        <DemoDivider size={24} />
-        <CustomButton onPress={() => initialize(this.state.lockData, this.state.name)}>OK</CustomButton>
-      </Screen>
-    )
-  }
-}
-
+        OK
+      </CustomButton>
+    </Screen>
+  )
+})
 
 const $screenContentContainer: ViewStyle = {
   paddingVertical: spacing.large,

@@ -24,6 +24,13 @@ const palette = {
   secondary400: "#626894",
   secondary500: "#41476E",
 
+  tertiary: "skyblue",
+  tertiary100: "#DCDDE9",
+  tertiary200: "#BCC0D6",
+  tertiary300: "#9196B9",
+  tertiary400: "#626894",
+  tertiary500: "#41476E",
+
   accent100: "#FFEED4",
   accent200: "#FFE1B2",
   accent300: "#FDD495",
@@ -67,7 +74,7 @@ export const colors = {
   /**
    * The main tinting color.
    */
-  tint: palette.primary500,
+  tint: palette.tertiary,
   /**
    * A subtle color used for lines.
    */

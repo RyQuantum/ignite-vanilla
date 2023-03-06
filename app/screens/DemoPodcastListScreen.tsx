@@ -1,6 +1,6 @@
 // Interested in migrating from FlatList to FlashList? Check out the recipe in our Ignite Cookbook
 // https://infinitered.github.io/ignite-cookbook/docs/MigratingToFlashList
-import { observer } from "mobx-react-lite"
+import { observer } from "mobx-react"
 import React, { FC, useEffect, useMemo } from "react"
 import {
   AccessibilityProps,
@@ -22,6 +22,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated"
 import { Button, Card, EmptyState, Icon, Screen, Text, Toggle } from "../components"
+import { isRTL, translate } from "../i18n"
 import { useStores } from "../models"
 import { Episode } from "../models/Episode"
 import { DemoTabScreenProps } from "../navigators/DemoNavigator"
@@ -78,10 +79,14 @@ export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = 
               <EmptyState
                 preset="generic"
                 style={$emptyState}
-                heading={episodeStore.favoritesOnly ? "This looks a bit empty" : ""}
-                context={
+                headingTx={
                   episodeStore.favoritesOnly
-                    ? "No favorites have been added yet. Tap the heart on an episode to add it to your favorites!"
+                    ? "demoPodcastListScreen.noFavoritesEmptyState.heading"
+                    : undefined
+                }
+                contentTx={
+                  episodeStore.favoritesOnly
+                    ? "demoPodcastListScreen.noFavoritesEmptyState.content"
                     : undefined
                 }
                 button={episodeStore.favoritesOnly ? null : undefined}
@@ -93,7 +98,7 @@ export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = 
           }
           ListHeaderComponent={
             <View style={$heading}>
-              <Text preset="heading" text="React Native Radio episodes" />
+              <Text preset="heading" tx="demoPodcastListScreen.title" />
               {(episodeStore.favoritesOnly || episodeStore.episodesForList.length > 0) && (
                 <View style={$toggle}>
                   <Toggle
@@ -102,10 +107,10 @@ export const DemoPodcastListScreen: FC<DemoTabScreenProps<"DemoPodcastList">> = 
                       episodeStore.setProp("favoritesOnly", !episodeStore.favoritesOnly)
                     }
                     variant="switch"
-                    label="Only Show Favorites"
+                    labelTx="demoPodcastListScreen.onlyFavorites"
                     labelPosition="left"
                     labelStyle={$labelStyle}
-                    accessibilityLabel="Switch on to only show favorites"
+                    accessibilityLabel={translate("demoPodcastListScreen.accessibility.switch")}
                   />
                 </View>
               )}
@@ -172,16 +177,17 @@ const EpisodeCard = observer(function EpisodeCard({
     () =>
       Platform.select<AccessibilityProps>({
         ios: {
-          accessibilityHint: `Double tap to listen to the episode. Double tap and hold to ${
-            isFavorite ? "unfavorite" : "favorite"
-          } this episode.`,
+          accessibilityLabel: episode.title,
+          accessibilityHint: translate("demoPodcastListScreen.accessibility.cardHint", {
+            action: isFavorite ? "unfavorite" : "favorite",
+          }),
         },
         android: {
           accessibilityLabel: episode.title,
           accessibilityActions: [
             {
               name: "longpress",
-              label: "Toggle Favorite",
+              label: translate("demoPodcastListScreen.accessibility.favoriteAction"),
             },
           ],
           onAccessibilityAction: ({ nativeEvent }) => {
@@ -262,14 +268,22 @@ const EpisodeCard = observer(function EpisodeCard({
           onPress={handlePressFavorite}
           onLongPress={handlePressFavorite}
           style={[$favoriteButton, isFavorite && $unFavoriteButton]}
-          accessibilityLabel={isFavorite ? "Episode favorited" : "Episode not favorited"}
+          accessibilityLabel={
+            isFavorite
+              ? translate("demoPodcastListScreen.accessibility.unfavoriteIcon")
+              : translate("demoPodcastListScreen.accessibility.favoriteIcon")
+          }
           LeftAccessory={ButtonLeftAccessory}
         >
           <Text
             size="xxs"
             accessibilityLabel={episode.duration.accessibilityLabel}
             weight="medium"
-            text={isFavorite ? "Unfavorite" : "Favorite"}
+            text={
+              isFavorite
+                ? translate("demoPodcastListScreen.unfavoriteButton")
+                : translate("demoPodcastListScreen.favoriteButton")
+            }
           />
         </Button>
       }
@@ -354,7 +368,7 @@ const $emptyState: ViewStyle = {
 }
 
 const $emptyStateImage: ImageStyle = {
-  transform: [{ scaleX: 1 }],
+  transform: [{ scaleX: isRTL ? -1 : 1 }],
 }
 // #endregion
 

@@ -1,8 +1,10 @@
 import React, { FC } from "react"
-import { Linking, TextStyle, View, ViewStyle } from "react-native"
+// import * as Application from "expo-application"
+import { Linking, Platform, TextStyle, View, ViewStyle } from "react-native"
 import { Button, ListItem, Screen, Text } from "../components"
 import { DemoTabScreenProps } from "../navigators/DemoNavigator"
 import { colors, spacing } from "../theme"
+import { isRTL } from "../i18n"
 import { useStores } from "../models"
 
 function openLinkInBrowser(url: string) {
@@ -39,10 +41,10 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
     <Screen preset="scroll" safeAreaEdges={["top"]} contentContainerStyle={$container}>
       <Text
         style={$reportBugsLink}
-        text="Report Bugs"
+        tx="demoDebugScreen.reportBugs"
         onPress={() => openLinkInBrowser("https://github.com/infinitered/ignite/issues")}
       />
-      <Text style={$title} preset="heading" />
+      <Text style={$title} preset="heading" tx="demoDebugScreen.title" />
       <View style={$itemsContainer}>
         <ListItem
           LeftComponent={
@@ -86,11 +88,11 @@ export const DemoDebugScreen: FC<DemoTabScreenProps<"DemoDebug">> = function Dem
         />
       </View>
       <View style={$buttonContainer}>
-        <Button style={$button} text="Send to Reactotron" onPress={demoReactotron} />
-        <Text style={$hint} />
+        <Button style={$button} tx="demoDebugScreen.reactotron" onPress={demoReactotron} />
+        <Text style={$hint} tx={`demoDebugScreen.${Platform.OS}ReactotronHint` as const} />
       </View>
       <View style={$buttonContainer}>
-        <Button style={$button} text="Log Out" onPress={logout} />
+        <Button style={$button} tx="common.logOut" onPress={logout} />
       </View>
     </Screen>
   )
@@ -109,7 +111,7 @@ const $title: TextStyle = {
 const $reportBugsLink: TextStyle = {
   color: colors.tint,
   marginBottom: spacing.large,
-  alignSelf: "flex-end",
+  alignSelf: isRTL ? "flex-start" : "flex-end",
 }
 
 const $item: ViewStyle = {

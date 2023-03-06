@@ -12,21 +12,17 @@ import {
 } from "@react-navigation/native"
 import { createNativeStackNavigator } from "@react-navigation/native-stack"
 import { StackScreenProps } from "@react-navigation/stack"
-import { observer } from "mobx-react-lite"
+import { observer } from "mobx-react"
 import React from "react"
-import { useColorScheme, Text } from "react-native"
+import { useColorScheme } from "react-native"
 import Config from "../config"
 import { useStores } from "../models" // @demo remove-current-line
 import {
-  LoginScreen,
-  PolicyScreen,
-  RegisterScreen,
+  LoginScreen, // @demo remove-current-line
   WelcomeScreen,
-  ResetPasswordScreen,
-  ForgetPasswordScreen,
 } from "../screens"
 import { DemoNavigator, DemoTabParamList } from "./DemoNavigator" // @demo remove-current-line
-import HomeNavigator from "./HomeNavigator2nd" // TODO "export default" of "export" needs consistent?
+import MainNavigator from "./MainNavigator2nd" // TODO "export default" of "export" needs consistent?
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
 import { LoginNavigator2nd } from "./LoginNavigator2nd"
 import { api } from "../services/api"
@@ -124,12 +120,8 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
       {...props}
     >
       {/* <AppStack /> */}
-      {isAuthenticated ? <HomeNavigator /> : <LoginNavigator2nd />}
+      {isAuthenticated ? <MainNavigator /> : <LoginNavigator2nd />}
       {/* <HomeNavigator /> */}
     </NavigationContainer>
   )
 })
-
-// const $registerButton = {
-//   color: 'white',
-// }

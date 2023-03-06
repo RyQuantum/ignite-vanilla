@@ -1,5 +1,5 @@
 import React, { FC, useMemo, useRef, useState } from "react"
-import { observer } from "mobx-react-lite"
+import { observer } from "mobx-react"
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Icon as Icon2, Screen, TextField, Toggle, TextFieldAccessoryProps, CustomButton } from "../components"
 import { Image, ImageStyle, TextInput, Text, TextStyle, ViewStyle, View } from "react-native"

@@ -1,4 +1,5 @@
 import { useScrollToTop } from "@react-navigation/native"
+// import { StatusBar, StatusBarProps } from "expo-status-bar"
 import React, { useRef, useState } from "react"
 import {
   KeyboardAvoidingView,
@@ -97,9 +98,7 @@ function useAutoPreset(props: AutoScreenProps) {
   const [scrollEnabled, setScrollEnabled] = useState(true)
 
   function updateScrollState() {
-    if (scrollViewHeight.current === null || scrollViewContentHeight.current === null) {
-      return
-    }
+    if (scrollViewHeight.current === null || scrollViewContentHeight.current === null) return
 
     // check whether content fits the screen then toggle scroll state according to it
     const contentFitsScreen = (function () {
@@ -111,14 +110,10 @@ function useAutoPreset(props: AutoScreenProps) {
     })()
 
     // content is less than the size of the screen, so we can disable scrolling
-    if (scrollEnabled && contentFitsScreen) {
-      setScrollEnabled(false)
-    }
+    if (scrollEnabled && contentFitsScreen) setScrollEnabled(false)
 
     // content is greater than the size of the screen, so let's enable scrolling
-    if (!scrollEnabled && !contentFitsScreen) {
-      setScrollEnabled(true)
-    }
+    if (!scrollEnabled && !contentFitsScreen) setScrollEnabled(true)
   }
 
   function onContentSizeChange(w: number, h: number) {
@@ -135,9 +130,7 @@ function useAutoPreset(props: AutoScreenProps) {
   }
 
   // update scroll state on every render
-  if (preset === "auto") {
-    updateScrollState()
-  }
+  if (preset === "auto") updateScrollState()
 
   return {
     scrollEnabled: preset === "auto" ? scrollEnabled : true,
@@ -162,6 +155,7 @@ function ScreenWithScrolling(props: ScreenProps) {
     contentContainerStyle,
     ScrollViewProps,
     style,
+    ...rest
   } = props as ScrollScreenProps
 
   const ref = useRef<ScrollView>()
@@ -190,6 +184,7 @@ function ScreenWithScrolling(props: ScreenProps) {
         ScrollViewProps?.contentContainerStyle,
         contentContainerStyle,
       ]}
+      {...rest}
     >
       {children}
     </ScrollView>

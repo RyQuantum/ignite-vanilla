@@ -1,5 +1,6 @@
-import React, { Component } from "react"
+import React, { FC, useCallback, useEffect, useState } from "react"
 import { TextStyle, ViewStyle } from "react-native"
+import { observer } from "mobx-react"
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BluetoothState, ScanLockModal, Ttlock } from "react-native-ttlock"
 import Spinner from "react-native-loading-spinner-overlay"
@@ -24,194 +25,95 @@ interface IState {
   lockList: LockModal[];
 }
 
-export class NearbyLocksScreen extends Component<IProps, IState> {
+export const NearbyLocksScreen: FC<any> = observer(function NearbyLocksScreen(props) {
+  const [isLoading, setIsLoading] = useState(false)
+  const [lockList, setLockList] = useState<ScanLockModal[]>([])
 
-  state: IState = {
-    isLoading: false,
-    lockList: [],
-  }
-
-  componentDidMount() {
-    Ttlock.getBluetoothState((state: BluetoothState) => {
-      console.log("bluetooth:", state)
-      this.startScan()
-    })
-  }
-
-  startScan = () => {
-    Ttlock.startScan((lockModal: LockModal) => {
-      console.log(lockModal)
-      const lockList = this.state.lockList
-      const index = lockList.findIndex((lock) => lock.lockMac === lockModal.lockMac)
+  const callback = useCallback((scanLockModal: ScanLockModal) => {
+    console.log(scanLockModal)
+    setLockList((preList) => {
+      const index = preList.findIndex((lock) => lock.lockMac === scanLockModal.lockMac)
       if (index === -1) {
-        lockList.push(lockModal)
-        if (!lockModal.isInited)
-          lockModal.timeout = setTimeout(() => {
-            this.setState((state) => ({ lockList: state.lockList.filter(l => l.lockMac !== lockModal.lockMac) }))
+        preList.push(scanLockModal)
+        if (!scanLockModal.isInited)
+          scanLockModal.timeout = setTimeout(() => {
+            setLockList((list) => list.filter(lock => lock.lockMac !== scanLockModal.lockMac))
           }, 3000)
       } else {
-        clearTimeout(lockList[index].timeout)
-        if (!lockModal.isInited) {
-          lockModal.timeout = setTimeout(() => {
-            this.setState((state) => ({ lockList: state.lockList.filter(l => l.lockMac !== lockModal.lockMac) }))
+        clearTimeout(preList[index].timeout)
+        if (!scanLockModal.isInited) {
+          scanLockModal.timeout = setTimeout(() => {
+            setLockList((list) => list.filter(lock => lock.lockMac !== scanLockModal.lockMac))
           }, 3000)
         }
-        lockList[index] = lockModal
+        preList[index] = scanLockModal
       }
-      this.setState({ lockList })
+      return [...preList]
     })
-  }
+  }, [])
 
-  componentWillUnmount() {
-    Ttlock.stopScan();
-  }
+  useEffect(() => {
+    Ttlock.getBluetoothState((state: BluetoothState) => {
+      console.log("bluetooth:", state);
+      Ttlock.startScan(callback);
+    });
+    return () => Ttlock.stopScan()
+  }, [])
 
-  render() {
-
-    return (
-      <Screen
-        preset="scroll"
-        // safeAreaEdges={["top", "bottom"]}
-        contentContainerStyle={$screenContentContainer}
-      >
-        <Spinner visible={this.state.isLoading} />
-        {this.state.lockList.map((lock, index) => {
-          const { lockMac, lockVersion, lockName, isInited } = lock
-          return isInited ?
-            <ListItem
-              text={lockName}
-              textStyle={$text}
-              bottomSeparator
-              leftIcon="lock"
-              rightIcon="exclamation"
-              // TODO LeftComponent={
-              //   <View style={$logoContainer}>
-              //     <Image source={reactNativeRadioLogo} style={$logo} />
-              //   </View>
-              // }
-              key={index}
-            /> :
-            <ListItem
-              text={lockName}
-              bottomSeparator
-              leftIcon="lock"
-              rightIcon="plus"
-              // TODO LeftComponent={
-              //   <View style={$logoContainer}>
-              //     <Image source={reactNativeRadioLogo} style={$logo} />
-              //   </View>
-              // }
-              key={index}
-              onPress={() => {
-                Ttlock.stopScan()
-                this.setState({ isLoading: true })
-                Ttlock.initLock({ lockMac, lockVersion }, (lockData) => {
-                  console.log(lockData)
-                  this.setState({ isLoading: false })
-                  this.props.navigation.navigate("Assign Name", { lockData, lockName })
-                }, (err, errMessage) => {
-                  alert(errMessage) // TODO complete the title and body format
-                  console.log(err, errMessage)
-                  this.setState({ isLoading: false })
-                  this.startScan()
-                })
-              }}
-            />
-        })}
-      </Screen>
-    )
-  }
-}
-
-// export const NearbyLocksScreen: FC<any> = observer(function NearbyLocksScreen(props) {
-//   const [isLoading, setIsLoading] = useState(false)
-//   const [lockList, setLockList] = useState<ScanLockModal[]>([])
-//
-//   const callback = useCallback((scanLockModal: ScanLockModal) => {
-//     console.log(scanLockModal)
-//     setLockList((preList) => {
-//       const index = preList.findIndex((lock) => lock.lockMac === scanLockModal.lockMac)
-//       if (index === -1) {
-//         preList.push(scanLockModal)
-//         if (!scanLockModal.isInited)
-//           scanLockModal.timeout = setTimeout(() => {
-//             setLockList((list) => list.filter(lock => lock.lockMac !== scanLockModal.lockMac))
-//           }, 3000)
-//       } else {
-//         clearTimeout(preList[index].timeout)
-//         if (!scanLockModal.isInited) {
-//           scanLockModal.timeout = setTimeout(() => {
-//             setLockList((list) => list.filter(lock => lock.lockMac !== scanLockModal.lockMac))
-//           }, 3000)
-//         }
-//         preList[index] = scanLockModal
-//       }
-//       return [...preList]
-//     })
-//   }, [])
-//
-//   useEffect(() => {
-//     Ttlock.getBluetoothState((state: BluetoothState) => {
-//       console.log("bluetooth:", state);
-//       Ttlock.startScan(callback);
-//     });
-//     return () => Ttlock.stopScan()
-//   }, [])
-//
-//   return (
-//     <Screen
-//       preset="scroll"
-//       // safeAreaEdges={["top", "bottom"]}
-//       contentContainerStyle={$screenContentContainer}
-//     >
-//       <Spinner visible={isLoading} />
-//       {lockList.map((lock, index) => {
-//         const { lockMac, lockVersion, lockName, isInited } = lock
-//         return isInited ?
-//           <ListItem
-//             text={lockName}
-//             textStyle={{ color: colors.palette.neutral400 }}
-//             bottomSeparator
-//             leftIcon="lock"
-//             rightIcon="exclamation"
-//             // TODO LeftComponent={
-//             //   <View style={$logoContainer}>
-//             //     <Image source={reactNativeRadioLogo} style={$logo} />
-//             //   </View>
-//             // }
-//             key={index}
-//             onPress={() => {}}
-//           /> :
-//           <ListItem
-//             text={lockName}
-//             bottomSeparator
-//             leftIcon="lock"
-//             rightIcon="plus"
-//             // TODO LeftComponent={
-//             //   <View style={$logoContainer}>
-//             //     <Image source={reactNativeRadioLogo} style={$logo} />
-//             //   </View>
-//             // }
-//             key={index}
-//             onPress={() => {
-//               Ttlock.stopScan()
-//               setIsLoading(true)
-//               Ttlock.initLock({ lockMac, lockVersion }, (lockData) => {
-//                 console.log(lockData)
-//                 setIsLoading(false)
-//                 props.navigation.navigate("Assign Name", { lockName })
-//               }, (err, errMessage) => {
-//                 alert(errMessage) // TODO complete the title and body format
-//                 console.log(err, errMessage)
-//                 setIsLoading(false)
-//                 Ttlock.startScan(callback);
-//               })
-//             }}
-//           />
-//       })}
-//     </Screen>
-//   )
-// })
+  return (
+    <Screen
+      preset="scroll"
+      // safeAreaEdges={["top", "bottom"]}
+      contentContainerStyle={$screenContentContainer}
+    >
+      <Spinner visible={isLoading} />
+      {lockList.map((lock, index) => {
+        const { lockMac, lockVersion, lockName, isInited } = lock
+        return isInited ?
+          <ListItem
+            text={lockName}
+            textStyle={{ color: colors.palette.neutral400 }}
+            bottomSeparator
+            leftIcon="lock"
+            rightIcon="exclamation"
+            // TODO LeftComponent={
+            //   <View style={$logoContainer}>
+            //     <Image source={reactNativeRadioLogo} style={$logo} />
+            //   </View>
+            // }
+            key={index}
+            onPress={() => {}}
+          /> :
+          <ListItem
+            text={lockName}
+            bottomSeparator
+            leftIcon="lock"
+            rightIcon="plus"
+            // TODO LeftComponent={
+            //   <View style={$logoContainer}>
+            //     <Image source={reactNativeRadioLogo} style={$logo} />
+            //   </View>
+            // }
+            key={index}
+            onPress={() => {
+              Ttlock.stopScan()
+              setIsLoading(true)
+              Ttlock.initLock({ lockMac, lockVersion }, (lockData) => {
+                console.log(lockData)
+                setIsLoading(false)
+                props.navigation.navigate("Assign Name", { lockName })
+              }, (err, errMessage) => {
+                alert(errMessage) // TODO complete the title and body format
+                console.log(err, errMessage)
+                setIsLoading(false)
+                Ttlock.startScan(callback);
+              })
+            }}
+          />
+      })}
+    </Screen>
+  )
+})
 
 const $screenContentContainer: ViewStyle = {
   paddingHorizontal: spacing.large,

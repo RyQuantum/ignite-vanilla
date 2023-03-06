@@ -44,6 +44,15 @@ interface CardProps extends TouchableOpacityProps {
    */
   heading?: TextProps["text"]
   /**
+   * Heading text which is looked up via i18n.
+   */
+  headingTx?: TextProps["tx"]
+  /**
+   * Optional heading options to pass to i18n. Useful for interpolation
+   * as well as explicitly setting locale or translation fallbacks.
+   */
+  headingTxOptions?: TextProps["txOptions"]
+  /**
    * Style overrides for heading text.
    */
   headingStyle?: StyleProp<TextStyle>
@@ -61,6 +70,15 @@ interface CardProps extends TouchableOpacityProps {
    */
   content?: TextProps["text"]
   /**
+   * Content text which is looked up via i18n.
+   */
+  contentTx?: TextProps["tx"]
+  /**
+   * Optional content options to pass to i18n. Useful for interpolation
+   * as well as explicitly setting locale or translation fallbacks.
+   */
+  contentTxOptions?: TextProps["txOptions"]
+  /**
    * Style overrides for content text.
    */
   contentStyle?: StyleProp<TextStyle>
@@ -77,6 +95,15 @@ interface CardProps extends TouchableOpacityProps {
    * The footer text to display if not using `footerTx`.
    */
   footer?: TextProps["text"]
+  /**
+   * Footer text which is looked up via i18n.
+   */
+  footerTx?: TextProps["tx"]
+  /**
+   * Optional footer options to pass to i18n. Useful for interpolation
+   * as well as explicitly setting locale or translation fallbacks.
+   */
+  footerTxOptions?: TextProps["txOptions"]
   /**
    * Style overrides for footer text.
    */
@@ -101,8 +128,14 @@ interface CardProps extends TouchableOpacityProps {
 export function Card(props: CardProps) {
   const {
     content,
+    contentTx,
+    contentTxOptions,
     footer,
+    footerTx,
+    footerTxOptions,
     heading,
+    headingTx,
+    headingTxOptions,
     ContentComponent,
     HeadingComponent,
     FooterComponent,
@@ -121,9 +154,9 @@ export function Card(props: CardProps) {
 
   const preset: Presets = $containerPresets[props.preset] ? props.preset : "default"
   const isPressable = !!WrapperProps.onPress
-  const isHeadingPresent = !!(HeadingComponent || heading)
-  const isContentPresent = !!(ContentComponent || content)
-  const isFooterPresent = !!(FooterComponent || footer)
+  const isHeadingPresent = !!(HeadingComponent || heading || headingTx)
+  const isContentPresent = !!(ContentComponent || content || contentTx)
+  const isFooterPresent = !!(FooterComponent || footer || footerTx)
 
   const Wrapper: ComponentType<TouchableOpacityProps> = isPressable ? TouchableOpacity : View
   const HeaderContentWrapper = verticalAlignment === "force-footer-bottom" ? View : Fragment
@@ -168,12 +201,26 @@ export function Card(props: CardProps) {
         <HeaderContentWrapper>
           {HeadingComponent ||
             (isHeadingPresent && (
-              <Text weight="bold" text={heading} {...HeadingTextProps} style={$headingStyle} />
+              <Text
+                weight="bold"
+                text={heading}
+                tx={headingTx}
+                txOptions={headingTxOptions}
+                {...HeadingTextProps}
+                style={$headingStyle}
+              />
             ))}
 
           {ContentComponent ||
             (isContentPresent && (
-              <Text weight="normal" text={content} {...ContentTextProps} style={$contentStyle} />
+              <Text
+                weight="normal"
+                text={content}
+                tx={contentTx}
+                txOptions={contentTxOptions}
+                {...ContentTextProps}
+                style={$contentStyle}
+              />
             ))}
         </HeaderContentWrapper>
 
@@ -183,6 +230,8 @@ export function Card(props: CardProps) {
               weight="normal"
               size="xs"
               text={footer}
+              tx={footerTx}
+              txOptions={footerTxOptions}
               {...FooterTextProps}
               style={$footerStyle}
             />
@@ -202,6 +251,8 @@ export const LockCard = ({
   endDate,
   userType,
   keyRight,
+  style,
+  ...rest
 }) => {
   const remoteUnlock = parseFeatureValueWithIndex(featureValue, 10) ? "Remote Unlock" : " "
   const currentTimezone = moment.tz.guess()
@@ -244,7 +295,7 @@ export const LockCard = ({
         <>
           <OriginalText style={$remoteUnlock}>{remoteUnlock}</OriginalText>
           <View style={$TimePeriodContainer}>
-            {info.slice(0, 9) !== "Permanent" ? (
+            {(info.slice(0, 9) !== "Permanent" && dayLeft < 16) ? (
               dayLeft >= 0 ? (
                 <OriginalText style={$dayLeft}>{dayLeft} day(s)</OriginalText>
               ) : (
@@ -258,7 +309,8 @@ export const LockCard = ({
       }
       footer={info} // footer="2023.02.16 17:31 - 2023.03.17 17:31/Authorized Admin"
       footerStyle={$footer}
-      style={$customContainer}
+      style={[$customContainer, info.slice(0, 9) !== "Permanent" && dayLeft < 0 && { backgroundColor: "lightgrey" }, style]}
+      {...rest}
     />
   )
 }
@@ -326,6 +378,7 @@ const $titleContainer: ViewStyle = {
 
 const $lockAlias: TextStyle = {
   fontFamily: "SpaceGrotesk-Bold",
+  // fontFamily: "spaceGroteskBold",
   fontSize: 18,
 }
 

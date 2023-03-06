@@ -1,5 +1,4 @@
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, react-native/no-inline-styles */
 import React from "react"
 import { AutoImage, Button, Card, Icon } from "../../../components"
 import { colors, spacing } from "../../../theme"
@@ -73,9 +72,12 @@ export const DemoCard: Demo = {
       <DemoDivider />
       <Card
         preset="reversed"
-        heading="demoShowroomScreen.demoViaSpecifiedTxProp"
-        content="demoShowroomScreen.demoViaSpecifiedTxProp"
-        footer="demoShowroomScreen.demoViaSpecifiedTxProp"
+        headingTx="demoShowroomScreen.demoViaSpecifiedTxProp"
+        headingTxOptions={{ prop: "heading" }}
+        contentTx="demoShowroomScreen.demoViaSpecifiedTxProp"
+        contentTxOptions={{ prop: "content" }}
+        footerTx="demoShowroomScreen.demoViaSpecifiedTxProp"
+        footerTxOptions={{ prop: "footer" }}
       />
     </DemoUseCase>,
 

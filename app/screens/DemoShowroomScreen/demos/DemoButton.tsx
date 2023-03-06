@@ -49,7 +49,7 @@ export const DemoButton: Demo = {
       <Button text="Via `text` Prop - Billum In" />
       <DemoDivider />
 
-      <Button text="Via `tx` Prop" />
+      <Button tx="demoShowroomScreen.demoViaTxProp" />
       <DemoDivider />
 
       <Button>Children - Irure Reprehenderit</Button>
@@ -77,10 +77,12 @@ export const DemoButton: Demo = {
 
       <Button>
         <Text>
-          <Text preset="bold">Nested children - proident veniam.</Text>{" "}
+          <Text preset="bold">Nested children - proident veniam.</Text>
+          {` `}
           <Text preset="default">
             Ullamco cupidatat officia exercitation velit non ullamco nisi..
-          </Text>{" "}
+          </Text>
+          {` `}
           <Text preset="bold">Occaecat aliqua irure proident veniam.</Text>
         </Text>
       </Button>

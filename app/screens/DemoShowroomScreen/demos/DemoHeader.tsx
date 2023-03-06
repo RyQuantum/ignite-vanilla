@@ -1,5 +1,4 @@
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, react-native/no-inline-styles */
 import React from "react"
 import { TextStyle, View, ViewStyle } from "react-native"
 import { Header, Icon } from "../../../components"
@@ -51,7 +50,11 @@ export const DemoHeader: Demo = {
       name="Action Text"
       description="You can easily pass in text to the left or right action components."
     >
-      <Header title="Via `leftTx`" leftText="Yay" safeAreaEdges={[]} />
+      <Header
+        title="Via `leftTx`"
+        leftTx="demoShowroomScreen.demoHeaderTxExample"
+        safeAreaEdges={[]}
+      />
       <DemoDivider size={24} />
       <Header title="Via `rightText`" rightText="Yay" safeAreaEdges={[]} />
     </DemoUseCase>,
