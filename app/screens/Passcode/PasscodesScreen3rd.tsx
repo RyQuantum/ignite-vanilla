@@ -6,7 +6,8 @@ import { colors } from "../../theme"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { RootStoreContext } from "../../models"
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
-import { Avatar, ListItem, SearchBar } from "@rneui/themed"
+// import { Avatar, ListItem, SearchBar } from "@rneui/themed"
+import { Avatar, ListItem, SearchBar } from "react-native-elements"
 import moment from "moment-timezone"
 
 type RootStackParamList = {
@@ -34,10 +35,14 @@ export class PasscodesScreen extends Component<IProps, IState> {
   }
 
   componentDidMount() {
+    this.unsubscribe = this.props.navigation.addListener('focus', () => {
+      this.forceUpdate()
+    });
     this.loadCodes()
   }
 
   componentWillUnmount() {
+    this.unsubscribe()
   }
 
   loadCodes = async () => {
@@ -132,7 +137,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
 
   render() {
     const {
-      codeStore: { codeList, isRefreshing, deleteCode },
+      codeStore: { codeList, codes, isRefreshing, deleteCode },
     } = this.context
 
     return (
@@ -151,36 +156,39 @@ export class PasscodesScreen extends Component<IProps, IState> {
           contentContainerStyle={$screenContentContainer}
         >
           <FlatList
-            data={codeList}
+            data={codes}
             refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={this.loadCodes} />}
             renderItem={({ item, index }) => {
+              const codeId = item.keyboardPwdId
               return (
-                <ListItem.Swipeable
+                // <ListItem.Swipeable
+                <ListItem
                   topDivider
                   bottomDivider
-                  onPress={() => this.props.navigation.navigate("Passcode Info", { code: item })}
-                  rightContent={(reset) => ( // TODO integrate swipe function for better user experience
-                    <Button
-                      style={{ minHeight: "100%", backgroundColor: "red" }}
-                      textStyle={{ color: "white" }}
-                      onPress={() => { // TODO execute item "close" function in the meanwhile of alert
-                        Alert.alert("Delete?", null, [
-                          {
-                            text: "Cancel",
-                            onPress: () => console.log("Cancel Pressed"),
-                            style: "cancel",
-                          },
-                          {
-                            text: "Delete",
-                            onPress: () =>
-                              deleteCode(this.props.route.params.lockId, item.keyboardPwdId),
-                          },
-                        ])
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  )}
+                  onPress={() => this.props.navigation.navigate("Passcode Info", { codeId })}
+                  // rightContent={(reset) => ( // TODO integrate swipe function for better user experience
+                  //   <Button
+                  //     style={{ minHeight: "100%", backgroundColor: "red" }}
+                  //     textStyle={{ color: "white" }}
+                  //     onPress={() => { // TODO execute item "close" function in the meanwhile of alert
+                  //       Alert.alert("Delete?", null, [
+                  //         {
+                  //           text: "Cancel",
+                  //           onPress: () => console.log("Cancel Pressed"),
+                  //           style: "cancel",
+                  //         },
+                  //         {
+                  //           text: "Delete",
+                  //           onPress: () =>
+                  //             deleteCode(this.props.route.params.lockId, item.keyboardPwdId),
+                  //         },
+                  //       ])
+                  //     }}
+                  //   >
+                  //     Delete
+                  //   </Button>
+                  // )}
+                  containerStyle={{ width: "100%" }}
                 >
                   <Avatar
                     rounded
@@ -200,6 +208,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
                           justifyContent: "space-between",
                           alignItems: "center",
                           width: "100%",
+                          minWidth: 260
                         }}
                       >
                         <Text style={{ fontSize: 18 }}>
@@ -212,7 +221,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
                       {this.generateCodeInfo(item)}
                     </ListItem.Subtitle>
                   </ListItem.Content>
-                </ListItem.Swipeable>
+                </ListItem>
               )
             }}
             contentContainerStyle={{ paddingBottom: 80 }}

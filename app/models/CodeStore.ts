@@ -14,12 +14,20 @@ export const CodeStoreModel = types
     codes: types.array(CodeModel),
   })
   .views((store) => ({
-    get codeList() {
-      return store.codes.slice()
-    },
+    // get codeList() {
+    //   return store.codes.slice()
+    // },
   }))
   .actions(withSetPropAction)
   .actions((store) => ({
+
+    updateCodeValue(codeId: number, keyboardPwd: string) {
+      const codes = store.codes.slice()
+      const code = codes.find((c) => c.keyboardPwdId === codeId)
+      code.keyboardPwd = keyboardPwd
+      store.setProp("codes", codes)
+    },
+
     async getCodeList(lockId: number): Promise<object[]> {
       store.isRefreshing = true
       const res: any = await api.getCodeList(lockId) // TODO add pagination
@@ -68,6 +76,36 @@ export const CodeStoreModel = types
           store.setProp("isLoading", false)
           switch (res.kind) {
             case "ok":
+              return resolve(res.data)
+            case "bad":
+              Alert.alert(`code: ${res.code}`, res.msg)
+              break
+            default:
+              Alert.alert(res.kind, res.msg)
+          }
+          return resolve(null)
+        }, (errorCode, errorDesc) => { // TODO print error in the log
+          store.setProp("isLoading", false)
+          Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
+          return resolve(null)
+        })
+      })
+    },
+
+    async updateCode(keyboardPwdId: number, newkeyboardPwd: string, keyboardPwdName: string, startDate: number, endDate: number, changeType = 1) { // TODO changeType can be 2 for gateway
+      store.isLoading = true
+      const code = store.codes.find((c) => c.keyboardPwdId === keyboardPwdId)
+      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === code.lockId)
+      return new Promise((resolve) => {
+        Ttlock.modifyPasscode(code.keyboardPwd, newkeyboardPwd, startDate, endDate, lock.lockData, async () => {
+          console.log("TTLock: modify passcode success")
+          const res: any = await api.updateCode(code.lockId, keyboardPwdId, keyboardPwdName, newkeyboardPwd, startDate, endDate, changeType)
+          store.setProp("isLoading", false)
+          switch (res.kind) {
+            case "ok":
+              setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
+              store.updateCodeValue(code.keyboardPwdId, newkeyboardPwd)
+              // store.setProp("codes", store.codes.filter((c) => c.keyboardPwdId !== keyboardPwdId))
               return resolve(res.data)
             case "bad":
               Alert.alert(`code: ${res.code}`, res.msg)

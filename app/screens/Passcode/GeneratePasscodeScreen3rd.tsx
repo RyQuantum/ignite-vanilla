@@ -2,7 +2,9 @@ import React, { Component } from "react"
 import { View, ViewStyle, Switch, StyleSheet, Button as Button2, TextStyle } from "react-native"
 import { observer } from "mobx-react"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+// import ScrollableTabView, { ScrollableTabBar } from "react-native-scrollable-tab-view";
 import { ListItem, Overlay, Tab } from "@rneui/themed"
+// import { ListItem, Overlay, Tab } from "react-native-elements"
 import { colors } from "../../theme"
 import { Text, Screen, Button } from "../../components"
 import { RootStoreContext } from "../../models"
@@ -132,6 +134,18 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
               title="Erase"
             />
           </Tab>
+          {/* <ScrollableTabView */}
+          {/*   style={{ marginTop: 20 }} */}
+          {/*   initialPage={0} */}
+          {/*   renderTabBar={() => <ScrollableTabBar />} */}
+          {/* > */}
+          {/*   <Text tabLabel='Tab #1'>My</Text> */}
+          {/*   <Text tabLabel='Tab #2 word word'>favorite</Text> */}
+          {/*   <Text tabLabel='Tab #3 word word word'>project</Text> */}
+          {/*   <Text tabLabel='Tab #4 word word word word'>favorite</Text> */}
+          {/*   <Text tabLabel='Tab #5'>project</Text> */}
+          {/* </ScrollableTabView> */}
+
           <DemoDivider />
 
           <Overlay isVisible={this.state.visible}>

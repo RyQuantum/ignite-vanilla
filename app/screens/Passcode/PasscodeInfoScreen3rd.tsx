@@ -2,10 +2,12 @@ import React, { Component } from "react"
 import { Text, View, ViewStyle, ImageStyle, Alert } from "react-native"
 import { observer } from "mobx-react"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import { AlertBox, fire } from 'react-native-alertbox';
 import { Screen } from "../../components"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import { RootStoreContext } from "../../models"
-import { ListItem } from "@rneui/themed"
+// import { ListItem } from "@rneui/themed"
+import { ListItem } from "react-native-elements"
 import moment from "moment-timezone"
 // const PlusImage = require("../../../assets/images/plus.jpeg")
 
@@ -47,9 +49,10 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
 
   render() {
     const {
-      codeStore: { deleteCode },
+      codeStore: { codes, deleteCode, updateCode },
     } = this.context
-    const code = this.props.route.params.code
+    // const code = this.props.route.params.code
+    const code = codes.find(c => c.keyboardPwdId === this.props.route.params.codeId)
 
     return (
       <Screen
@@ -58,21 +61,76 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
         contentContainerStyle={$screenContentContainer}
       >
         <View>
-          <ListItem bottomDivider>
+          <AlertBox />
+          <ListItem
+            bottomDivider
+            onPress={() => {
+              fire({
+                title: "Change password",
+                actions: [
+                  {
+                    text: 'Cancel',
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'OK',
+                    onPress: async (data) => {
+                      const res = await updateCode(code.keyboardPwdId, data.code, code.keyboardPwdName, code.startDate, code.endDate)
+                    },
+                  },
+                ],
+                fields: [
+                  {
+                    name: 'code',
+                    placeholder: '4 - 9 Digits in length',
+                    keyboardType: "number-pad"
+                  },
+                ],
+              });
+            }}
+          >
             <ListItem.Content>
               <ListItem.Title>Passcode</ListItem.Title>
             </ListItem.Content>
             <ListItem.Subtitle>{code.keyboardPwd}</ListItem.Subtitle>
             <ListItem.Chevron />
           </ListItem>
-          <ListItem bottomDivider>
+          <ListItem
+            bottomDivider
+            onPress={() => {
+              fire({
+                title: "Edit name",
+                actions: [
+                  {
+                    text: 'Cancel',
+                    style: 'cancel',
+                  },
+                  {
+                    text: 'OK',
+                    onPress: (data) => console.log(data), // It is an object that holds fields data
+                  },
+                ],
+                fields: [
+                  {
+                    name: 'name',
+                    defaultValue: code.keyboardPwd
+                  },
+                ],
+              });
+            }}
+          >
             <ListItem.Content>
               <ListItem.Title>Name</ListItem.Title>
             </ListItem.Content>
             <ListItem.Subtitle>{code.keyboardPwdName || code.keyboardPwd}</ListItem.Subtitle>
             <ListItem.Chevron />
           </ListItem>
-          <ListItem bottomDivider onPress={() => this.props.navigation.navigate("Change Period")}>
+          <ListItem
+            bottomDivider
+            onPress={() =>
+              this.props.navigation.navigate("Change Period", { code })
+            }
+          >
             <ListItem.Content>
               <ListItem.Title>Validity Period</ListItem.Title>
             </ListItem.Content>

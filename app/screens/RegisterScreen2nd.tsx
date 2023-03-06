@@ -1,7 +1,8 @@
 import React, { FC, useMemo, useState } from "react"
 import { Text, TextStyle, ViewStyle, View } from "react-native"
 import { observer } from "mobx-react"
-import { ButtonGroup } from "@rneui/themed"
+// import { ButtonGroup } from "@rneui/themed"
+import { ButtonGroup } from "react-native-elements"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import CountryPicker, { Country, CountryCode } from "react-native-country-picker-modal"
 import {

@@ -277,6 +277,41 @@ export class Api {
   }
 
   @parseResult()
+  async updateCode(lockId: number, keyboardPwdId: number, keyboardPwdName: string, newKeyboardPwd: string, startDate: number, endDate: number, changeType: number) {
+    const body: { lockId: number, keyboardPwdId: number, keyboardPwdName?: string, newKeyboardPwd?: string, startDate?: number, endDate?: number, changeType?: number, date: number } = {
+      lockId,
+      keyboardPwdId,
+      date: Date.now()
+    }
+    if (keyboardPwdName) {
+      body.keyboardPwdName = keyboardPwdName
+    }
+    if (newKeyboardPwd) {
+      body.newKeyboardPwd = newKeyboardPwd
+    }
+    if (startDate) {
+      body.startDate = startDate
+    }
+    if (endDate) {
+      body.endDate = endDate
+    }
+    if (changeType) {
+      body.changeType = changeType
+    }
+    const response = await this.apisauce.post(
+      "keyboardPwd/change",
+      // formData,
+      qs.stringify(body, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return response
+  }
+
+  @parseResult()
   async deleteCode(lockId: number, keyboardPwdId: number, deleteType: number) {
     const response = await this.apisauce.post(
       "keyboardPwd/delete",
