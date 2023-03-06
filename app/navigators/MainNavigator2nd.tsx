@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ActivityIndicator, ViewStyle } from "react-native"
+import React, { useState } from "react"
+import { View, Text, ActivityIndicator, ViewStyle, Alert } from "react-native"
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
@@ -40,9 +40,9 @@ function Settings({ navigation }) {
 const Drawer = createDrawerNavigator();
 const Stack = createStackNavigator();
 
-const LocksNavigator = observer(function () {
+const LocksNavigator = observer(function (_props) {
   const {
-    codeStore: { isLoading }, // TODO each module has an "isLoading", how to organize them?
+    codeStore: { isLoading, resetAllCodes, lockId }, // TODO each module has an "isLoading", how to organize them?
   } = useStores()
 
   return (
@@ -100,7 +100,22 @@ const LocksNavigator = observer(function () {
             // title: "Passcodes",
             headerRight: () => (
               <HeaderButtons>
-                <Item title="Reset" buttonStyle={{ color: "white" }} onPress={() => {}} />
+                <Item title="Reset" buttonStyle={{ color: "white" }}
+                      onPress={() => Alert.alert("ALL Passcodes for this Lock will be DELETED", undefined, [
+                        {
+                          text: "Cancel",
+                          onPress: () => console.log("Cancel Pressed"),
+                          style: "cancel",
+                        },
+                        {
+                          text: "Reset",
+                          onPress: async () => {
+                            const res = await resetAllCodes(lockId)
+                            // if (res) this.props.navigation.goBack()
+                            // TODO call forceUpdate of the PasscodesScreen
+                          },
+                        },
+                      ])} />
               </HeaderButtons>
             ),
           })}

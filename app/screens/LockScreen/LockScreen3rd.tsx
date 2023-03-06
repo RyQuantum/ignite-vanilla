@@ -17,6 +17,7 @@ import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import { RootStoreContext } from "../../models"
 import { observer } from "mobx-react"
 import { parseFeatureValueWithIndex } from "../../utils/ttlock2nd"
+import Spinner from "react-native-loading-spinner-overlay"
 
 const UnlockImage = require("../../../assets/images/UnlockImageIcon2nd.png")
 const RemoteUnlockImage = require("../../../assets/images/remoteUnlock2nd.png")
@@ -50,11 +51,12 @@ export class LockHomeScreen extends Component<IProps, IState> {
   }
 
   render() {
-    const { lockStore: { locks } } = this.context
+    const { lockStore: { locks, unlockOperation, lockOperation, isLoading } } = this.context
     const lock = locks.find((lock) => lock.lockMac === this.props.route.params.lockMac)
     const { lockId, lockAlias, electricQuantity, featureValue, userType, keyRight, startDate, endDate } = lock
     const isSupportFingerprint = parseFeatureValueWithIndex(featureValue, 2)
     const isSupportRemoteUnlock = parseFeatureValueWithIndex(featureValue, 10)
+    const isSupportRemoter = parseFeatureValueWithIndex(featureValue, 24)
     const isAdmin = userType === "110301"
     const isNormalUser = userType === "110302" && keyRight === 0
     const isAuthorizedAdmin = userType === "110302" && keyRight === 1
@@ -62,6 +64,7 @@ export class LockHomeScreen extends Component<IProps, IState> {
 
     return (
       <>
+        <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
         {dayLeft !== Infinity && dayLeft >= 0 && dayLeft < 16 && (
           <View
             style={{
@@ -117,7 +120,13 @@ export class LockHomeScreen extends Component<IProps, IState> {
               style={{ flexDirection: "row", justifyContent: "center", alignItems: "flex-end" }}
             >
               <View style={{ width: 35 }} />
-              <Image source={dayLeft >= 0 ? UnlockImage : ForbidUnlockImage} style={$image} resizeMode="contain" />
+              {dayLeft >= 0 ?
+                <TouchableWithoutFeedback onPress={async () => {
+                  const res = await unlockOperation(lockId)
+                }} onLongPress={async () => {
+                  const res = await lockOperation(lockId)
+                }}><Image source={UnlockImage} style={$image} resizeMode="contain" /></TouchableWithoutFeedback> :
+                <Image source={ForbidUnlockImage} style={$image} resizeMode="contain" />}
               {isSupportRemoteUnlock && dayLeft >= 0 ? (
                 <Image source={RemoteUnlockImage} style={$remoteUnlockImage} resizeMode="contain" />
               ) : (
@@ -175,14 +184,14 @@ export class LockHomeScreen extends Component<IProps, IState> {
                     </View>
                   </TouchableWithoutFeedback>
                 )}
-                <TouchableWithoutFeedback disabled={dayLeft < 0} onPress={() => console.log("touch")}>
+                {isSupportRemoter && <TouchableWithoutFeedback disabled={dayLeft < 0} onPress={() => console.log("touch")}>
                   <View style={$iconTile}>
                     <MaterialCommunityIcons name="remote" color={dayLeft >= 0 ? colors.tint : colors.border} size={35} />
                     <Text size="xs" style={$iconTileLabel}>
                       Remote
                     </Text>
                   </View>
-                </TouchableWithoutFeedback>
+                </TouchableWithoutFeedback>}
                 {isAdmin && <TouchableWithoutFeedback disabled={dayLeft < 0} onPress={() => console.log("touch")}>
                   <View style={$iconTile}>
                     <FeatherIcons name="user-check" color={dayLeft >= 0 ? colors.tint : colors.border} size={35} />

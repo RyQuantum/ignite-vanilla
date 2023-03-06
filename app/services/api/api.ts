@@ -277,7 +277,7 @@ export class Api {
   }
 
   @parseResult()
-  async updateCode(lockId: number, keyboardPwdId: number, keyboardPwdName: string, newKeyboardPwd: string, startDate: number, endDate: number, changeType: number) {
+  async updateCode(lockId: number, keyboardPwdId: number, keyboardPwdName?: string, newKeyboardPwd?: string, startDate?: number, endDate?: number, changeType?: number) {
     const body: { lockId: number, keyboardPwdId: number, keyboardPwdName?: string, newKeyboardPwd?: string, startDate?: number, endDate?: number, changeType?: number, date: number } = {
       lockId,
       keyboardPwdId,
@@ -321,6 +321,26 @@ export class Api {
         keyboardPwdId,
         deleteType,
         date: Date.now()
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return response
+  }
+
+
+  @parseResult()
+  async updateLock(lockId: number, lockData: string) {
+    const response = await this.apisauce.post(
+      "lock/updateLockData",
+      // formData,
+      qs.stringify({
+        lockId,
+        lockData,
+        date: Date.now() // TODO new system is not needed
       }, { encode: true }),
       {
         headers: {

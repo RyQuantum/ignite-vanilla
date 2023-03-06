@@ -49,10 +49,14 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
 
   render() {
     const {
-      codeStore: { codes, deleteCode, updateCode },
+      codeStore: { codes, deleteCode, updateCode, updateCodeName },
     } = this.context
     // const code = this.props.route.params.code
     const code = codes.find(c => c.keyboardPwdId === this.props.route.params.codeId)
+    if (!code) { // After delete the code, the code will be removed from the store immediately. So return null.
+      this.props.navigation.goBack()
+      return null
+    }
 
     return (
       <Screen
@@ -69,11 +73,11 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
                 title: "Change password",
                 actions: [
                   {
-                    text: 'Cancel',
-                    style: 'cancel',
+                    text: "Cancel",
+                    style: "cancel",
                   },
                   {
-                    text: 'OK',
+                    text: "OK",
                     onPress: async (data) => {
                       const res = await updateCode(code.keyboardPwdId, data.code, code.keyboardPwdName, code.startDate, code.endDate)
                     },
@@ -81,9 +85,9 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
                 ],
                 fields: [
                   {
-                    name: 'code',
-                    placeholder: '4 - 9 Digits in length',
-                    keyboardType: "number-pad"
+                    name: "code",
+                    placeholder: "4 - 9 Digits in length",
+                    keyboardType: "number-pad",
                   },
                 ],
               });
@@ -102,18 +106,20 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
                 title: "Edit name",
                 actions: [
                   {
-                    text: 'Cancel',
-                    style: 'cancel',
+                    text: "Cancel",
+                    style: "cancel",
                   },
                   {
-                    text: 'OK',
-                    onPress: (data) => console.log(data), // It is an object that holds fields data
+                    text: "OK",
+                    onPress: async (data) => {
+                      const res = await updateCodeName(code.keyboardPwdId, data.name)
+                    },
                   },
                 ],
                 fields: [
                   {
-                    name: 'name',
-                    defaultValue: code.keyboardPwd
+                    name: "name",
+                    defaultValue: code.keyboardPwdName,
                   },
                 ],
               });
@@ -177,7 +183,7 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
                   text: "Delete",
                   onPress: async () => {
                     const res = await deleteCode(code.lockId, code.keyboardPwdId)
-                    if (res) this.props.navigation.goBack()
+                    // if (res) this.props.navigation.goBack()
                   },
                 },
               ])

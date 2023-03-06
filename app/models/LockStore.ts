@@ -1,8 +1,10 @@
 import { Alert } from "react-native"
-import { Instance, SnapshotOut, types } from "mobx-state-tree"
+import { getRoot, Instance, SnapshotOut, types } from "mobx-state-tree"
 import { api } from "../services/api"
 import { LockModel } from "./Lock"
 import { withSetPropAction } from "./helpers/withSetPropAction"
+import { LockControlType, Ttlock } from "react-native-ttlock"
+import Toast from "react-native-simple-toast"
 
 export const LockStoreModel = types
   .model("LockStore")
@@ -83,6 +85,40 @@ export const LockStoreModel = types
       }
       return null
     },
+
+    async unlockOperation(lockId: number) {
+      store.isLoading = true
+      const lock = store.locks.find(l => l.lockId === lockId)
+      return new Promise((resolve) => {
+        Ttlock.controlLock(LockControlType.Unlock, lock.lockData, () => {
+          console.log("TTLock: unlock success")
+          store.setProp("isLoading", false)
+          setTimeout(() => Toast.showWithGravity("Unlocked", Toast.SHORT, Toast.CENTER), 200)
+          return resolve(null)
+        }, (errorCode, errorDesc) => { // TODO print error in the log
+          store.setProp("isLoading", false)
+          Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
+          return resolve(null)
+        })
+      })
+    },
+
+    async lockOperation(lockId: number) {
+      store.isLoading = true
+      const lock = store.locks.find(l => l.lockId === lockId)
+      return new Promise((resolve) => {
+        Ttlock.controlLock(LockControlType.Lock, lock.lockData, () => {
+          console.log("TTLock: lock success")
+          store.setProp("isLoading", false)
+          setTimeout(() => Toast.showWithGravity("Locked", Toast.SHORT, Toast.CENTER), 200)
+          return resolve(null)
+        }, (errorCode, errorDesc) => { // TODO print error in the log
+          store.setProp("isLoading", false)
+          Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
+          return resolve(null)
+        })
+      })
+    }
   }))
   .preProcessSnapshot((snapshot) => {
     // remove sensitive data from snapshot to avoid secrets

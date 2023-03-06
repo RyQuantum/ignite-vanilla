@@ -1,5 +1,5 @@
 import { Alert } from "react-native"
-import { getRoot, Instance, SnapshotOut, types } from "mobx-state-tree"
+import { applySnapshot, getRoot, Instance, SnapshotOut, types } from "mobx-state-tree"
 import { api } from "../services/api"
 import { CodeModel } from "./Code"
 import { withSetPropAction } from "./helpers/withSetPropAction"
@@ -11,6 +11,7 @@ export const CodeStoreModel = types
   .props({
     isRefreshing: false,
     isLoading: false,
+    lockId: 0,
     codes: types.array(CodeModel),
   })
   .views((store) => ({
@@ -21,15 +22,27 @@ export const CodeStoreModel = types
   .actions(withSetPropAction)
   .actions((store) => ({
 
-    updateCodeValue(codeId: number, keyboardPwd: string) {
+    updateCodeToStore(codeId: number, keyboardPwd: string) {
       const codes = store.codes.slice()
       const code = codes.find((c) => c.keyboardPwdId === codeId)
       code.keyboardPwd = keyboardPwd
       store.setProp("codes", codes)
     },
 
+    updateCodeNameToStore(codeId: number, keyboardPwdName: string) {
+      const codes = store.codes.slice()
+      const code = codes.find((c) => c.keyboardPwdId === codeId)
+      code.keyboardPwdName = keyboardPwdName
+      store.setProp("codes", codes)
+    },
+
+    reset() {
+      applySnapshot(store, {})
+    },
+
     async getCodeList(lockId: number): Promise<object[]> {
       store.isRefreshing = true
+      store.lockId = lockId
       const res: any = await api.getCodeList(lockId) // TODO add pagination
       store.setProp("isRefreshing", false)
       switch (res.kind) {
@@ -95,7 +108,7 @@ export const CodeStoreModel = types
     async updateCode(keyboardPwdId: number, newkeyboardPwd: string, keyboardPwdName: string, startDate: number, endDate: number, changeType = 1) { // TODO changeType can be 2 for gateway
       store.isLoading = true
       const code = store.codes.find((c) => c.keyboardPwdId === keyboardPwdId)
-      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === code.lockId)
+      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === code!.lockId)
       return new Promise((resolve) => {
         Ttlock.modifyPasscode(code.keyboardPwd, newkeyboardPwd, startDate, endDate, lock.lockData, async () => {
           console.log("TTLock: modify passcode success")
@@ -104,7 +117,7 @@ export const CodeStoreModel = types
           switch (res.kind) {
             case "ok":
               setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
-              store.updateCodeValue(code.keyboardPwdId, newkeyboardPwd)
+              store.updateCodeToStore(code.keyboardPwdId, newkeyboardPwd)
               // store.setProp("codes", store.codes.filter((c) => c.keyboardPwdId !== keyboardPwdId))
               return resolve(res.data)
             case "bad":
@@ -120,6 +133,27 @@ export const CodeStoreModel = types
           return resolve(null)
         })
       })
+    },
+
+    async updateCodeName(keyboardPwdId: number, keyboardPwdName: string) {
+      store.isLoading = true
+      const code = store.codes.find((c) => c.keyboardPwdId === keyboardPwdId)
+      // const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === code.lockId)
+      const res: any = await api.updateCode(code!.lockId, keyboardPwdId, keyboardPwdName)
+      store.setProp("isLoading", false)
+      switch (res.kind) {
+        case "ok":
+          setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
+          store.updateCodeNameToStore(keyboardPwdId, keyboardPwdName)
+          // store.setProp("codes", store.codes.filter((c) => c.keyboardPwdId !== keyboardPwdId))
+          return res.data
+        case "bad":
+          Alert.alert(`code: ${res.code}`, res.msg)
+          break
+        default:
+          Alert.alert(res.kind, res.msg)
+      }
+      return null
     },
 
     async deleteCode(lockId: number, keyboardPwdId: number, deleteType?: number) { // TODO make TTLock library promisable
@@ -144,6 +178,34 @@ export const CodeStoreModel = types
           }
           return resolve(null)
         }, (errorCode, errorDesc) => {
+          store.setProp("isLoading", false)
+          Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
+          return resolve(null)
+        })
+      })
+    },
+
+    async resetAllCodes(lockId: number) {
+      store.isLoading = true
+      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === lockId)
+      return new Promise((resolve) => {
+        Ttlock.resetPasscode(lock.lockData, async (newLockData) => {
+          console.log("TTLock: reset passcodes success")
+          const res: any = await api.updateLock(lockId, newLockData)
+          store.setProp("isLoading", false)
+          switch (res.kind) {
+            case "ok":
+              store.reset()
+              setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
+              return resolve(res.data)
+            case "bad":
+              Alert.alert(`code: ${res.code}`, res.msg)
+              break
+            default:
+              Alert.alert(res.kind, res.msg)
+          }
+          return resolve(null)
+        }, (errorCode, errorDesc) => { // TODO print error in the log
           store.setProp("isLoading", false)
           Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
           return resolve(null)

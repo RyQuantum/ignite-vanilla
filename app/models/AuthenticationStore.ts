@@ -181,7 +181,7 @@ export const AuthenticationStoreModel = types
   .preProcessSnapshot((snapshot) => {
     // remove sensitive data from snapshot to avoid secrets
     // being stored in AsyncStorage in plain text if backing up store
-    const { isLoading, authToken, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { isLoading, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
 
     // see the following for strategies to consider storing secrets on device
     // https://reactnative.dev/docs/security#storing-sensitive-info

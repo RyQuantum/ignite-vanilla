@@ -35,9 +35,11 @@ export class PasscodesScreen extends Component<IProps, IState> {
   }
 
   componentDidMount() {
-    this.unsubscribe = this.props.navigation.addListener('focus', () => {
+    this.context.codeStore.reset() // clean code store at the beginning
+    this.unsubscribe = this.props.navigation.addListener('focus', () => { // auto refresh after delete a code
       this.forceUpdate()
     });
+    this.props.navigation.setParams({ forceUpdate: this.forceUpdate }); // TODO doesn't work
     this.loadCodes()
   }
 

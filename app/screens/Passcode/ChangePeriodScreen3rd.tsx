@@ -106,13 +106,12 @@ export class ChangePeriodScreen extends Component<IProps, IState> {
           date={this.state.date}
           onConfirm={(date) => {
             console.log("A date has been picked: ", date.toLocaleDateString("en-CA"))
-            const newState = {
-              dateVisible: false,
-              hour: parseInt(this.state.startTime.slice(0, 2)).toString(),
-            }
+            const newState = { dateVisible: false }
             if (this.state.isStart) {
+              newState.hour = parseInt(this.state.startTime.slice(0, 2)).toString()
               newState.startDate = date.toLocaleDateString("en-CA")
             } else {
+              newState.hour = parseInt(this.state.endTime.slice(0, 2)).toString()
               newState.endDate = date.toLocaleDateString("en-CA")
             }
             this.setState(newState, () => {
