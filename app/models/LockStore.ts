@@ -5,11 +5,13 @@ import { LockModel } from "./Lock"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { LockControlType, Ttlock } from "react-native-ttlock"
 import Toast from "react-native-simple-toast"
+import { stringMd5 } from "react-native-quick-md5"
 
 export const LockStoreModel = types
   .model("LockStore")
   .props({
     isLoading: false,
+    isRefreshing: false,
     locks: types.array(LockModel),
   })
   .views((store) => ({
@@ -33,9 +35,9 @@ export const LockStoreModel = types
   .actions(withSetPropAction)
   .actions((store) => ({
     async getKeyList(): Promise<object[]> {
-      store.isLoading = true
+      store.isRefreshing = true
       const res: any = await api.getKeyList() // TODO add pagination
-      store.setProp("isLoading", false)
+      store.setProp("isRefreshing", false)
       switch (res.kind) {
         case "ok":
           if (res.data?.list) {
@@ -121,12 +123,57 @@ export const LockStoreModel = types
           return resolve(null)
         })
       })
+    },
+
+    async verifyPassword(password: string) {
+      store.isLoading = true
+      const username = getRoot(store).authenticationStore.authEmail
+      const res: any = await api.login(username, stringMd5(password))
+      store.setProp("isLoading", false)
+      switch (res.kind) {
+        case "ok":
+          return res.data
+        case "bad":
+          Alert.alert(`code: ${res.code}`, res.msg)
+          break
+        default:
+          Alert.alert(res.kind, res.msg)
+      }
+      return null
+    },
+
+    async deleteLock(keyId: number) {
+      store.isLoading = true
+      const lock = store.locks.find((l) => l.keyId === keyId)
+      return new Promise((resolve) => {
+        Ttlock.resetLock(lock.lockData, async () => {
+          console.log("TTLock: resetLock success")
+          const res: any = await api.deleteLock(lock.keyId)
+          store.setProp("isLoading", false)
+          switch (res.kind) {
+            case "ok":
+              setTimeout(() => Toast.showWithGravity("Deleted", Toast.SHORT, Toast.CENTER), 200)
+              store.setProp("locks", store.locks.filter((l) => l.keyId !== lock.keyId))
+              return resolve(res.data)
+            case "bad":
+              Alert.alert(`code: ${res.code}`, res.msg)
+              break
+            default:
+              Alert.alert(res.kind, res.msg)
+          }
+          return resolve(null)
+        }, (errorCode, errorDesc) => {
+          store.setProp("isLoading", false)
+          Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
+          return resolve(null)
+        })
+      })
     }
   }))
   .preProcessSnapshot((snapshot) => {
     // remove sensitive data from snapshot to avoid secrets
     // being stored in AsyncStorage in plain text if backing up store
-    const { ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { isLoading, isRefreshing, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
 
     // see the following for strategies to consider storing secrets on device
     // https://reactnative.dev/docs/security#storing-sensitive-info

@@ -16,7 +16,7 @@ const PlusImage = require("../../../assets/images/plus.jpeg")
 export const LocksScreen: FC<any> = observer(function LocksScreenr(props) {
   // const [lockList, setLockList] = useState([])
   // const [isLoading, setIsLoading] = useState(true)
-  const { lockStore: { getKeyList, lockList, isLoading } } = useStores()
+  const { lockStore: { getKeyList, lockList, isRefreshing } } = useStores()
 
   const loadLockList = useCallback(() => {
     ;(async () => {
@@ -38,7 +38,7 @@ export const LocksScreen: FC<any> = observer(function LocksScreenr(props) {
         // safeAreaEdges={["top", "bottom"]}
         contentContainerStyle={$screenContentContainer}
       >
-        {/* {isLoading ? <ActivityIndicator /> : null} */}
+        {/* {isRefreshing ? <ActivityIndicator /> : null} */}
         {/* <View> */}
         {/*   {lockList.length === 0 && ( */}
         {/*     <View style={{ width: "60%" }}> */}
@@ -53,7 +53,7 @@ export const LocksScreen: FC<any> = observer(function LocksScreenr(props) {
           refreshControl={
             <RefreshControl
               colors={["#9Bd35A", "#689F38"]}
-              refreshing={isLoading}
+              refreshing={isRefreshing}
               onRefresh={loadLockList}
             />
           }

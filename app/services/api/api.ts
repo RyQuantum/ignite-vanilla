@@ -331,7 +331,6 @@ export class Api {
     return response
   }
 
-
   @parseResult()
   async updateLock(lockId: number, lockData: string) {
     const response = await this.apisauce.post(
@@ -340,6 +339,23 @@ export class Api {
       qs.stringify({
         lockId,
         lockData,
+        date: Date.now() // TODO new system is not needed
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return response
+  }
+
+  @parseResult()
+  async deleteLock(keyId: number) {
+    const response = await this.apisauce.post(
+      "key/delete",
+      qs.stringify({
+        keyId,
         date: Date.now() // TODO new system is not needed
       }, { encode: true }),
       {

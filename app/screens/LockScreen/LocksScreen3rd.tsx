@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { RefreshControl, TouchableWithoutFeedback, ScrollView, ViewStyle } from "react-native"
+import { RefreshControl, TouchableWithoutFeedback, ScrollView, ViewStyle, Alert } from "react-native"
 import { observer } from "mobx-react"
 import { Text, LockCard, AutoImage, Screen } from "../../components"
 import { spacing } from "../../theme"
@@ -7,6 +7,8 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import { RootStoreContext } from "../../models"
 import { SimpleAccordion } from "react-native-simple-accordion"
+import { AlertBox, fire } from "react-native-alertbox"
+import Spinner from "react-native-loading-spinner-overlay"
 
 const PlusImage = require("../../../assets/images/plus.jpeg")
 
@@ -40,14 +42,14 @@ export class LocksScreen extends Component<IProps, IState> {
 
   loadLocks = async () => {
     // const { lockStore: { getKeyList } } = this.context
-    // this.setState({ isLoading: true })
+    // this.setState({ isRefreshing: true })
     await this.context.lockStore.getKeyList()
-    // this.setState({ isLoading: false })
+    // this.setState({ isRefreshing: false })
   }
 
   render() {
     const {
-      lockStore: { lockList, lockGroups, isLoading },
+      lockStore: { verifyPassword, deleteLock, lockGroups, isLoading, isRefreshing },
     } = this.context
 
     let content;
@@ -120,6 +122,75 @@ export class LocksScreen extends Component<IProps, IState> {
                 onPress={() =>
                   this.props.navigation.navigate("Lock Details", { lockMac: lock.lockMac })
                 }
+                onLongPress={() =>
+                  // fire({ TODO complete this part for auth admin
+                  //   title: "Are you sure you want to DELETE this delegated eKey?",
+                  //   message: 'Type "yes" to DELETE ALL eKeys associated with this eKey. The Step cannot be UNDONE!',
+                  //   actions: [
+                  //     {
+                  //       text: "Cancel",
+                  //       style: "cancel",
+                  //     },
+                  //     {
+                  //       text: "Delete",
+                  //       onPress: async (data) => {
+                  //         // const res = await updateCode(
+                  //         //   code.keyboardPwdId,
+                  //         //   data.code,
+                  //         //   code.keyboardPwdName,
+                  //         //   code.startDate,
+                  //         //   code.endDate,
+                  //         // )
+                  //         console.log("data", data)
+                  //       },
+                  //     },
+                  //   ],
+                  //   fields: [
+                  //     {
+                  //       name: "text",
+                  //     },
+                  //   ],
+                  // })
+                  fire({
+                    title: "Delete this Lock?",
+                    actions: [
+                      {
+                        text: "Cancel",
+                        style: "cancel",
+                      },
+                      {
+                        text: "OK",
+                        onPress: async (data) => {
+                          fire({
+                            title: "Please enter the Application Password",
+                            actions: [
+                              {
+                                text: "Cancel",
+                                style: "cancel",
+                              },
+                              {
+                                text: "OK",
+                                onPress: async (data) => {
+                                  const res = await verifyPassword(data.password)
+                                  if (res) {
+                                    await deleteLock(lock.keyId)
+                                  }
+                                },
+                              },
+                            ],
+                            fields: [
+                              {
+                                name: "password",
+                                placeholder: "Password",
+                              },
+                            ],
+                          })
+                        },
+                      },
+                    ],
+                    fields: [],
+                  })
+                }
               />
             ))}
             title={lockGroup.groupName || "Ungrouped"}
@@ -134,10 +205,12 @@ export class LocksScreen extends Component<IProps, IState> {
         // safeAreaEdges={["bottom"]}
         // contentContainerStyle={$screenContentContainer}
       >
+        <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
+        <AlertBox />
         <ScrollView
           contentContainerStyle={{ height: "100%" }}
           refreshControl={
-            <RefreshControl refreshing={isLoading} onRefresh={this.loadLocks} />
+            <RefreshControl refreshing={isRefreshing} onRefresh={this.loadLocks} />
           }>
           {content}
         </ScrollView>
@@ -150,7 +223,7 @@ export class LocksScreen extends Component<IProps, IState> {
     //     // safeAreaEdges={["top", "bottom"]}
     //     contentContainerStyle={$screenContentContainer}
     //   >
-    //     {isLoading ? <ActivityIndicator /> : null}
+    //     {isRefreshing ? <ActivityIndicator /> : null}
     //     {/*<View>*/}
     //     {/*  {lockList.length === 0 && (*/}
     //     {/*    <>*/}
@@ -184,7 +257,7 @@ export class LocksScreen extends Component<IProps, IState> {
     //     {/*  refreshControl={*/}
     //     {/*    <RefreshControl*/}
     //     {/*      colors={["#9Bd35A", "#689F38"]}*/}
-    //     {/*      refreshing={isLoading}*/}
+    //     {/*      refreshing={isRefreshing}*/}
     //     {/*      onRefresh={this.loadLocks}*/}
     //     {/*    />*/}
     //     {/*  }*/}

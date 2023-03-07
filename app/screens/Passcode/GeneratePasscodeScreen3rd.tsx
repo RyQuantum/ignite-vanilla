@@ -47,7 +47,7 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
     hour: new Date().getHours().toString(),
     startDate: new Date().toLocaleDateString("en-CA"),
     startTime: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00",
-    endDate: new Date().toLocaleDateString("en-CA"),
+    endDate: new Date(Date.now() + 3600000).toLocaleDateString("en-CA"),
     endTime: new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00",
     dateVisible: false,
     timeVisible: false,
