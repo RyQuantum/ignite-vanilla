@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   TouchableOpacityProps,
   View,
-  ViewStyle,
+  ViewStyle, Alert,
 } from "react-native"
 import moment from "moment-timezone"
 import { colors, spacing } from "../theme"

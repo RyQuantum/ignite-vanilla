@@ -6196,7 +6196,7 @@ prompts@^2.0.1, prompts@^2.4.0:
     kleur "^3.0.3"
     sisteransi "^1.0.5"
 
-prop-types@*, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
+prop-types@*, prop-types@^15.5.10, prop-types@^15.6.2, prop-types@^15.7.2, prop-types@^15.8.1:
   version "15.8.1"
   resolved "https://registry.yarnpkg.com/prop-types/-/prop-types-15.8.1.tgz#67d87bf1a694f48435cf332c24af10214a3140b5"
   integrity sha512-oj87CgZICdulUohogVAR7AjlC0327U4el4L6eAvOqCeudMDVU0NThNaV+b9Df4dXgSP1gXMTnPdhfe/2qDH5cg==
@@ -6392,6 +6392,13 @@ react-native-modal-datetime-picker@^14.0.1:
   dependencies:
     prop-types "^15.7.2"
 
+react-native-modal-selector@^2.1.2:
+  version "2.1.2"
+  resolved "https://registry.yarnpkg.com/react-native-modal-selector/-/react-native-modal-selector-2.1.2.tgz#c9fae030baf8bb2c5419e766ff63c31fc946f396"
+  integrity sha512-+Cvoz/yNUFmfIkJ7xkmlLR2nhJOUhx00S6BPqp2Ruy8LkmaiNr7WMZ4BzsgzylyEgZ84Q+42HQ0v0QzJYobviA==
+  dependencies:
+    prop-types "^15.5.10"
+
 react-native-quick-md5@^3.0.4:
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/react-native-quick-md5/-/react-native-quick-md5-3.0.4.tgz#3021405541c8caae9b426676f010bc3cce2c2338"
@@ -6445,6 +6452,11 @@ react-native-screens@^3.19.0:
   dependencies:
     react-freeze "^1.0.0"
     warn-once "^0.1.0"
+
+react-native-share@^8.2.1:
+  version "8.2.1"
+  resolved "https://registry.yarnpkg.com/react-native-share/-/react-native-share-8.2.1.tgz#f9933852de3ddd0f474ab63448e06c22cfecc9d4"
+  integrity sha512-dUIgrcdg4nOHrbKN1w+hs17RZ+51NeXd62CEezPAd4tEyj2Ki1qeAxWnJe8ZPRwvB5/6ml7YUR/2PJApxGHCAQ==
 
 react-native-simple-accordion@^1.17.0:
   version "1.17.0"

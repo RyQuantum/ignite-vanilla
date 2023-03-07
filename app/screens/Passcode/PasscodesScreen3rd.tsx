@@ -36,10 +36,11 @@ export class PasscodesScreen extends Component<IProps, IState> {
 
   componentDidMount() {
     this.context.codeStore.reset() // clean code store at the beginning
+    this.context.codeStore.updateLockId(this.props.route.params.lockId)
     this.unsubscribe = this.props.navigation.addListener('focus', () => { // auto refresh after delete a code
       this.forceUpdate()
     });
-    this.props.navigation.setParams({ forceUpdate: this.forceUpdate }); // TODO doesn't work
+    // this.props.navigation.setParams({ forceUpdate: this.forceUpdate }); // TODO doesn't work
     this.loadCodes()
   }
 
@@ -73,7 +74,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
       case 2:
         return `${this.convertTimeStamp(code.startDate)} Permanent`
       case 3:
-        return `${this.convertTimeStamp(code.startDate)} - ${this.convertTimeStamp(code.endDate)} Timed`
+        return `${this.convertTimeStamp(code.startDate)} - ${this.convertTimeStamp(code.endDate)} ${code.isCustom ? "Custom" : "Timed"}`
       case 4:
         return `${this.convertTimeStamp(code.startDate)} Erase`
       case 5:
@@ -139,7 +140,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
 
   render() {
     const {
-      codeStore: { codeList, codes, isRefreshing, deleteCode },
+      codeStore: { codeList, isRefreshing, deleteCode },
     } = this.context
 
     return (
@@ -158,7 +159,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
           contentContainerStyle={$screenContentContainer}
         >
           <FlatList
-            data={codes}
+            data={codeList}
             refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={this.loadCodes} />}
             renderItem={({ item, index }) => {
               const codeId = item.keyboardPwdId
@@ -168,28 +169,42 @@ export class PasscodesScreen extends Component<IProps, IState> {
                   topDivider
                   bottomDivider
                   onPress={() => this.props.navigation.navigate("Passcode Info", { codeId })}
-                  // rightContent={(reset) => ( // TODO integrate swipe function for better user experience
-                  //   <Button
-                  //     style={{ minHeight: "100%", backgroundColor: "red" }}
-                  //     textStyle={{ color: "white" }}
-                  //     onPress={() => { // TODO execute item "close" function in the meanwhile of alert
-                  //       Alert.alert("Delete?", null, [
-                  //         {
-                  //           text: "Cancel",
-                  //           onPress: () => console.log("Cancel Pressed"),
-                  //           style: "cancel",
-                  //         },
-                  //         {
-                  //           text: "Delete",
-                  //           onPress: () =>
-                  //             deleteCode(this.props.route.params.lockId, item.keyboardPwdId),
-                  //         },
-                  //       ])
-                  //     }}
-                  //   >
-                  //     Delete
-                  //   </Button>
-                  // )}
+                  onLongPress={() => Alert.alert("Delete?", undefined, [
+                    {
+                      text: "Cancel",
+                      onPress: () => console.log("Cancel Pressed"),
+                      style: "cancel",
+                    },
+                    {
+                      text: "Delete",
+                      onPress: async () => {
+                        const res = await deleteCode(item.lockId, item.keyboardPwdId)
+                        // if (res) this.props.navigation.goBack()
+                      },
+                    },
+                  ])}
+                  rightContent={ // TODO integrate swipe function for better user experience
+                    <Button
+                      style={{ minHeight: "100%", backgroundColor: "red" }}
+                      textStyle={{ color: "white" }}
+                      onPress={() => { // TODO execute item "close" function in the meanwhile of alert
+                        Alert.alert("Delete?", undefined, [
+                          {
+                            text: "Cancel",
+                            onPress: () => console.log("Cancel Pressed"),
+                            style: "cancel",
+                          },
+                          {
+                            text: "Delete",
+                            onPress: () =>
+                              deleteCode(this.props.route.params.lockId, item.keyboardPwdId),
+                          },
+                        ])
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  }
                   containerStyle={{ width: "100%" }}
                 >
                   <Avatar
@@ -224,6 +239,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
                     </ListItem.Subtitle>
                   </ListItem.Content>
                 </ListItem>
+              // </ListItem.Swipeable>
               )
             }}
             contentContainerStyle={{ paddingBottom: 80 }}

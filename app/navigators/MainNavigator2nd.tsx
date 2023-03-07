@@ -42,7 +42,7 @@ const Stack = createStackNavigator();
 
 const LocksNavigator = observer(function (_props) {
   const {
-    codeStore: { isLoading, resetAllCodes, lockId }, // TODO each module has an "isLoading", how to organize them?
+    codeStore: { isLoading, resetAllCodes, share, lockId }, // TODO each module has an "isLoading", how to organize them?
   } = useStores()
 
   return (
@@ -134,7 +134,7 @@ const LocksNavigator = observer(function (_props) {
             // title: "Passcodes",
             headerRight: () => (
               <HeaderButtons HeaderButtonComponent={HeaderShareButton}>
-                <Item title="share" iconName="share-outline" color="white" onPress={() => {}} />
+                <Item title="share" iconName="share-outline" color="white" onPress={share} />
               </HeaderButtons>
             ),
           })}
@@ -144,11 +144,13 @@ const LocksNavigator = observer(function (_props) {
           component={ChangePeriodScreen}
           options={({ navigation }) => ({
             // title: "Passcodes",
-            headerRight: () => (
-              <HeaderButtons>
-                <Item title="Save" buttonStyle={{ color: "white" }} onPress={() => {}} />
-              </HeaderButtons>
-            ),
+            // headerRight: () => (
+            //   <HeaderButtons>
+            //     <Item title="Save" buttonStyle={{ color: "white" }} onPress={async () => {
+            //       const res = await updateCode(undefined, )
+            //     }} />
+            //   </HeaderButtons>
+            // ),
           })}
         />
         <Stack.Screen

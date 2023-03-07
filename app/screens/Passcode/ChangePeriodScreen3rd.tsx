@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { View, ViewStyle, ImageStyle, Text } from "react-native"
+import { View, ViewStyle, ImageStyle, Text, Alert } from "react-native"
 import { observer } from "mobx-react"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 // import { ListItem } from "@rneui/themed"
@@ -8,6 +8,8 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import TimePicker from "react-native-24h-timepicker";
 import { Screen } from "../../components"
 import { RootStoreContext } from "../../models"
+import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
+import Spinner from "react-native-loading-spinner-overlay"
 
 type RootStackParamList = {
   // "Assign Name": { lockName: string };
@@ -52,7 +54,7 @@ export class ChangePeriodScreen extends Component<IProps, IState> {
 
   render() {
     const {
-      lockStore: { lockList, lockGroups, isLoading },
+      codeStore: { updateCode, isLoading },
     } = this.context
 
     return (
@@ -67,7 +69,6 @@ export class ChangePeriodScreen extends Component<IProps, IState> {
             bottomDivider
             onPress={() => {
               this.setState({
-                // date: new Date(this.props.route.params.code.startDate),
                 date: new Date(`${this.state.startDate} ${this.state.startTime}`),
                 dateVisible: true,
                 isStart: true,
@@ -85,7 +86,6 @@ export class ChangePeriodScreen extends Component<IProps, IState> {
             bottomDivider
             onPress={() => {
               this.setState({
-                // date: new Date(this.props.route.params.code.endDate),
                 date: new Date(`${this.state.endDate} ${this.state.endTime}`),
                 dateVisible: true,
                 isStart: false,
@@ -98,6 +98,21 @@ export class ChangePeriodScreen extends Component<IProps, IState> {
             <ListItem.Subtitle>
               {this.state.endDate} {this.state.endTime}
             </ListItem.Subtitle>
+          </ListItem>
+          <DemoDivider size={50} />
+          <ListItem
+            topDivider
+            bottomDivider
+            containerStyle={{ justifyContent: "center" }}
+            onPress={async () => {
+              const code = this.props.route.params.code
+              const startDate = new Date(`${this.state.startDate} ${this.state.startTime}`)
+              const endDate = new Date(`${this.state.endDate} ${this.state.endTime}`)
+              const res = await updateCode(code.keyboardPwdId, code.keyboardPwd, undefined, startDate.getTime(), endDate.getTime())
+              if (res) this.props.navigation.goBack()
+            }}
+          >
+            <ListItem.Title>Save</ListItem.Title>
           </ListItem>
         </View>
         <DateTimePickerModal
@@ -135,6 +150,7 @@ export class ChangePeriodScreen extends Component<IProps, IState> {
           }}
           onCancel={() => this.TimePicker.close()}
         />
+        <Spinner visible={isLoading} />
       </Screen>
     )
   }

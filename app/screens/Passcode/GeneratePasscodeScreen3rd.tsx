@@ -1,16 +1,21 @@
 import React, { Component } from "react"
-import { View, ViewStyle, Switch, StyleSheet, Button as Button2, TextStyle } from "react-native"
+import { View, ViewStyle, Switch, TextStyle } from "react-native"
 import { observer } from "mobx-react"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 // import ScrollableTabView, { ScrollableTabBar } from "react-native-scrollable-tab-view";
 import { ListItem, Overlay, Tab } from "@rneui/themed"
 // import { ListItem, Overlay, Tab } from "react-native-elements"
+import DateTimePickerModal from "react-native-modal-datetime-picker"
+import TimePicker from "react-native-24h-timepicker"
 import { colors } from "../../theme"
 import { Text, Screen, Button } from "../../components"
 import { RootStoreContext } from "../../models"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
 import Spinner from "react-native-loading-spinner-overlay"
+import { Picker } from "@react-native-picker/picker"
+import ModalSelector from "react-native-modal-selector"
+import Share from "react-native-share"
 // const PlusImage = require("../../../assets/images/plus.jpeg")
 
 type RootStackParamList = {
@@ -38,16 +43,19 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
     index: 0,
     name: "",
     isPermanent: true,
-    startTime: "",
-    endTime: "",
-    startDateTime: "",
-    endDateTime: "",
+    date: new Date(), // for datetime modal picker
+    hour: new Date().getHours().toString(),
+    startDate: new Date().toLocaleDateString("en-CA"),
+    startTime: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00",
+    endDate: new Date().toLocaleDateString("en-CA"),
+    endTime: new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00",
+    dateVisible: false,
+    timeVisible: false,
+    isStart: false,
+    mode: 5, // the default keyboardPwdType for recurring code
     passcode: "", // custom code
     code: "", // auto code result from the server
     visible: false,
-    // lockList: [],
-    // isLoading: false,
-    // name: this.props.route.params.lockName,
   }
 
   componentDidMount() {}
@@ -65,21 +73,32 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
         break
       case 1:
         keyboardPwdType = 3
-        break
+        startDate = new Date(`${this.state.startDate} ${this.state.startTime}`).getTime()
+        endDate = new Date(`${this.state.endDate} ${this.state.endTime}`).getTime()
+        res = await this.context.codeStore.generateCode(this.props.route.params.lockId, keyboardPwdType, this.state.name, startDate, endDate)
+        if (res) this.setState({ code: res.keyboardPwd, visible: true })
+        return
       case 2:
         keyboardPwdType = 1
         break
       case 3:
         // keyboardPwdType = 0 // CUSTOM
         if (!this.state.isPermanent) {
-          // TODO date time library
+          startDate = new Date(`${this.state.startDate} ${this.state.startTime}`).getTime()
+          endDate = new Date(`${this.state.endDate} ${this.state.endTime}`).getTime()
+          res = await this.context.codeStore.addCode(this.props.route.params.lockId, this.state.passcode, this.state.name, startDate, endDate)
+        } else {
+          res = await this.context.codeStore.addCode(this.props.route.params.lockId, this.state.passcode, this.state.name, startDate, endDate)
         }
-        res = await this.context.codeStore.addCode(this.props.route.params.lockId, this.state.passcode, this.state.name, startDate, endDate)
         if (res) this.setState({ code: this.state.passcode, visible: true })
         return
       case 4:
-        keyboardPwdType = 0 // Recurring
-        break
+        keyboardPwdType = this.state.mode
+        startDate = new Date(`${new Date().toLocaleDateString("en-CA")} ${this.state.startTime}`).getTime()
+        endDate = new Date(`${new Date().toLocaleDateString("en-CA")} ${this.state.endTime}`).getTime()
+        res = await this.context.codeStore.generateCode(this.props.route.params.lockId, keyboardPwdType, this.state.name, startDate, endDate)
+        if (res) this.setState({ code: res.keyboardPwd, visible: true })
+        return
       case 5:
         keyboardPwdType = 4
         break
@@ -90,7 +109,7 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
 
   render() {
     const {
-      codeStore: { isLoading },
+      codeStore: { isLoading }, lockStore: { getLockInfo }
     } = this.context
 
     return (
@@ -168,11 +187,62 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
             <Button
               style={{ borderColor: "skyblue" }}
               textStyle={{ color: "skyblue" }}
-              onPress={() => {}}
+              onPress={async () => {
+                let type = ""
+                const lock = getLockInfo(this.props.route.params.lockId)
+                let startDate = new Date()
+                let startString = `${startDate.toLocaleDateString("en-CA")} ${startDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                let beforeDate = new Date()
+                let beforeString = ""
+                switch (this.state.index) {
+                  case 0:
+                    type = "Permanent"
+                    beforeDate.setDate(beforeDate.getDate() + 1)
+                    beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                    break
+                  case 1:
+                    type = "Timed"
+                    startString = `${this.state.startDate} ${this.state.startTime} End time: ${this.state.endDate} ${this.state.endTime}`
+                    beforeDate = new Date(`${this.state.startDate} ${this.state.startTime}`)
+                    beforeDate.setDate(beforeDate.getDate() + 1)
+                    beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                    break
+                  case 2:
+                    type = "One-time"
+                    beforeDate.setHours(beforeDate.getHours() + 6)
+                    beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                    break
+                  case 3:
+                    if (this.state.isPermanent) {
+                      type = "Permanent"
+                      startDate = new Date(0)
+                      startString = `${startDate.toLocaleDateString("en-CA")} ${startDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                    } else {
+                      type = "Timed"
+                      startString = `${this.state.startDate} ${this.state.startTime} End time: ${this.state.endDate} ${this.state.endTime}`
+                    }
+                    break
+                  case 4:
+                    type = data.find(item => item.key === this.state.mode).label + " Recurring"
+                    startString = `${this.state.startTime} End time: ${this.state.endTime}`
+                    beforeDate.setDate(beforeDate.getDate() + 1)
+                    beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                    break
+                  case 5:
+                    type = "Erase"
+                    beforeDate.setDate(beforeDate.getDate() + 1)
+                    beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                    break
+                  default:
+                    type = `invalid index: ${this.state.index}`
+                }
+
+                const message = `Hello, Here is your Pin Code: ${this.state.code}\nStart time: ${startString}\nType: ${type}\nLock name: ${lock.lockName}\n\nTo Unlock - Press PIN CODE #\n\nNotes: ${beforeString} The # key is the UNLOCKING key at the bottom right. Please don't share your Pin Code with anyone.`
+                const res = await Share.open({ message }) // TODO verify the message in different code type
+              }}
             >
               Share
             </Button>
-            {/*TODO finish share*/}
           </Overlay>
 
           {this.state.index === 0 && (
@@ -196,21 +266,48 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
 
           {this.state.index === 1 && (
             <>
-              <ListItem topDivider bottomDivider>
+              <ListItem
+                topDivider
+                bottomDivider
+                onPress={() => {
+                  this.setState({
+                    date: new Date(`${this.state.startDate} ${this.state.startTime}`),
+                    dateVisible: true,
+                    isStart: true,
+                  })
+                }}
+              >
                 <ListItem.Title>Start Time</ListItem.Title>
                 <ListItem.Content />
-                <ListItem.Subtitle>2023-03-01 23:00</ListItem.Subtitle>
+                <ListItem.Subtitle>
+                  {this.state.startDate} {this.state.startTime}
+                </ListItem.Subtitle>
               </ListItem>
-              <ListItem bottomDivider>
+              <ListItem
+                bottomDivider
+                onPress={() => {
+                  this.setState({
+                    date: new Date(`${this.state.endDate} ${this.state.endTime}`),
+                    dateVisible: true,
+                    isStart: false,
+                  })
+                }}
+              >
                 <ListItem.Title>End Time</ListItem.Title>
                 <ListItem.Content />
-                <ListItem.Subtitle>2023-03-01 23:00</ListItem.Subtitle>
+                <ListItem.Subtitle>
+                  {this.state.endDate} {this.state.endTime}
+                </ListItem.Subtitle>
               </ListItem>
               <DemoDivider />
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Name</ListItem.Title>
                 <ListItem.Content>
-                  <ListItem.Input placeholder="Enter a name for this passcode" />
+                  <ListItem.Input
+                    value={this.state.name}
+                    onChangeText={(name) => this.setState({ name })}
+                    placeholder="Enter a name for this passcode"
+                  />
                 </ListItem.Content>
               </ListItem>
               <Text size="xs" style={{ padding: 10, color: colors.palette.neutral500 }}>
@@ -226,7 +323,11 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Name</ListItem.Title>
                 <ListItem.Content>
-                  <ListItem.Input placeholder="Enter a name for this passcode" />
+                  <ListItem.Input
+                    value={this.state.name}
+                    onChangeText={(name) => this.setState({ name })}
+                    placeholder="Enter a name for this passcode"
+                  />
                 </ListItem.Content>
               </ListItem>
               <Text size="xs" style={{ padding: 10, color: colors.palette.neutral500 }}>
@@ -248,15 +349,37 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
               </ListItem>
               {this.state.isPermanent || (
                 <>
-                  <ListItem bottomDivider>
+                  <ListItem
+                    bottomDivider
+                    onPress={() => {
+                      this.setState({
+                        date: new Date(`${this.state.startDate} ${this.state.startTime}`),
+                        dateVisible: true,
+                        isStart: true,
+                      })
+                    }}
+                  >
                     <ListItem.Title>Start Time</ListItem.Title>
                     <ListItem.Content />
-                    <ListItem.Subtitle>{this.state.startDateTime}</ListItem.Subtitle>
+                    <ListItem.Subtitle>
+                      {this.state.startDate} {this.state.startTime}
+                    </ListItem.Subtitle>
                   </ListItem>
-                  <ListItem bottomDivider>
+                  <ListItem
+                    bottomDivider
+                    onPress={() => {
+                      this.setState({
+                        date: new Date(`${this.state.endDate} ${this.state.endTime}`),
+                        dateVisible: true,
+                        isStart: false,
+                      })
+                    }}
+                  >
                     <ListItem.Title>End Time</ListItem.Title>
                     <ListItem.Content />
-                    <ListItem.Subtitle>{this.state.endDateTime}</ListItem.Subtitle>
+                    <ListItem.Subtitle>
+                      {this.state.endDate} {this.state.endTime}
+                    </ListItem.Subtitle>
                   </ListItem>
                 </>
               )}
@@ -293,23 +416,52 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Mode</ListItem.Title>
                 <ListItem.Content />
-                <ListItem.Subtitle>Weekend</ListItem.Subtitle>
+                <ListItem.Subtitle>
+                  <ModalSelector
+                    data={data}
+                    animationType="fade"
+                    selectedKey={this.state.mode}
+                    onChange={(option) => this.setState({ mode: option.key || this.state.mode })} // to fix variable undefined
+                  />
+                </ListItem.Subtitle>
               </ListItem>
-              <ListItem bottomDivider>
+              <ListItem
+                bottomDivider
+                onPress={() => {
+                  this.setState({
+                    isStart: true,
+                    hour: parseInt(this.state.startTime.slice(0, 2)).toString(),
+                  })
+                  this.TimePicker.open()
+                }}
+              >
                 <ListItem.Title>Start Time</ListItem.Title>
                 <ListItem.Content />
-                <ListItem.Subtitle>23:00</ListItem.Subtitle>
+                <ListItem.Subtitle>{this.state.startTime}</ListItem.Subtitle>
               </ListItem>
-              <ListItem bottomDivider>
+              <ListItem
+                bottomDivider
+                onPress={() => {
+                  this.setState({
+                    isStart: false,
+                    hour: parseInt(this.state.endTime.slice(0, 2)).toString(),
+                  })
+                  this.TimePicker.open()
+                }}
+              >
                 <ListItem.Title>End Time</ListItem.Title>
                 <ListItem.Content />
-                <ListItem.Subtitle>23:00</ListItem.Subtitle>
+                <ListItem.Subtitle>{this.state.endTime}</ListItem.Subtitle>
               </ListItem>
               <DemoDivider />
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Name</ListItem.Title>
                 <ListItem.Content>
-                  <ListItem.Input placeholder="Enter a name for this passcode" />
+                  <ListItem.Input
+                    value={this.state.name}
+                    onChangeText={(name) => this.setState({ name })}
+                    placeholder="Enter a name for this passcode"
+                  />
                 </ListItem.Content>
               </ListItem>
               <DemoDivider />
@@ -325,7 +477,11 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Name</ListItem.Title>
                 <ListItem.Content>
-                  <ListItem.Input placeholder="Enter a name for this passcode" />
+                  <ListItem.Input
+                    value={this.state.name}
+                    onChangeText={(name) => this.setState({ name })}
+                    placeholder="Enter a name for this passcode"
+                  />
                 </ListItem.Content>
               </ListItem>
               <Text size="xs" style={{ padding: 10, color: colors.palette.neutral500 }}>
@@ -344,11 +500,58 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
             {this.state.index === 3 ? "Set Passcode" : "Generate"}
           </Button>
         </View>
-        <Spinner visible={isLoading} />
+        <DateTimePickerModal
+          isVisible={this.state.dateVisible}
+          mode="date"
+          date={this.state.date}
+          onConfirm={(date) => {
+            console.log("A date has been picked: ", date.toLocaleDateString("en-CA"))
+            const newState = { dateVisible: false }
+            if (this.state.isStart) {
+              newState.hour = parseInt(this.state.startTime.slice(0, 2)).toString()
+              newState.startDate = date.toLocaleDateString("en-CA")
+            } else {
+              newState.hour = parseInt(this.state.endTime.slice(0, 2)).toString()
+              newState.endDate = date.toLocaleDateString("en-CA")
+            }
+            this.setState(newState, () => {
+              setTimeout(() => this.TimePicker.open(), 300)
+            })
+          }}
+          onCancel={() => this.setState({ dateVisible: false })}
+        />
+        <TimePicker
+          ref={(ref) => (this.TimePicker = ref)}
+          minuteInterval={60}
+          selectedHour={this.state.hour}
+          onConfirm={(hour, minute) => {
+            console.log(hour)
+            if (this.state.isStart) {
+              this.setState({ startTime: hour.padStart(2, "0") + ":00" })
+            } else {
+              this.setState({ endTime: hour.padStart(2, "0") + ":00" })
+            }
+            this.TimePicker.close()
+          }}
+          onCancel={() => this.TimePicker.close()}
+        />
       </Screen>
     )
   }
 }
+
+const data = [
+  { key: 5, label: 'Weekend' },
+  { key: 6, label: 'Daily' },
+  { key: 7, label: 'Workday' },
+  { key: 8, label: 'Monday' },
+  { key: 9, label: 'Tuesday' },
+  { key: 10, label: 'Wednesday' },
+  { key: 11, label: 'Thursday' },
+  { key: 12, label: 'Friday' },
+  { key: 13, label: 'Saturday' },
+  { key: 14, label: 'Sunday' },
+];
 
 const $screenContentContainer: ViewStyle = {
   // paddingVertical: spacing.medium,

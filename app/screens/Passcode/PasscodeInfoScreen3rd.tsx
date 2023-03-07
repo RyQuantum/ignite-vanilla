@@ -25,12 +25,47 @@ interface IState {
 }
 
 function Period({ code }) {
-  return ( // TODO detect Permanent and other mode
-    <View>
-      <Text style={{ fontSize: 12 }}>{moment(code.startDate).format("YYYY-MM-DD HH:mm")}</Text>
-      <Text style={{ fontSize: 12 }}>{moment(code.endDate).format("YYYY-MM-DD HH:mm")}</Text>
-    </View>
-  )
+  let keyType = ""
+  switch (code.keyboardPwdType) {
+    case 5:
+      keyType = "Weekend"
+      break
+    case 6:
+      keyType = "Daily"
+      break
+    case 7:
+      keyType = "Workday"
+      break
+    case 8:
+      keyType = "Monday"
+      break
+    case 9:
+      keyType = "Tuesday"
+      break
+    case 10:
+      keyType = "Wednesday"
+      break
+    case 11:
+      keyType = "Thursday"
+      break
+    case 12:
+      keyType = "Friday"
+      break
+    case 13:
+      keyType = "Saturday"
+      break
+    case 14:
+      keyType = "Sunday"
+      break
+    default: // TODO verify case 1 to 4
+      return (
+        <View>
+          <Text style={{ fontSize: 12 }}>{moment(code.startDate).format("YYYY-MM-DD HH:mm")}</Text>
+          <Text style={{ fontSize: 12 }}>{moment(code.endDate).format("YYYY-MM-DD HH:mm")}</Text>
+        </View>
+      )
+  }
+  return <Text style={{ fontSize: 16 }}>{keyType} {moment(code.startDate).format("HH:mm")}-{moment(code.endDate).format("HH:mm")}</Text>
 }
 
 @observer
@@ -43,9 +78,16 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
     // name: this.props.route.params.lockName,
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    this.context.codeStore.updateCodeId(this.props.route.params.codeId)
+    this.unsubscribe = this.props.navigation.addListener('focus', () => { // auto refresh after delete a code
+      this.forceUpdate()
+    });
+  }
 
-  componentWillUnmount() {}
+  componentWillUnmount() {
+    this.unsubscribe()
+  }
 
   render() {
     const {
@@ -68,36 +110,46 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
           <AlertBox />
           <ListItem
             bottomDivider
-            onPress={() => {
-              fire({
-                title: "Change password",
-                actions: [
-                  {
-                    text: "Cancel",
-                    style: "cancel",
-                  },
-                  {
-                    text: "OK",
-                    onPress: async (data) => {
-                      const res = await updateCode(code.keyboardPwdId, data.code, code.keyboardPwdName, code.startDate, code.endDate)
-                    },
-                  },
-                ],
-                fields: [
-                  {
-                    name: "code",
-                    placeholder: "4 - 9 Digits in length",
-                    keyboardType: "number-pad",
-                  },
-                ],
-              });
-            }}
+            onPress={
+              [1, 4].includes(code.keyboardPwdType)
+                ? undefined
+                : () => {
+                    fire({
+                      title: "Change passcode",
+                      actions: [
+                        {
+                          text: "Cancel",
+                          style: "cancel",
+                        },
+                        {
+                          text: "OK",
+                          onPress: async (data) => {
+                            const res = await updateCode(
+                              code.keyboardPwdId,
+                              data.code,
+                              code.keyboardPwdName,
+                              code.startDate,
+                              code.endDate,
+                            )
+                          },
+                        },
+                      ],
+                      fields: [
+                        {
+                          name: "code",
+                          placeholder: "4 - 9 Digits in length",
+                          keyboardType: "number-pad",
+                        },
+                      ],
+                    })
+                  }
+            }
           >
             <ListItem.Content>
               <ListItem.Title>Passcode</ListItem.Title>
             </ListItem.Content>
             <ListItem.Subtitle>{code.keyboardPwd}</ListItem.Subtitle>
-            <ListItem.Chevron />
+            {[1, 4].includes(code.keyboardPwdType) || <ListItem.Chevron />}
           </ListItem>
           <ListItem
             bottomDivider
@@ -122,7 +174,7 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
                     defaultValue: code.keyboardPwdName,
                   },
                 ],
-              });
+              })
             }}
           >
             <ListItem.Content>
@@ -133,8 +185,10 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
           </ListItem>
           <ListItem
             bottomDivider
-            onPress={() =>
-              this.props.navigation.navigate("Change Period", { code })
+            onPress={
+              [2, 3].includes(code.keyboardPwdType)
+                ? () => this.props.navigation.navigate("Change Period", { code })
+                : undefined
             }
           >
             <ListItem.Content>
@@ -143,7 +197,7 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
             <ListItem.Subtitle>
               <Period code={code} />
             </ListItem.Subtitle>
-            <ListItem.Chevron />
+            {[2, 3].includes(code.keyboardPwdType) && <ListItem.Chevron />}
           </ListItem>
           <DemoDivider />
           <ListItem topDivider bottomDivider>
@@ -157,7 +211,7 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
               <ListItem.Title>Time Issued</ListItem.Title>
             </ListItem.Content>
             <ListItem.Subtitle>
-              {moment(code.sendDate).format("YYYY-MM-DD HH:mm")}
+              {moment(code.sendDate).format("YYYY-MM-DD HH:mm:ss")}
             </ListItem.Subtitle>
           </ListItem>
           <DemoDivider />
@@ -173,7 +227,7 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
             bottomDivider
             containerStyle={{ justifyContent: "center" }}
             onPress={async () =>
-              Alert.alert("Delete?", null, [
+              Alert.alert("Delete?", undefined, [
                 {
                   text: "Cancel",
                   onPress: () => console.log("Cancel Pressed"),
@@ -189,7 +243,7 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
               ])
             }
           >
-            <ListItem.Title>Delete</ListItem.Title>
+            <ListItem.Title style={{ color: "red" }}>Delete</ListItem.Title>
           </ListItem>
         </View>
       </Screen>

@@ -26,6 +26,9 @@ export const LockStoreModel = types
       })
       return result
     },
+    getLockInfo(lockId: number) {
+      return store.locks.find(l => l.lockId === lockId)
+    },
   }))
   .actions(withSetPropAction)
   .actions((store) => ({
