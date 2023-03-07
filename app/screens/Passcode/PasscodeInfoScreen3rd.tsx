@@ -2,7 +2,8 @@ import React, { Component } from "react"
 import { Text, View, ViewStyle, ImageStyle, Alert } from "react-native"
 import { observer } from "mobx-react"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
-import { AlertBox, fire } from 'react-native-alertbox';
+import { fire } from 'react-native-alertbox';
+import { HeaderButtons, Item } from "react-navigation-header-buttons"
 import { Screen } from "../../components"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import { RootStoreContext } from "../../models"
@@ -80,6 +81,13 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
 
   componentDidMount() {
     this.context.codeStore.updateCodeId(this.props.route.params.codeId)
+    this.props.navigation.setOptions({ // TODO apply setOptions for all header buttons
+      headerRight: () => (
+        <HeaderButtons>
+          <Item title="share" buttonStyle={{ color: "white" }} onPress={this.context.codeStore.share} />
+        </HeaderButtons>
+      ),
+    })
     this.unsubscribe = this.props.navigation.addListener('focus', () => { // auto refresh after delete a code
       this.forceUpdate()
     });
@@ -107,7 +115,6 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
         contentContainerStyle={$screenContentContainer}
       >
         <View>
-          <AlertBox />
           <ListItem
             bottomDivider
             onPress={

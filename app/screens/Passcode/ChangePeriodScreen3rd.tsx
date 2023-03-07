@@ -1,15 +1,15 @@
 import React, { Component } from "react"
-import { View, ViewStyle, ImageStyle, Text, Alert } from "react-native"
+import { View, ViewStyle, ImageStyle } from "react-native"
 import { observer } from "mobx-react"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 // import { ListItem } from "@rneui/themed"
 import { ListItem } from "react-native-elements"
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import { HeaderButtons, Item } from "react-navigation-header-buttons"
 import TimePicker from "react-native-24h-timepicker";
 import { Screen } from "../../components"
 import { RootStoreContext } from "../../models"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
-import Spinner from "react-native-loading-spinner-overlay"
 
 type RootStackParamList = {
   // "Assign Name": { lockName: string };
@@ -40,22 +40,24 @@ export class ChangePeriodScreen extends Component<IProps, IState> {
   }
 
   componentDidMount = () => {
-    // setTimeout(() => this.TimePicker.open(), 1000)
-    // setTimeout(() => this.setState({ visible: true }), 1000)
+    this.props.navigation.setOptions({ // TODO apply setOptions for all header buttons
+      headerRight: () => (
+        <HeaderButtons>
+          <Item title="Save" buttonStyle={{ color: "white" }} onPress={async () => {
+            const code = this.props.route.params.code
+            const startDate = new Date(`${this.state.startDate} ${this.state.startTime}`)
+            const endDate = new Date(`${this.state.endDate} ${this.state.endTime}`)
+            const res = await this.context.codeStore.updateCode(code.keyboardPwdId, code.keyboardPwd, undefined, startDate.getTime(), endDate.getTime())
+            if (res) this.props.navigation.goBack()
+          }} />
+        </HeaderButtons>
+      ),
+    })
   }
 
-  componentWillUnmount() {
-  }
-
-  onConfirm = (hour, minute)  => {
-    this.setState({ hour });
-    this.TimePicker.close();
-  }
+  componentWillUnmount() {}
 
   render() {
-    const {
-      codeStore: { updateCode, isLoading },
-    } = this.context
 
     return (
       <Screen
@@ -100,20 +102,6 @@ export class ChangePeriodScreen extends Component<IProps, IState> {
             </ListItem.Subtitle>
           </ListItem>
           <DemoDivider size={50} />
-          <ListItem
-            topDivider
-            bottomDivider
-            containerStyle={{ justifyContent: "center" }}
-            onPress={async () => {
-              const code = this.props.route.params.code
-              const startDate = new Date(`${this.state.startDate} ${this.state.startTime}`)
-              const endDate = new Date(`${this.state.endDate} ${this.state.endTime}`)
-              const res = await updateCode(code.keyboardPwdId, code.keyboardPwd, undefined, startDate.getTime(), endDate.getTime())
-              if (res) this.props.navigation.goBack()
-            }}
-          >
-            <ListItem.Title>Save</ListItem.Title>
-          </ListItem>
         </View>
         <DateTimePickerModal
           isVisible={this.state.dateVisible}
@@ -150,7 +138,6 @@ export class ChangePeriodScreen extends Component<IProps, IState> {
           }}
           onCancel={() => this.TimePicker.close()}
         />
-        <Spinner visible={isLoading} />
       </Screen>
     )
   }

@@ -14,6 +14,7 @@ import "./utils/ignoreWarnings"
 import React from "react"
 // import { Linking } from "react-native"
 import { initialWindowMetrics, SafeAreaProvider } from "react-native-safe-area-context"
+import { AlertBox } from "react-native-alertbox"
 import { useInitialRootStore } from "./models"
 import { AppNavigator, useNavigationPersistence } from "./navigators"
 import { ErrorBoundary } from "./screens/ErrorScreen/ErrorBoundary"
@@ -106,6 +107,7 @@ function App(props: AppProps) {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <ErrorBoundary catchErrors={Config.catchErrors}>
+        <AlertBox />
         <AppNavigator
           // linking={linking}
           // initialState={initialNavigationState}

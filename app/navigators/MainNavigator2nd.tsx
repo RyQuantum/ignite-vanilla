@@ -42,7 +42,7 @@ const Stack = createStackNavigator();
 
 const LocksNavigator = observer(function (_props) {
   const {
-    codeStore: { isLoading, resetAllCodes, share, lockId }, // TODO each module has an "isLoading", how to organize them?
+    codeStore: { isLoading }, // TODO each module has an "isLoading", how to organize them?
   } = useStores()
 
   return (
@@ -77,88 +77,27 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Lock Details"
           component={LockHomeScreen}
-          options={({ navigation }) => ({
-            title: "Sifely",
-            headerLeft: () => (
-              <HeaderButtons HeaderButtonComponent={HeaderBackButton}>
-                <Item
-                  title="back"
-                  iconName="arrow-left"
-                  color="white"
-                  onPress={() => {
-                    navigation.navigate("My Locks")
-                  }}
-                />
-              </HeaderButtons>
-            ),
-          })}
+          options={({ navigation }) => ({ title: "Sifely" })}
         />
         <Stack.Screen
           name="Passcodes"
           component={PasscodesScreen}
-          options={({ navigation }) => ({
-            // title: "Passcodes",
-            headerRight: () => (
-              <HeaderButtons>
-                <Item title="Reset" buttonStyle={{ color: "white" }}
-                      onPress={() => Alert.alert("ALL Passcodes for this Lock will be DELETED", undefined, [
-                        {
-                          text: "Cancel",
-                          onPress: () => console.log("Cancel Pressed"),
-                          style: "cancel",
-                        },
-                        {
-                          text: "Reset",
-                          onPress: async () => {
-                            const res = await resetAllCodes(lockId)
-                            // if (res) this.props.navigation.goBack()
-                            // TODO call forceUpdate of the PasscodesScreen
-                          },
-                        },
-                      ])} />
-              </HeaderButtons>
-            ),
-          })}
         />
         <Stack.Screen
           name="Generate Passcode"
           component={GeneratePasscodeScreen}
-          // options={({ navigation }) => ({
-          //   title: "Passcodes",
-          // })}
         />
         <Stack.Screen
           name="Passcode Info"
           component={PasscodeInfoScreen}
-          options={({ navigation }) => ({
-            // title: "Passcodes",
-            headerRight: () => (
-              <HeaderButtons HeaderButtonComponent={HeaderShareButton}>
-                <Item title="share" iconName="share-outline" color="white" onPress={share} />
-              </HeaderButtons>
-            ),
-          })}
         />
         <Stack.Screen
           name="Change Period"
           component={ChangePeriodScreen}
-          options={({ navigation }) => ({
-            // title: "Passcodes",
-            // headerRight: () => (
-            //   <HeaderButtons>
-            //     <Item title="Save" buttonStyle={{ color: "white" }} onPress={async () => {
-            //       const res = await updateCode(undefined, )
-            //     }} />
-            //   </HeaderButtons>
-            // ),
-          })}
         />
         <Stack.Screen
           name="Records"
           component={RecordsScreen}
-          // options={({ navigation }) => ({
-          //   title: "Passcodes",
-          // })}
         />
       </Stack.Navigator>
     </>

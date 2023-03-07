@@ -52,7 +52,7 @@ export class LockHomeScreen extends Component<IProps, IState> {
 
   render() {
     const { lockStore: { locks, unlockOperation, lockOperation, isLoading } } = this.context
-    const lock = locks.find((lock) => lock.lockMac === this.props.route.params.lockMac)
+    const lock = locks.find((lock) => lock.lockId === this.props.route.params.lockId) // TODO move to store
     const { lockId, lockAlias, electricQuantity, featureValue, userType, keyRight, startDate, endDate } = lock
     const isSupportFingerprint = parseFeatureValueWithIndex(featureValue, 2)
     const isSupportRemoteUnlock = parseFeatureValueWithIndex(featureValue, 10)

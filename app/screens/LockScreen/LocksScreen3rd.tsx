@@ -7,7 +7,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import { RootStoreContext } from "../../models"
 import { SimpleAccordion } from "react-native-simple-accordion"
-import { AlertBox, fire } from "react-native-alertbox"
+import { fire } from "react-native-alertbox"
 import Spinner from "react-native-loading-spinner-overlay"
 
 const PlusImage = require("../../../assets/images/plus.jpeg")
@@ -120,7 +120,7 @@ export class LocksScreen extends Component<IProps, IState> {
                 key={lock.lockMac}
                 {...lock}
                 onPress={() =>
-                  this.props.navigation.navigate("Lock Details", { lockMac: lock.lockMac })
+                  this.props.navigation.navigate("Lock Details", { lockId: lock.lockId })
                 }
                 onLongPress={() =>
                   // fire({ TODO complete this part for auth admin
@@ -206,7 +206,6 @@ export class LocksScreen extends Component<IProps, IState> {
         // contentContainerStyle={$screenContentContainer}
       >
         <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
-        <AlertBox />
         <ScrollView
           contentContainerStyle={{ height: "100%" }}
           refreshControl={

@@ -179,7 +179,10 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
             <Button
               style={{ backgroundColor: "skyblue", borderWidth: 0 }}
               textStyle={{ color: "white" }}
-              onPress={() => this.setState({ visible: false, name: "" })}
+              onPress={() => {
+                this.props.route.params.needRefresh()
+                this.setState({ visible: false, name: "" })
+              }}
             >
               Complete
             </Button>

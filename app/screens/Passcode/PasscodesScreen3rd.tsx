@@ -1,14 +1,15 @@
 import React, { Component } from "react"
 import { View, ViewStyle, ImageStyle, RefreshControl, FlatList, Text, Alert } from "react-native"
 import { observer } from "mobx-react"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
+import { HeaderButtons, Item } from "react-navigation-header-buttons"
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
+import { Avatar, ListItem, SearchBar } from "react-native-elements"
+// import { Avatar, ListItem, SearchBar } from "@rneui/themed"
+import moment from "moment-timezone"
 import { Screen, Button } from "../../components"
 import { colors } from "../../theme"
-import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { RootStoreContext } from "../../models"
-import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
-// import { Avatar, ListItem, SearchBar } from "@rneui/themed"
-import { Avatar, ListItem, SearchBar } from "react-native-elements"
-import moment from "moment-timezone"
 
 type RootStackParamList = {
   // "Assign Name": { lockName: string };
@@ -28,6 +29,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
   static contextType = RootStoreContext
   state: IState = {
     searchText: "",
+    shouldRefresh: true,
     currentTimezone: moment.tz.guess(), // TODO unify to a single place and can be updated every time user changes the timezone without quit the app
     // lockList: [],
     // isRefreshing: false,
@@ -36,13 +38,41 @@ export class PasscodesScreen extends Component<IProps, IState> {
 
   componentDidMount() {
     this.context.codeStore.reset() // clean code store at the beginning
-    this.context.codeStore.updateLockId(this.props.route.params.lockId)
+    this.props.navigation.setOptions({
+      headerRight: () => (
+        <HeaderButtons>
+          <Item title="Reset" buttonStyle={{ color: "white" }}
+                onPress={() => Alert.alert("ALL Passcodes for this Lock will be DELETED", undefined, [
+                  {
+                    text: "Cancel",
+                    onPress: () => console.log("Cancel Pressed"),
+                    style: "cancel",
+                  },
+                  {
+                    text: "Reset",
+                    onPress: async () => {
+                      const res = await this.context.codeStore.resetAllCodes(this.props.route.params.lockId)
+                      // if (res) this.props.navigation.goBack()
+                    },
+                  },
+                ])} />
+        </HeaderButtons>
+      ),
+    })
     this.unsubscribe = this.props.navigation.addListener('focus', () => { // auto refresh after delete a code
+      this.context.codeStore.updateLockId(this.props.route.params.lockId)
+      this.state.shouldRefresh && this.loadCodes()
+      this.setState({ shouldRefresh: false })
       this.forceUpdate()
     });
     // this.props.navigation.setParams({ forceUpdate: this.forceUpdate }); // TODO doesn't work
     this.loadCodes()
   }
+
+  needRefresh = () => {
+    this.setState({ shouldRefresh: true })
+  }
+
 
   componentWillUnmount() {
     this.unsubscribe()
@@ -274,6 +304,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
               onPress={() =>
                 this.props.navigation.navigate("Generate Passcode", {
                   lockId: this.props.route.params.lockId,
+                  needRefresh: this.needRefresh
                 })
               }
             >
