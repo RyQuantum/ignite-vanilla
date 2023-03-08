@@ -205,9 +205,7 @@ export class LocksScreen extends Component<IProps, IState> {
         // safeAreaEdges={["bottom"]}
         // contentContainerStyle={$screenContentContainer}
       >
-        <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
         <ScrollView
-          contentContainerStyle={{ height: "100%" }}
           refreshControl={
             <RefreshControl refreshing={isRefreshing} onRefresh={this.loadLocks} />
           }>

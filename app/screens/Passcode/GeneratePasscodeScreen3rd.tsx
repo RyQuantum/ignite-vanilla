@@ -12,8 +12,6 @@ import { Text, Screen, Button } from "../../components"
 import { RootStoreContext } from "../../models"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
-import Spinner from "react-native-loading-spinner-overlay"
-import { Picker } from "@react-native-picker/picker"
 import ModalSelector from "react-native-modal-selector"
 import Share from "react-native-share"
 // const PlusImage = require("../../../assets/images/plus.jpeg")
@@ -252,13 +250,11 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
             <>
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Name</ListItem.Title>
-                <ListItem.Content>
-                  <ListItem.Input
-                    value={this.state.name}
-                    onChangeText={(name) => this.setState({ name })}
-                    placeholder="Enter a name for this passcode"
-                  />
-                </ListItem.Content>
+                <ListItem.Input
+                  value={this.state.name}
+                  onChangeText={(name) => this.setState({ name })}
+                  placeholder="Enter a name for this passcode"
+                />
               </ListItem>
               <Text size="xs" style={{ padding: 10, color: colors.palette.neutral500 }}>
                 This passcode MUST BE used at least Once, within 24 Hours from Current Time, or it
@@ -305,13 +301,11 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
               <DemoDivider />
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Name</ListItem.Title>
-                <ListItem.Content>
-                  <ListItem.Input
-                    value={this.state.name}
-                    onChangeText={(name) => this.setState({ name })}
-                    placeholder="Enter a name for this passcode"
-                  />
-                </ListItem.Content>
+                <ListItem.Input
+                  value={this.state.name}
+                  onChangeText={(name) => this.setState({ name })}
+                  placeholder="Enter a name for this passcode"
+                />
               </ListItem>
               <Text size="xs" style={{ padding: 10, color: colors.palette.neutral500 }}>
                 This passcode can be used for unlimited times within the validity period.{"\n"}This
@@ -325,13 +319,11 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
             <>
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Name</ListItem.Title>
-                <ListItem.Content>
-                  <ListItem.Input
-                    value={this.state.name}
-                    onChangeText={(name) => this.setState({ name })}
-                    placeholder="Enter a name for this passcode"
-                  />
-                </ListItem.Content>
+                <ListItem.Input
+                  value={this.state.name}
+                  onChangeText={(name) => this.setState({ name })}
+                  placeholder="Enter a name for this passcode"
+                />
               </ListItem>
               <Text size="xs" style={{ padding: 10, color: colors.palette.neutral500 }}>
                 This passcode MUST BE used within 6 Hours from the Current Time or it will be
@@ -389,18 +381,15 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
               <DemoDivider />
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Name</ListItem.Title>
-                <ListItem.Content>
-                  <ListItem.Input
-                    value={this.state.name}
-                    onChangeText={(name) => this.setState({ name })}
-                    placeholder="Enter a name for this passcode"
-                  />
-                </ListItem.Content>
+                <ListItem.Input
+                  value={this.state.name}
+                  onChangeText={(name) => this.setState({ name })}
+                  placeholder="Enter a name for this passcode"
+                />
               </ListItem>
               <DemoDivider />
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Passcode</ListItem.Title>
-                <ListItem.Content />
                 <ListItem.Input
                   value={this.state.passcode}
                   onChangeText={(passcode) => this.setState({ passcode })}
@@ -459,13 +448,11 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
               <DemoDivider />
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Name</ListItem.Title>
-                <ListItem.Content>
-                  <ListItem.Input
-                    value={this.state.name}
-                    onChangeText={(name) => this.setState({ name })}
-                    placeholder="Enter a name for this passcode"
-                  />
-                </ListItem.Content>
+                <ListItem.Input
+                  value={this.state.name}
+                  onChangeText={(name) => this.setState({ name })}
+                  placeholder="Enter a name for this passcode"
+                />
               </ListItem>
               <DemoDivider />
               <Text size="xs" style={{ padding: 10, color: colors.palette.neutral500 }}>
@@ -479,13 +466,11 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
             <>
               <ListItem topDivider bottomDivider>
                 <ListItem.Title>Name</ListItem.Title>
-                <ListItem.Content>
-                  <ListItem.Input
-                    value={this.state.name}
-                    onChangeText={(name) => this.setState({ name })}
-                    placeholder="Enter a name for this passcode"
-                  />
-                </ListItem.Content>
+                <ListItem.Input
+                  value={this.state.name}
+                  onChangeText={(name) => this.setState({ name })}
+                  placeholder="Enter a name for this passcode"
+                />
               </ListItem>
               <Text size="xs" style={{ padding: 10, color: colors.palette.neutral500 }}>
                 This passcode is VALID for 24 Hours from the Current Time.{"\n"}Caution - All
@@ -507,15 +492,28 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
           isVisible={this.state.dateVisible}
           mode="date"
           date={this.state.date}
+          minimumDate={new Date()}
+          maximumDate={new Date(new Date().setFullYear(new Date().getFullYear() + 3))}
           onConfirm={(date) => {
             console.log("A date has been picked: ", date.toLocaleDateString("en-CA"))
             const newState = { dateVisible: false }
             if (this.state.isStart) {
               newState.hour = parseInt(this.state.startTime.slice(0, 2)).toString()
               newState.startDate = date.toLocaleDateString("en-CA")
+              const start = new Date(`${date.toLocaleDateString("en-CA")} ${this.state.startTime}`)
+              if (start >= new Date(`${this.state.endDate} ${this.state.endTime}`)) {
+                const end = new Date(new Date(date).setHours(date.getHours() + 1))
+                newState.endDate = end.toLocaleDateString("en-CA")
+                newState.endTime = end.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00"
+              }
             } else {
               newState.hour = parseInt(this.state.endTime.slice(0, 2)).toString()
               newState.endDate = date.toLocaleDateString("en-CA")
+              const end = new Date(`${date.toLocaleDateString("en-CA")} ${this.state.endTime}`)
+              if (end <= new Date(`${this.state.startDate} ${this.state.startTime}`)) {
+                const start = new Date(new Date(end).setHours(end.getHours() - 1))
+                newState.startDate = start.toLocaleDateString("en-CA")
+                newState.startTime = start.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00"              }
             }
             this.setState(newState, () => {
               setTimeout(() => this.TimePicker.open(), 300)
@@ -528,11 +526,20 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
           minuteInterval={60}
           selectedHour={this.state.hour}
           onConfirm={(hour, minute) => {
-            console.log(hour)
             if (this.state.isStart) {
               this.setState({ startTime: hour.padStart(2, "0") + ":00" })
+              const start = new Date(`${this.state.startDate} ${hour.padStart(2, "0") + ":00"}`)
+              if (start >= new Date(`${this.state.endDate} ${this.state.endTime}`)) {
+                const end = new Date(new Date(start).setHours(start.getHours() + 1))
+                this.setState({ endDate: end.toLocaleDateString("en-CA"), endTime: end.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" })
+              }
             } else {
               this.setState({ endTime: hour.padStart(2, "0") + ":00" })
+              const end = new Date(`${this.state.endDate} ${hour.padStart(2, "0") + ":00"}`)
+              if (end <= new Date(`${this.state.startDate} ${this.state.startTime}`)) {
+                const start = new Date(new Date(end).setHours(end.getHours() - 1))
+                this.setState({ startDate: start.toLocaleDateString("en-CA"), startTime: start.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" })
+              }
             }
             this.TimePicker.close()
           }}

@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { View, ViewStyle, ImageStyle, RefreshControl, FlatList, Text, Alert } from "react-native"
+import { View, ViewStyle, ImageStyle, RefreshControl, FlatList, Text, Alert, Image } from "react-native"
 import { observer } from "mobx-react"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { HeaderButtons, Item } from "react-navigation-header-buttons"
@@ -10,6 +10,8 @@ import moment from "moment-timezone"
 import { Screen, Button } from "../../components"
 import { colors } from "../../theme"
 import { RootStoreContext } from "../../models"
+
+const noData = require("../../../assets/images/noData2nd.png")
 
 type RootStackParamList = {
   // "Assign Name": { lockName: string };
@@ -199,25 +201,29 @@ export class PasscodesScreen extends Component<IProps, IState> {
                   topDivider
                   bottomDivider
                   onPress={() => this.props.navigation.navigate("Passcode Info", { codeId })}
-                  onLongPress={() => Alert.alert("Delete?", undefined, [
-                    {
-                      text: "Cancel",
-                      onPress: () => console.log("Cancel Pressed"),
-                      style: "cancel",
-                    },
-                    {
-                      text: "Delete",
-                      onPress: async () => {
-                        const res = await deleteCode(item.lockId, item.keyboardPwdId)
-                        // if (res) this.props.navigation.goBack()
+                  onLongPress={() =>
+                    Alert.alert("Delete?", undefined, [
+                      {
+                        text: "Cancel",
+                        onPress: () => console.log("Cancel Pressed"),
+                        style: "cancel",
                       },
-                    },
-                  ])}
-                  rightContent={ // TODO integrate swipe function for better user experience
+                      {
+                        text: "Delete",
+                        onPress: async () => {
+                          const res = await deleteCode(item.lockId, item.keyboardPwdId)
+                          // if (res) this.props.navigation.goBack()
+                        },
+                      },
+                    ])
+                  }
+                  rightContent={
+                    // TODO integrate swipe function for better user experience
                     <Button
                       style={{ minHeight: "100%", backgroundColor: "red" }}
                       textStyle={{ color: "white" }}
-                      onPress={() => { // TODO execute item "close" function in the meanwhile of alert
+                      onPress={() => {
+                        // TODO execute item "close" function in the meanwhile of alert
                         Alert.alert("Delete?", undefined, [
                           {
                             text: "Cancel",
@@ -255,7 +261,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
                           justifyContent: "space-between",
                           alignItems: "center",
                           width: "100%",
-                          minWidth: 260
+                          minWidth: 260,
                         }}
                       >
                         <Text style={{ fontSize: 18 }}>
@@ -269,9 +275,15 @@ export class PasscodesScreen extends Component<IProps, IState> {
                     </ListItem.Subtitle>
                   </ListItem.Content>
                 </ListItem>
-              // </ListItem.Swipeable>
+                // </ListItem.Swipeable>
               )
             }}
+            ListEmptyComponent={
+              <View style={{ height: 500, justifyContent: "center", alignItems: "center" }}>
+                <Image resizeMode="center" source={noData} style={{ height: 100 }} />
+                <Text style={{ color: colors.palette.neutral400 }}>No Data</Text>
+              </View>
+            }
             contentContainerStyle={{ paddingBottom: 80 }}
           />
           <View
@@ -304,7 +316,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
               onPress={() =>
                 this.props.navigation.navigate("Generate Passcode", {
                   lockId: this.props.route.params.lockId,
-                  needRefresh: this.needRefresh
+                  needRefresh: this.needRefresh,
                 })
               }
             >
