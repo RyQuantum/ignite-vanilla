@@ -17,7 +17,6 @@ import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import { RootStoreContext } from "../../models"
 import { observer } from "mobx-react"
 import { parseFeatureValueWithIndex } from "../../utils/ttlock2nd"
-import Spinner from "react-native-loading-spinner-overlay"
 
 const UnlockImage = require("../../../assets/images/UnlockImageIcon2nd.png")
 const RemoteUnlockImage = require("../../../assets/images/remoteUnlock2nd.png")

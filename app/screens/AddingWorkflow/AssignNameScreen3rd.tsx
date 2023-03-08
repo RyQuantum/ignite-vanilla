@@ -5,7 +5,6 @@ import { CustomButton, Screen, Text, TextField } from "../../components"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import { spacing } from "../../theme"
 import { RootStoreContext } from "../../models"
-import Spinner from "react-native-loading-spinner-overlay"
 import { observer } from "mobx-react"
 
 type RootStackParamList = {
