@@ -37,6 +37,7 @@ interface IState {
 @observer
 export class LockHomeScreen extends Component<IProps, IState> {
   static contextType = RootStoreContext
+  declare context: React.ContextType<typeof RootStoreContext>
   state: IState = {
     // lockInfo: this.props.route.params.lock,
     // lockIndex: this.props.route.params.lockIndex,
@@ -51,7 +52,7 @@ export class LockHomeScreen extends Component<IProps, IState> {
   }
 
   render() {
-    const { lockStore: { locks, unlockOperation, lockOperation, isLoading } } = this.context
+    const { lockStore: { locks, unlockOperation, lockOperation } } = this.context
     const lock = locks.find((lock) => lock.lockId === this.props.route.params.lockId) // TODO move to store
     const { lockId, lockAlias, electricQuantity, featureValue, userType, keyRight, startDate, endDate } = lock
     const isSupportFingerprint = parseFeatureValueWithIndex(featureValue, 2)
@@ -64,7 +65,6 @@ export class LockHomeScreen extends Component<IProps, IState> {
 
     return (
       <>
-        <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
         {dayLeft !== Infinity && dayLeft >= 0 && dayLeft < 16 && (
           <View
             style={{

@@ -7,6 +7,7 @@ const plugins = [
   ],
   ["@babel/plugin-proposal-optional-catch-binding"],
   "react-native-reanimated/plugin", // NOTE: this must be last in the plugins
+  ["@babel/plugin-transform-flow-strip-types", { allowDeclareFields: true }],
 ]
 
 module.exports = {

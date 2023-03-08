@@ -24,6 +24,7 @@ interface IState {
 @observer
 export class AssignNameScreen extends Component<IProps, IState> {
   static contextType = RootStoreContext
+  declare context: React.ContextType<typeof RootStoreContext>
   state: IState = {
     // lockData: this.props.route.params.lockData,
     lockAlias: this.props.route.params.lockName,
@@ -39,7 +40,7 @@ export class AssignNameScreen extends Component<IProps, IState> {
   }
 
   render() {
-    const { lockStore: { rename, isLoading } } = this.context
+    const { lockStore: { rename } } = this.context
 
     return (
       <Screen
@@ -47,7 +48,6 @@ export class AssignNameScreen extends Component<IProps, IState> {
         safeAreaEdges={["top", "bottom"]}
         contentContainerStyle={$screenContentContainer}
       >
-        <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
         <View>
           <Text style={$text}>Success. Assign a name</Text>
           <DemoDivider size={48} />

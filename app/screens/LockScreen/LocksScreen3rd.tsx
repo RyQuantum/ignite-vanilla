@@ -28,6 +28,7 @@ interface IState {
 @observer
 export class LocksScreen extends Component<IProps, IState> {
   static contextType = RootStoreContext
+  declare context: React.ContextType<typeof RootStoreContext>
   state: IState = {
     // lockList: [],
     // isLoading: false,
@@ -49,7 +50,7 @@ export class LocksScreen extends Component<IProps, IState> {
 
   render() {
     const {
-      lockStore: { verifyPassword, deleteLock, lockGroups, isLoading, isRefreshing },
+      lockStore: { verifyPassword, deleteLock, lockGroups, isRefreshing },
     } = this.context
 
     let content;

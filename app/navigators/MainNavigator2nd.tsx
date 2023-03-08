@@ -1,9 +1,8 @@
-import React, { useState } from "react"
-import { View, Text, ActivityIndicator, ViewStyle, Alert } from "react-native"
+import React from "react"
+import { View, Text, ActivityIndicator, ViewStyle } from "react-native"
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
-import Ionicon from "react-native-vector-icons/Ionicons"
 import { HeaderButton, HeaderButtons, Item } from "react-navigation-header-buttons"
 import { CustomButton, Screen } from "../components"
 import { spacing } from "../theme"
@@ -42,12 +41,13 @@ const Stack = createStackNavigator();
 
 const LocksNavigator = observer(function (_props) {
   const {
-    codeStore: { isLoading }, // TODO each module has an "isLoading", how to organize them?
+    codeStore: { isLoading: isCodeLoading },
+    lockStore: { isLoading: isLockLoading },
   } = useStores()
 
   return (
     <>
-      <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
+      <Spinner visible={isCodeLoading || isLockLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
       <Stack.Navigator
         screenOptions={{
           // headerShown: true,
@@ -77,7 +77,7 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Lock Details"
           component={LockHomeScreen}
-          options={({ navigation }) => ({ title: "Sifely" })}
+          options={() => ({ title: "Sifely" })}
         />
         <Stack.Screen
           name="Passcodes"
@@ -106,10 +106,6 @@ const LocksNavigator = observer(function (_props) {
 
 const HeaderBackButton = (props) => {
   return <HeaderButton IconComponent={Icon} iconSize={23} {...props} />
-}
-
-const HeaderShareButton = (props) => {
-  return <HeaderButton IconComponent={Ionicon} iconSize={23} {...props} />
 }
 
 function AddingLockNavigator() {

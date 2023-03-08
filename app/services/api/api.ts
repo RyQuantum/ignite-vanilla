@@ -16,7 +16,9 @@ import Config from "../../config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem" // @demo remove-current-line
 import type {
   ApiConfig,
-  ApiFeedResponse, ApiLoginResponse, // @demo remove-current-line
+  ApiFeedResponse,
+  ApiGetKeyListResponse,
+  ApiLoginResponse, // @demo remove-current-line
 } from "./api.types"
 import type { EpisodeSnapshotIn } from "../../models/Episode" // @demo remove-current-line
 
@@ -102,7 +104,6 @@ export class Api {
   }
   // @demo remove-block-end
 
-  @parseResult()
   async sendVerificationCode(countryCode: string, contactInfo: { email?: string; mobile?: string }) {
     const body = { countryCode, twilioType: "1", ...contactInfo }
     const response = await this.apisauce.post( // TODO ApiGetVerificationCodeResponse
@@ -115,10 +116,9 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async register(contactInfo: { mobile?: string; phone?: string }, countryCode: string, password: string, verificationCode: string) {
     const uniqueid = await getUniqueId() // TODO uid should be discussed
     const body: { countryCode: string, password: string, verificationCode: string, uniqueid: string, date: number, mobile?: string, email?: string } = {
@@ -138,10 +138,9 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async login(username: string, password: string) {
     const response: ApiResponse<ApiLoginResponse> = await this.apisauce.post(
       "user/login",
@@ -155,23 +154,21 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
-  async getKeyList(pageNo = 1, pageSize = 20) { // TODO support pagination
+  async getKeyList(pageNo = 1, pageSize = 100) { // TODO support pagination
     const formData = new FormData()
     formData.append("pageNo", pageNo.toString())
     formData.append("pageSize", pageSize.toString())
     formData.append("date", Date.now().toString())
-    const response = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
+    const response: ApiResponse<ApiGetKeyListResponse> = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
       "key/list",
       formData
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async initialize(lockData: string, lockAlias: string) {
     const response = await this.apisauce.post(
       "lock/initialize",
@@ -187,10 +184,9 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async rename(lockId: number, lockAlias: string) {
     const response = await this.apisauce.post(
       "lock/rename",
@@ -206,10 +202,9 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async getCodeList(lockId: number, pageNo = 1, pageSize = 20) {
     const formData = new FormData()
     formData.append("lockId", lockId.toString())
@@ -220,10 +215,9 @@ export class Api {
       "lock/listKeyboardPwd",
       formData
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async addCode(lockId: number, keyboardPwd: string, keyboardPwdName: string, startDate: number, endDate: number, addType: number) {
     const body: { lockId: number, keyboardPwd: string, keyboardPwdName?: string, startDate: number, endDate: number, addType: number, date: number } = {
       lockId,
@@ -246,10 +240,9 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async generateCode(lockId: number, keyboardPwdType: number, keyboardPwdName: string, startDate: number, endDate?: number) {
     const body: { lockId: number, keyboardPwdType: number, keyboardPwdName?: string, startDate: number, endDate?: number, date: number } = {
       lockId,
@@ -273,10 +266,9 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async updateCode(lockId: number, keyboardPwdId: number, keyboardPwdName?: string, newKeyboardPwd?: string, startDate?: number, endDate?: number, changeType?: number) {
     const body: { lockId: number, keyboardPwdId: number, keyboardPwdName?: string, newKeyboardPwd?: string, startDate?: number, endDate?: number, changeType?: number, date: number } = {
       lockId,
@@ -308,10 +300,9 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async deleteCode(lockId: number, keyboardPwdId: number, deleteType: number) {
     const response = await this.apisauce.post(
       "keyboardPwd/delete",
@@ -328,10 +319,9 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async updateLock(lockId: number, lockData: string) {
     const response = await this.apisauce.post(
       "lock/updateLockData",
@@ -347,10 +337,9 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 
-  @parseResult()
   async deleteLock(keyId: number) {
     const response = await this.apisauce.post(
       "key/delete",
@@ -364,27 +353,21 @@ export class Api {
         }
       }
     )
-    return response
+    return parseResponse(response)
   }
 }
 
-function parseResult() {
-  return (target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<(... params: any[])=> Promise<any>>) => {
-    const oldFunc = descriptor.value;
-    descriptor.value = async function (){
-      const response = await oldFunc.apply(this, arguments);
-      if (!response.ok) {
-        const problem = getGeneralApiProblem(response)
-        if (problem) {
-          return { ...problem, msg: response.originalError.message }
-        }
-      }
-      if (response.data?.code === 200) {
-        return { kind: "ok", data: response.data.data }
-      } else {
-        return { kind: "bad", ...response.data }
-      }
+function parseResponse(response) {
+  if (!response.ok) {
+    const problem = getGeneralApiProblem(response)
+    if (problem) {
+      return { ...problem, msg: response.originalError.message }
     }
+  }
+  if (response.data?.code === 200) {
+    return { kind: "ok", data: response.data.data }
+  } else {
+    return { kind: "bad", ...response.data }
   }
 }
 

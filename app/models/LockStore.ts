@@ -36,7 +36,7 @@ export const LockStoreModel = types
   .actions((store) => ({
     async getKeyList(): Promise<object[]> {
       store.isRefreshing = true
-      const res: any = await api.getKeyList() // TODO add pagination
+      const res = await api.getKeyList() // TODO add pagination
       store.setProp("isRefreshing", false)
       switch (res.kind) {
         case "ok":

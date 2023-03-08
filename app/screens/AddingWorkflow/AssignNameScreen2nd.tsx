@@ -9,7 +9,7 @@ import { useStores } from "../../models"
 
 export const AssignNameScreen: FC<any> = observer(function AssignNameScreen(props) {
 
-  const { lockStore: { rename, isLoading } } = useStores()
+  const { lockStore: { rename } } = useStores()
   const [lockAlias, setLockAlias] = useState(props.route.params.lockName)
 
   useEffect(() => {
@@ -25,7 +25,6 @@ export const AssignNameScreen: FC<any> = observer(function AssignNameScreen(prop
       safeAreaEdges={["top", "bottom"]}
       contentContainerStyle={$screenContentContainer}
     >
-      <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
       <View>
         <Text style={$text}>Success. Assign a name</Text>
         <DemoDivider size={48} />

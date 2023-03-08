@@ -27,6 +27,7 @@ interface IState {
 @observer
 export class ChangePeriodScreen extends Component<IProps, IState> {
   static contextType = RootStoreContext
+  declare context: React.ContextType<typeof RootStoreContext>
   state: IState = {
     date: new Date(), // for datetime modal picker
     hour: "0",

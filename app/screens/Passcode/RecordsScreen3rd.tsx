@@ -26,6 +26,7 @@ interface IState {
 @observer
 export class RecordsScreen extends Component<IProps, IState> {
   static contextType = RootStoreContext
+  declare context: React.ContextType<typeof RootStoreContext>
   state: IState = {
     searchText: "",
     // lockList: [],

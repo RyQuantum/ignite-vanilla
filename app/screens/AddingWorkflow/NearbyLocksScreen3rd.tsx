@@ -26,6 +26,7 @@ interface IState {
 
 export class NearbyLocksScreen extends Component<IProps, IState> {
   static contextType = RootStoreContext
+  declare context: React.ContextType<typeof RootStoreContext>
   state: IState = {
     isLoading: false,
     lockList: [],

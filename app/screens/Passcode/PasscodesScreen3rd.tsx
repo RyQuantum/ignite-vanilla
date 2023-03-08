@@ -29,6 +29,7 @@ interface IState {
 @observer
 export class PasscodesScreen extends Component<IProps, IState> {
   static contextType = RootStoreContext
+  declare context: React.ContextType<typeof RootStoreContext>
   state: IState = {
     searchText: "",
     shouldRefresh: true,
@@ -279,7 +280,7 @@ export class PasscodesScreen extends Component<IProps, IState> {
               )
             }}
             ListEmptyComponent={
-              <View style={{ height: 500, justifyContent: "center", alignItems: "center" }}>
+              <View style={{ height: 400, justifyContent: "center", alignItems: "center" }}>
                 <Image resizeMode="center" source={noData} style={{ height: 100 }} />
                 <Text style={{ color: colors.palette.neutral400 }}>No Data</Text>
               </View>

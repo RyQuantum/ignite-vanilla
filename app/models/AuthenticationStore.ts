@@ -153,7 +153,7 @@ export const AuthenticationStoreModel = types
 
     async login() {
       store.isLoading = true
-      const res: any = await api.login(store.authEmail, stringMd5(store.authPassword))
+      const res = await api.login(store.authEmail, stringMd5(store.authPassword))
       store.setProp("isLoading", false)
       switch (res.kind) {
         case "ok":

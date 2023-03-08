@@ -49,6 +49,52 @@ export interface ApiLoginResponse {
     email: string
   }
 }
+
+type Key = {
+  "date": number,
+  "specialValue": number,
+  "lockAlias": string,
+  "keyStatus": "110401" | string,
+  "endDate": number,
+  "noKeyPwd": string,
+  "keyId": number,
+  "lockMac": string,
+  "deletePwd": string,
+  "timezoneRawOffset": number,
+  "featureValue": string,
+  "lockId": number,
+  "electricQuantity": number,
+  "lockData": string,
+  "keyboardPwdVersion": number,
+  "remoteEnable": number,
+  "wirelessKeypadFeatureValue": string,
+  "lockVersion": {
+    "showAdminKbpwdFlag": boolean,
+    "groupId": number,
+    "protocolVersion": number,
+    "protocolType": number,
+    "orgId": number,
+    "logoUrl": string,
+    "scene": number
+  },
+  "userType": "110301" | "110302",
+  "lockName": string,
+  "startDate": number,
+  "remarks": string,
+  "keyRight": number
+}
+export interface ApiGetKeyListResponse {
+  code: number,
+  msg: string,
+  data: {
+    "total": number,
+    "pages": number,
+    "pageNo": number,
+    "pageSize": number,
+    "list": Key[],
+  }
+}
+
 /**
  * The options used to configure apisauce.
  */
