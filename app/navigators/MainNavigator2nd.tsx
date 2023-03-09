@@ -3,12 +3,13 @@ import { View, Text, ActivityIndicator, ViewStyle } from "react-native"
 import { createStackNavigator } from '@react-navigation/stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
+import AntDesignIcon from "react-native-vector-icons/AntDesign"
 import { HeaderButton, HeaderButtons, Item } from "react-navigation-header-buttons"
 import Spinner from "react-native-loading-spinner-overlay"
 import { observer } from "mobx-react"
 import { CustomButton, Screen } from "../components"
 import { spacing } from "../theme"
-import { NearbyLocksScreen, TutorialScreen, AssignNameScreen } from "../screens/AddingWorkflow"
+import { NearbyLocksScreen, TutorialScreen, AssignNameScreen, FAQScreen } from "../screens/AddingWorkflow"
 import { LocksScreen, LockHomeScreen } from "../screens/LockScreen"
 import { PasscodesScreen, PasscodeInfoScreen, ChangePeriodScreen, RecordsScreen } from "../screens/Passcode"
 import { GeneratePasscodeScreen } from "../screens/Passcode/GeneratePasscodeScreen3rd"
@@ -107,24 +108,51 @@ const LocksNavigator = observer(function (_props) {
 const HeaderBackButton = (props) => {
   return <HeaderButton IconComponent={Icon} iconSize={23} {...props} />
 }
+const HeaderQuestionButton = (props) => {
+  return <HeaderButton IconComponent={AntDesignIcon} iconSize={23} {...props} />
+}
 
 const AddingLockNavigator = observer(function AddingLockNavigator() {
-  const { lockStore: { isLoading } } = useStores()
+  const {
+    lockStore: { isLoading },
+  } = useStores()
 
   return (
     <>
       <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+          headerTintColor: "white",
+          headerStyle: { backgroundColor: "skyblue" },
+        }}
+      >
         <Stack.Screen
           name="Tutorial"
           component={TutorialScreen}
           options={({ navigation }) => ({
             headerLeft: () => (
               <HeaderButtons HeaderButtonComponent={HeaderBackButton}>
-                <Item title="back" iconName="arrow-left" onPress={() => {
-                  navigation.navigate("My Locks")
-                  navigation.toggleDrawer()
-                }} />
+                <Item
+                  title="back"
+                  iconName="arrow-left"
+                  color="white"
+                  onPress={() => {
+                    navigation.navigate("My Locks")
+                    navigation.toggleDrawer()
+                  }}
+                />
+              </HeaderButtons>
+            ),
+            headerRight: () => (
+              <HeaderButtons HeaderButtonComponent={HeaderQuestionButton}>
+                <Item
+                  title="back"
+                  iconName="questioncircleo"
+                  color="white"
+                  onPress={() => {
+                    navigation.navigate("FAQ")
+                  }}
+                />
               </HeaderButtons>
             ),
           })}
@@ -132,13 +160,20 @@ const AddingLockNavigator = observer(function AddingLockNavigator() {
         <Stack.Screen
           name="Nearby Locks"
           component={NearbyLocksScreen}
-          options={({ headerRight: () => <View style={{ padding: 24 }}><ActivityIndicator /></View> })}
+          options={{
+            headerRight: () => (
+              <View style={{ padding: 24 }}>
+                <ActivityIndicator color="white" />
+              </View>
+            ),
+          }}
         />
         <Stack.Screen
           name="Assign Name"
           component={AssignNameScreen}
           options={{ headerLeft: () => null, gestureEnabled: false }}
         />
+        <Stack.Screen name="FAQ" component={FAQScreen} />
       </Stack.Navigator>
     </>
   )
