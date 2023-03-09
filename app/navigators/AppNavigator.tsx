@@ -125,3 +125,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
     </NavigationContainer>
   )
 })
+
+// const $registerButton = {
+//   color: 'white',
+// }
