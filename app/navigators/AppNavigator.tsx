@@ -22,9 +22,9 @@ import {
   WelcomeScreen,
 } from "../screens"
 import { DemoNavigator, DemoTabParamList } from "./DemoNavigator" // @demo remove-current-line
-import MainNavigator from "./MainNavigator2nd" // TODO "export default" of "export" needs consistent?
+import { MainNavigator } from "./#MainNavigator" // TODO "export default" of "export" needs consistent?
 import { navigationRef, useBackButtonHandler } from "./navigationUtilities"
-import { LoginNavigator2nd } from "./LoginNavigator2nd"
+import { LoginNavigator } from "./#LoginNavigator"
 import { api } from "../services/api"
 
 /**
@@ -120,7 +120,7 @@ export const AppNavigator = observer(function AppNavigator(props: NavigationProp
       {...props}
     >
       {/* <AppStack /> */}
-      {isAuthenticated ? <MainNavigator /> : <LoginNavigator2nd />}
+      {isAuthenticated ? <MainNavigator /> : <LoginNavigator />}
       {/* <HomeNavigator /> */}
     </NavigationContainer>
   )

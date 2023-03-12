@@ -1,10 +1,10 @@
 import React, { FC, useMemo, useState } from "react"
 import { View, ViewStyle } from "react-native"
 import { observer } from "mobx-react"
-import { Button, Icon as Icon2, Screen, Text, TextField, TextFieldAccessoryProps } from "../components"
-import { colors, spacing } from "../theme"
+import { Button, Icon as Icon2, Screen, Text, TextField, TextFieldAccessoryProps } from "../../components"
+import { colors, spacing } from "../../theme"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
-import { DemoDivider } from "./DemoShowroomScreen/DemoDivider"
+import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 
 export const ResetPasswordScreen: FC<any> = observer(function ResetPasswordScreen(_props) {
 

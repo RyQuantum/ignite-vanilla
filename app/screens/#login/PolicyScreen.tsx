@@ -1,9 +1,9 @@
 import React, { FC } from "react"
 import { ViewStyle } from "react-native"
 import { observer } from "mobx-react"
-import { Text, Screen } from "../components"
-import { spacing } from "../theme"
-import { DemoDivider } from "./DemoShowroomScreen/DemoDivider"
+import { Text, Screen } from "../../components"
+import { spacing } from "../../theme"
+import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 
 export const PolicyScreen: FC<any> = observer(function PolicyScreen(_props) {
   return (

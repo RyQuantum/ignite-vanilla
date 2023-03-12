@@ -16,7 +16,7 @@ import {
   RegisterScreen,
   ForgetPasswordScreen,
   ResetPasswordScreen,
-} from "../screens"
+} from "../screens/#login"
 import { DemoTabParamList } from "./DemoNavigator" // @demo remove-current-line
 import { HeaderButtons, Item } from "react-navigation-header-buttons" // TODO "export default" of "export" needs consistent?
 import { useStores } from "../models"
@@ -59,7 +59,7 @@ export type AppStackScreenProps<T extends keyof AppStackParamList> = StackScreen
 // Documentation: https://reactnavigation.org/docs/stack-navigator/
 const Stack = createNativeStackNavigator<AppStackParamList>()
 
-export const LoginNavigator2nd = observer(function LoginNavigator() {
+export const LoginNavigator = observer(function LoginNavigator() {
   // @demo remove-block-start
   const {
     authenticationStore: { isLoading },

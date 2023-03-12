@@ -1,13 +1,13 @@
 import React, { FC, useMemo, useRef, useState } from "react"
 import { observer } from "mobx-react"
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Icon as Icon2, Screen, TextField, Toggle, TextFieldAccessoryProps, CustomButton } from "../components"
+import { Icon as Icon2, Screen, TextField, Toggle, TextFieldAccessoryProps, CustomButton } from "../../components"
 import { Image, ImageStyle, TextInput, Text, TextStyle, ViewStyle, View } from "react-native"
-import { colors, spacing } from "../theme"
-import { useStores } from "../models"
-import { DemoDivider } from "./DemoShowroomScreen/DemoDivider"
+import { colors, spacing } from "../../theme"
+import { useStores } from "../../models"
+import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 
-const reactNativeRadioLogo = require("../../assets/images/logo2nd.png")
+const reactNativeRadioLogo = require("../../../assets/images/logo2nd.png")
 // TODO use correct logo image
 
 export const LoginScreen: FC<any> = observer(function LoginScreen(props) {

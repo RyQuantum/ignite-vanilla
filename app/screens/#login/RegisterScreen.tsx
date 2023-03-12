@@ -13,10 +13,10 @@ import {
   TextFieldAccessoryProps,
   Text as StyledText,
   CustomButton,
-} from "../components"
-import { colors, spacing } from "../theme"
-import { DemoDivider } from "./DemoShowroomScreen/DemoDivider"
-import { useStores } from "../models"
+} from "../../components"
+import { colors, spacing } from "../../theme"
+import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
+import { useStores } from "../../models"
 
 export const RegisterScreen: FC<any> = observer(function RegisterScreen(props) {
   const [selectedIndex, setSelectedIndex] = useState(0);

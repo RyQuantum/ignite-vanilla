@@ -9,10 +9,9 @@ import Spinner from "react-native-loading-spinner-overlay"
 import { observer } from "mobx-react"
 import { CustomButton, Screen } from "../components"
 import { spacing } from "../theme"
-import { NearbyLocksScreen, TutorialScreen, AssignNameScreen, FAQScreen } from "../screens/AddingWorkflow"
-import { LocksScreen, LockHomeScreen } from "../screens/LockScreen"
-import { PasscodesScreen, PasscodeInfoScreen, ChangePeriodScreen, RecordsScreen } from "../screens/Passcode"
-import { GeneratePasscodeScreen } from "../screens/Passcode/GeneratePasscodeScreen3rd"
+import { NearbyLocksScreen, TutorialScreen, AssignNameScreen, FAQScreen } from "../screens/#addingLock"
+import { LocksScreen, LockHomeScreen } from "../screens/#lock"
+import { PasscodesScreen, PasscodeInfoScreen, ChangePeriodScreen, RecordsScreen, GeneratePasscodeScreen } from "../screens/#passcode"
 import { useStores } from "../models"
 
 function Settings({ navigation }) {
@@ -200,7 +199,7 @@ function SettingsNavigator() {
   );
 }
 
-export default function MainNavigator() {
+export function MainNavigator() {
   return (
     <Drawer.Navigator
       // useLegacyImplementation
