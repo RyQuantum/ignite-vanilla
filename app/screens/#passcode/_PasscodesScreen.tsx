@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { View, ViewStyle, ImageStyle, RefreshControl, FlatList, Text, Alert, Image } from "react-native"
+import { View, ViewStyle, RefreshControl, FlatList, Text, Alert, Image } from "react-native"
 import { observer } from "mobx-react"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { HeaderButtons, Item } from "react-navigation-header-buttons"
@@ -92,11 +92,11 @@ export class PasscodesScreen extends Component<IProps, IState> {
     return moment(timestamp).tz(this.state.currentTimezone).format("YYYY.MM.DD HH:mm")
   }
 
-  convertTimeStampWithoutTime = (timestamp: number) => {
+  convertTimeStampToDate = (timestamp: number) => {
     return moment(timestamp).tz(this.state.currentTimezone).format("YYYY.MM.DD")
   }
 
-  parseTimeOfTimeStamp = (timestamp: number) => {
+  convertTimeStampToTime = (timestamp: number) => {
     return moment(timestamp).tz(this.state.currentTimezone).format("HH:mm")
   }
 
@@ -111,25 +111,25 @@ export class PasscodesScreen extends Component<IProps, IState> {
       case 4:
         return `${this.convertTimeStamp(code.startDate)} Erase`
       case 5:
-        return `${this.convertTimeStampWithoutTime(code.startDate)} Weekend ${this.parseTimeOfTimeStamp(code.startDate)} - ${this.parseTimeOfTimeStamp(code.endDate)} Recurring`
+        return `${this.convertTimeStampToDate(code.startDate)} Weekend ${this.convertTimeStampToTime(code.startDate)} - ${this.convertTimeStampToTime(code.endDate)} Recurring`
       case 6:
-        return `${this.convertTimeStampWithoutTime(code.startDate)} Daily ${this.parseTimeOfTimeStamp(code.startDate)} - ${this.parseTimeOfTimeStamp(code.endDate)} Recurring`
+        return `${this.convertTimeStampToDate(code.startDate)} Daily ${this.convertTimeStampToTime(code.startDate)} - ${this.convertTimeStampToTime(code.endDate)} Recurring`
       case 7:
-        return `${this.convertTimeStampWithoutTime(code.startDate)} Workday ${this.parseTimeOfTimeStamp(code.startDate)} - ${this.parseTimeOfTimeStamp(code.endDate)} Recurring`
+        return `${this.convertTimeStampToDate(code.startDate)} Workday ${this.convertTimeStampToTime(code.startDate)} - ${this.convertTimeStampToTime(code.endDate)} Recurring`
       case 8:
-        return `${this.convertTimeStampWithoutTime(code.startDate)} Monday ${this.parseTimeOfTimeStamp(code.startDate)} - ${this.parseTimeOfTimeStamp(code.endDate)} Recurring`
+        return `${this.convertTimeStampToDate(code.startDate)} Monday ${this.convertTimeStampToTime(code.startDate)} - ${this.convertTimeStampToTime(code.endDate)} Recurring`
       case 9:
-        return `${this.convertTimeStampWithoutTime(code.startDate)} Tuesday ${this.parseTimeOfTimeStamp(code.startDate)} - ${this.parseTimeOfTimeStamp(code.endDate)} Recurring`
+        return `${this.convertTimeStampToDate(code.startDate)} Tuesday ${this.convertTimeStampToTime(code.startDate)} - ${this.convertTimeStampToTime(code.endDate)} Recurring`
       case 10:
-        return `${this.convertTimeStampWithoutTime(code.startDate)} Wednesday ${this.parseTimeOfTimeStamp(code.startDate)} - ${this.parseTimeOfTimeStamp(code.endDate)} Recurring`
+        return `${this.convertTimeStampToDate(code.startDate)} Wednesday ${this.convertTimeStampToTime(code.startDate)} - ${this.convertTimeStampToTime(code.endDate)} Recurring`
       case 11:
-        return `${this.convertTimeStampWithoutTime(code.startDate)} Thursday ${this.parseTimeOfTimeStamp(code.startDate)} - ${this.parseTimeOfTimeStamp(code.endDate)} Recurring`
+        return `${this.convertTimeStampToDate(code.startDate)} Thursday ${this.convertTimeStampToTime(code.startDate)} - ${this.convertTimeStampToTime(code.endDate)} Recurring`
       case 12:
-        return `${this.convertTimeStampWithoutTime(code.startDate)} Friday ${this.parseTimeOfTimeStamp(code.startDate)} - ${this.parseTimeOfTimeStamp(code.endDate)} Recurring`
+        return `${this.convertTimeStampToDate(code.startDate)} Friday ${this.convertTimeStampToTime(code.startDate)} - ${this.convertTimeStampToTime(code.endDate)} Recurring`
       case 13:
-        return `${this.convertTimeStampWithoutTime(code.startDate)} Saturday ${this.parseTimeOfTimeStamp(code.startDate)} - ${this.parseTimeOfTimeStamp(code.endDate)} Recurring`
+        return `${this.convertTimeStampToDate(code.startDate)} Saturday ${this.convertTimeStampToTime(code.startDate)} - ${this.convertTimeStampToTime(code.endDate)} Recurring`
       case 14:
-        return `${this.convertTimeStampWithoutTime(code.startDate)} Sunday ${this.parseTimeOfTimeStamp(code.startDate)} - ${this.parseTimeOfTimeStamp(code.endDate)} Recurring`
+        return `${this.convertTimeStampToDate(code.startDate)} Sunday ${this.convertTimeStampToTime(code.startDate)} - ${this.convertTimeStampToTime(code.endDate)} Recurring`
       default:
         return `Invalid keyboardPwdType: ${code.keyboardPwdType}`
     }
@@ -197,7 +197,6 @@ export class PasscodesScreen extends Component<IProps, IState> {
             renderItem={({ item, index }) => {
               const codeId = item.keyboardPwdId
               return (
-                // <ListItem.Swipeable
                 <ListItem
                   topDivider
                   bottomDivider
@@ -217,30 +216,6 @@ export class PasscodesScreen extends Component<IProps, IState> {
                         },
                       },
                     ])
-                  }
-                  rightContent={
-                    // TODO integrate swipe function for better user experience
-                    <Button
-                      style={{ minHeight: "100%", backgroundColor: "red" }}
-                      textStyle={{ color: "white" }}
-                      onPress={() => {
-                        // TODO execute item "close" function in the meanwhile of alert
-                        Alert.alert("Delete?", undefined, [
-                          {
-                            text: "Cancel",
-                            onPress: () => console.log("Cancel Pressed"),
-                            style: "cancel",
-                          },
-                          {
-                            text: "Delete",
-                            onPress: () =>
-                              deleteCode(this.props.route.params.lockId, item.keyboardPwdId),
-                          },
-                        ])
-                      }}
-                    >
-                      Delete
-                    </Button>
                   }
                   containerStyle={{ width: "100%" }}
                 >
@@ -276,7 +251,6 @@ export class PasscodesScreen extends Component<IProps, IState> {
                     </ListItem.Subtitle>
                   </ListItem.Content>
                 </ListItem>
-                // </ListItem.Swipeable>
               )
             }}
             ListEmptyComponent={
@@ -336,5 +310,3 @@ const $screenContentContainer: ViewStyle = {
   justifyContent: "space-between",
   height: "100%",
 }
-
-const $iconStyle: ImageStyle = { width: 30, height: 30 }

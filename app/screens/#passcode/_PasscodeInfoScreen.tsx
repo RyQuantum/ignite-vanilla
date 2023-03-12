@@ -1,5 +1,5 @@
 import React, { Component } from "react"
-import { Text, View, ViewStyle, ImageStyle, Alert } from "react-native"
+import { Text, View, ViewStyle, Alert } from "react-native"
 import { observer } from "mobx-react"
 import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import { fire } from 'react-native-alertbox';
@@ -10,7 +10,6 @@ import { RootStoreContext } from "../../models"
 // import { ListItem } from "@rneui/themed"
 import { ListItem } from "react-native-elements"
 import moment from "moment-timezone"
-// const PlusImage = require("../../../assets/images/plus.jpeg")
 
 type RootStackParamList = {
   // "Assign Name": { lockName: string };
@@ -74,7 +73,6 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
   static contextType = RootStoreContext
   declare context: React.ContextType<typeof RootStoreContext>
   state: IState = {
-    searchText: "",
     // lockList: [],
     // isLoading: false,
     // name: this.props.route.params.lockName,
@@ -265,5 +263,3 @@ const $screenContentContainer: ViewStyle = {
   justifyContent: "space-between",
   height: "100%",
 }
-
-const $iconStyle: ImageStyle = { width: 30, height: 30 }
