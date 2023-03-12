@@ -10,7 +10,7 @@ import { observer } from "mobx-react"
 import { CustomButton, Screen } from "../components"
 import { spacing } from "../theme"
 import { NearbyLocksScreen, TutorialScreen, AssignNameScreen, FAQScreen } from "../screens/#addingLock"
-import { LocksScreen, LockHomeScreen } from "../screens/#lock"
+import { LocksScreen, LockScreen } from "../screens/#lock"
 import { PasscodesScreen, PasscodeInfoScreen, ChangePeriodScreen, RecordsScreen, GeneratePasscodeScreen } from "../screens/#passcode"
 import { useStores } from "../models"
 
@@ -76,7 +76,7 @@ const LocksNavigator = observer(function (_props) {
         />
         <Stack.Screen
           name="Lock Details"
-          component={LockHomeScreen}
+          component={LockScreen}
           options={() => ({ title: "Sifely" })}
         />
         <Stack.Screen
