@@ -2,7 +2,7 @@ import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 
 /**
- * This represents a passcode code of a lock.
+ * This represents a passcode of a lock.
  */
 export const CodeModel = types
   .model("Code")

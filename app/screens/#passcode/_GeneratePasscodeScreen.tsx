@@ -49,7 +49,6 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
     endDate: new Date(Date.now() + 3600000).toLocaleDateString("en-CA"),
     endTime: new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00",
     dateVisible: false,
-    timeVisible: false,
     isStart: false,
     mode: 5, // the default keyboardPwdType for recurring code
     passcode: "", // custom code
@@ -113,10 +112,91 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
 
     return (
       <Screen
-        preset="scroll"
+        preset="fixed"
         safeAreaEdges={["bottom"]}
         contentContainerStyle={$screenContentContainer}
       >
+        <Overlay isVisible={this.state.visible}>
+          <Icon
+            style={{ alignSelf: "center" }}
+            name="check-circle"
+            color="limegreen"
+            size={100}
+          />
+          <Text style={$textSecondary}>Succeeded. The Passcode is</Text>
+          <Text style={$textPrimary}>{this.state.code}</Text>
+          <Button
+            style={{ backgroundColor: "skyblue", borderWidth: 0 }}
+            textStyle={{ color: "white" }}
+            onPress={() => {
+              this.props.route.params.needRefresh()
+              this.setState({ visible: false, name: "" })
+            }}
+          >
+            Complete
+          </Button>
+          <DemoDivider />
+          <Button
+            style={{ borderColor: "skyblue" }}
+            textStyle={{ color: "skyblue" }}
+            onPress={async () => {
+              let type = ""
+              const lock = getLockInfo(this.props.route.params.lockId)
+              let startDate = new Date()
+              let startString = `${startDate.toLocaleDateString("en-CA")} ${startDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+              let beforeDate = new Date()
+              let beforeString = ""
+              switch (this.state.index) {
+                case 0:
+                  type = "Permanent"
+                  beforeDate.setDate(beforeDate.getDate() + 1)
+                  beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                  break
+                case 1:
+                  type = "Timed"
+                  startString = `${this.state.startDate} ${this.state.startTime} End time: ${this.state.endDate} ${this.state.endTime}`
+                  beforeDate = new Date(`${this.state.startDate} ${this.state.startTime}`)
+                  beforeDate.setDate(beforeDate.getDate() + 1)
+                  beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                  break
+                case 2:
+                  type = "One-time"
+                  beforeDate.setHours(beforeDate.getHours() + 6)
+                  beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                  break
+                case 3:
+                  if (this.state.isPermanent) {
+                    type = "Permanent"
+                    startDate = new Date(0)
+                    startString = `${startDate.toLocaleDateString("en-CA")} ${startDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                  } else {
+                    type = "Timed"
+                    startString = `${this.state.startDate} ${this.state.startTime} End time: ${this.state.endDate} ${this.state.endTime}`
+                  }
+                  break
+                case 4:
+                  type = data.find(item => item.key === this.state.mode).label + " Recurring"
+                  startString = `${this.state.startTime} End time: ${this.state.endTime}`
+                  beforeDate.setDate(beforeDate.getDate() + 1)
+                  beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                  break
+                case 5:
+                  type = "Erase"
+                  beforeDate.setDate(beforeDate.getDate() + 1)
+                  beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
+                  break
+                default:
+                  type = `invalid index: ${this.state.index}`
+              }
+
+              const message = `Hello, Here is your Pin Code: ${this.state.code}\nStart time: ${startString}\nType: ${type}\nLock name: ${lock.lockName}\n\nTo Unlock - Press PIN CODE #\n\nNotes: ${beforeString} The # key is the UNLOCKING key at the bottom right. Please don't share your Pin Code with anyone.`
+              const res = await Share.open({ message }) // TODO verify the message in different code type
+            }}
+          >
+            Share
+          </Button>
+        </Overlay>
+
         <View>
           {/* {TODO Tab indicator bug} */}
           <Tab
@@ -165,87 +245,6 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
           {/* </ScrollableTabView> */}
 
           <DemoDivider />
-
-          <Overlay isVisible={this.state.visible}>
-            <Icon
-              style={{ alignSelf: "center" }}
-              name="check-circle"
-              color="limegreen"
-              size={100}
-            />
-            <Text style={$textSecondary}>Succeeded. The Passcode is</Text>
-            <Text style={$textPrimary}>{this.state.code}</Text>
-            <Button
-              style={{ backgroundColor: "skyblue", borderWidth: 0 }}
-              textStyle={{ color: "white" }}
-              onPress={() => {
-                this.props.route.params.needRefresh()
-                this.setState({ visible: false, name: "" })
-              }}
-            >
-              Complete
-            </Button>
-            <DemoDivider />
-            <Button
-              style={{ borderColor: "skyblue" }}
-              textStyle={{ color: "skyblue" }}
-              onPress={async () => {
-                let type = ""
-                const lock = getLockInfo(this.props.route.params.lockId)
-                let startDate = new Date()
-                let startString = `${startDate.toLocaleDateString("en-CA")} ${startDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
-                let beforeDate = new Date()
-                let beforeString = ""
-                switch (this.state.index) {
-                  case 0:
-                    type = "Permanent"
-                    beforeDate.setDate(beforeDate.getDate() + 1)
-                    beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
-                    break
-                  case 1:
-                    type = "Timed"
-                    startString = `${this.state.startDate} ${this.state.startTime} End time: ${this.state.endDate} ${this.state.endTime}`
-                    beforeDate = new Date(`${this.state.startDate} ${this.state.startTime}`)
-                    beforeDate.setDate(beforeDate.getDate() + 1)
-                    beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
-                    break
-                  case 2:
-                    type = "One-time"
-                    beforeDate.setHours(beforeDate.getHours() + 6)
-                    beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
-                    break
-                  case 3:
-                    if (this.state.isPermanent) {
-                      type = "Permanent"
-                      startDate = new Date(0)
-                      startString = `${startDate.toLocaleDateString("en-CA")} ${startDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
-                    } else {
-                      type = "Timed"
-                      startString = `${this.state.startDate} ${this.state.startTime} End time: ${this.state.endDate} ${this.state.endTime}`
-                    }
-                    break
-                  case 4:
-                    type = data.find(item => item.key === this.state.mode).label + " Recurring"
-                    startString = `${this.state.startTime} End time: ${this.state.endTime}`
-                    beforeDate.setDate(beforeDate.getDate() + 1)
-                    beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
-                    break
-                  case 5:
-                    type = "Erase"
-                    beforeDate.setDate(beforeDate.getDate() + 1)
-                    beforeString = `The Pin Code should be used at least ONCE before ${beforeDate.toLocaleDateString("en-CA")} ${beforeDate.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00" }`
-                    break
-                  default:
-                    type = `invalid index: ${this.state.index}`
-                }
-
-                const message = `Hello, Here is your Pin Code: ${this.state.code}\nStart time: ${startString}\nType: ${type}\nLock name: ${lock.lockName}\n\nTo Unlock - Press PIN CODE #\n\nNotes: ${beforeString} The # key is the UNLOCKING key at the bottom right. Please don't share your Pin Code with anyone.`
-                const res = await Share.open({ message }) // TODO verify the message in different code type
-              }}
-            >
-              Share
-            </Button>
-          </Overlay>
 
           {this.state.index === 0 && (
             <>
@@ -517,7 +516,7 @@ export class GeneratePasscodeScreen extends Component<IProps, IState> {
                 newState.startTime = start.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00"              }
             }
             this.setState(newState, () => {
-              setTimeout(() => this.TimePicker.open(), 300)
+              setTimeout(() => this.TimePicker.open(), 500)
             })
           }}
           onCancel={() => this.setState({ dateVisible: false })}

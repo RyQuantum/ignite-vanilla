@@ -355,6 +355,63 @@ export class Api {
     )
     return parseResponse(response)
   }
+
+  async getCardList(lockId: number, pageNo = 1, pageSize = 20) {
+    const formData = new FormData()
+    formData.append("lockId", lockId.toString())
+    formData.append("pageNo", pageNo.toString())
+    formData.append("pageSize", pageSize.toString())
+    formData.append("date", Date.now().toString())
+    const response = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
+      "identityCard/list",
+      formData
+    )
+    return parseResponse(response)
+  }
+
+  async addCard(lockId: number, cardNumber: string, cardName: string, startDate: number, endDate: number, addType: number) {
+    const body: { lockId: number, cardNumber: string, cardName: string, startDate: number, endDate: number, addType: number, date: number } = {
+      lockId,
+      cardNumber,
+      cardName,
+      startDate,
+      endDate,
+      addType,
+      date: Date.now()
+    }
+    const response = await this.apisauce.post(
+      "identityCard/addForReversedCardNumber",
+      // "identityCard/add",
+
+      // formData,
+      qs.stringify(body, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
+
+  async deleteCard(lockId: number, cardId: number, deleteType: number) {
+    const response = await this.apisauce.post(
+      "identityCard/delete",
+      // formData,
+      qs.stringify({
+        lockId,
+        cardId,
+        deleteType,
+        date: Date.now()
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
 }
 
 function parseResponse(response) {

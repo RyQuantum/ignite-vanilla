@@ -12,7 +12,6 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(_props) {
     lockStore: { },
   } = useStores()
 
-
   return (
     <Screen
       preset="scroll"

@@ -132,7 +132,7 @@ export class ChangePeriodScreen extends Component<IProps, IState> {
                 newState.startTime = start.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00"              }
             }
             this.setState(newState, () => {
-              setTimeout(() => this.TimePicker.open(), 300)
+              setTimeout(() => this.TimePicker.open(), 500)
             })
           }}
           onCancel={() => this.setState({ dateVisible: false })}

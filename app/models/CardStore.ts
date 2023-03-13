@@ -1,24 +1,24 @@
 import { Alert } from "react-native"
 import { applySnapshot, getRoot, Instance, SnapshotOut, types } from "mobx-state-tree"
 import { api } from "../services/api"
-import { CodeModel } from "./Code"
+import { CardModel } from "./Card"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { Ttlock } from "react-native-ttlock"
 import Toast from 'react-native-simple-toast';
 import Share from "react-native-share"
 
-export const CodeStoreModel = types
-  .model("CodeStore")
+export const CardStoreModel = types
+  .model("CardStore")
   .props({
     isRefreshing: false,
     isLoading: false,
     lockId: 0,
-    codeId: 0,
-    codes: types.array(CodeModel),
+    cardId: 0,
+    cards: types.array(CardModel),
   })
   .views((store) => ({
-    get codeList() {
-      return store.codes.slice()
+    get cardList() {
+      return store.cards.slice()
     },
   }))
   .actions(withSetPropAction)
@@ -28,8 +28,8 @@ export const CodeStoreModel = types
       store.lockId = id
     },
 
-    updateCodeId(id: number) {
-      store.codeId = id
+    updateCardeId(id: number) {
+      store.cardId = id
     },
 
     updateCodeToStore(codeId: number, keyboardPwd: string) {
@@ -54,20 +54,18 @@ export const CodeStoreModel = types
       store.setProp("codes", codes)
     },
 
-    reset() {
+    resetStore() {
       applySnapshot(store, {})
     },
 
-    async getCodeList(lockId: number): Promise<object[]> {
+    async getCardList() {
       store.isRefreshing = true
-      console.log(1)
-      const res: any = await api.getCodeList(lockId) // TODO add pagination
-      console.log(2)
+      const res: any = await api.getCardList(store.lockId) // TODO add pagination
       store.setProp("isRefreshing", false)
       switch (res.kind) {
         case "ok":
           if (res.data?.list) {
-            store.setProp("codes", res.data.list)
+            store.setProp("cards", res.data.list)
             // return res.data.list
           } else {
             alert(JSON.stringify(res))
@@ -82,45 +80,33 @@ export const CodeStoreModel = types
       return []
     },
 
-    async generateCode(lockId: number, keyboardPwdType: number, keyboardPwdName: string, startDate: number, endDate?: number) {
+    async addCard(cardName: string, startDate: number, endDate: number, addType = 1) { // TODO addType can be 2 for gateway
       store.isLoading = true
-      const res: any = await api.generateCode(lockId, keyboardPwdType, keyboardPwdName, startDate, endDate)
-      store.setProp("isLoading", false)
-      switch (res.kind) {
-        case "ok": // TODO get newest codeList if wanted
-          return res.data
-        case "bad":
-          Alert.alert(`code: ${res.code}`, res.msg)
-          break
-        default:
-          Alert.alert(res.kind, res.msg)
-      }
-      return null
-    },
-
-    async addCode(lockId: number, keyboardPwd: string, keyboardPwdName: string, startDate: number, endDate: number, addType = 1) { // TODO addType can be 2 for gateway
-      store.isLoading = true
-      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === lockId)
+      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
       return new Promise((resolve) => {
-        Ttlock.createCustomPasscode(keyboardPwd, startDate, endDate, lock.lockData, async () => {
-          console.log("TTLock: addCode success")
-          const res: any = await api.addCode(lockId, keyboardPwd, keyboardPwdName, startDate, endDate, addType) // deleteType by default is 1, TODO gateway is 2
-          store.setProp("isLoading", false)
-          switch (res.kind) {
-            case "ok":
-              return resolve(res.data)
-            case "bad":
-              Alert.alert(`code: ${res.code}`, res.msg)
-              break
-            default:
-              Alert.alert(res.kind, res.msg)
-          }
-          return resolve(null)
-        }, (errorCode, errorDesc) => { // TODO print error in the log
-          store.setProp("isLoading", false)
-          Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
-          return resolve(null)
-        })
+        Toast.showWithGravity("Connecting with Lock. Please wait...", Toast.SHORT, Toast.CENTER)
+        Ttlock.addCard(null, startDate, endDate, lock.lockData,
+          () => Toast.showWithGravity("Connected. Place the Card against the Card Reader Sensor on the Smart Lock.", Toast.SHORT, Toast.CENTER),
+          async (cardNumber) => {
+            console.log("TTLock: addCard success", cardNumber)
+            const res: any = await api.addCard(lock.lockId, cardNumber, cardName, startDate, endDate, addType) // addType by default is 1, TODO gateway is 2
+            store.setProp("isLoading", false)
+            switch (res.kind) {
+              case "ok":
+                setTimeout(() => Toast.showWithGravity("Added Successfully", Toast.SHORT, Toast.CENTER), 200)
+                return resolve(res.data)
+              case "bad":
+                Alert.alert(`code: ${res.code}`, res.msg)
+                break
+              default:
+                Alert.alert(res.kind, res.msg)
+            }
+            return resolve(null)
+          }, (errorCode, errorDesc) => { // TODO print error in the log
+            store.setProp("isLoading", false)
+            Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
+            return resolve(null)
+          })
       })
     },
 
@@ -175,19 +161,19 @@ export const CodeStoreModel = types
       return null
     },
 
-    async deleteCode(lockId: number, keyboardPwdId: number, deleteType?: number) { // TODO make TTLock library promisable
+    async deleteCard(cardId: number, deleteType?: number) { // TODO make TTLock library promisable
       store.isLoading = true
-      const code = store.codes.find((c) => c.keyboardPwdId === keyboardPwdId)
-      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === lockId)
+      const card = store.cards.find((c) => c.cardId === cardId)
+      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
       return new Promise((resolve) => {
-        Ttlock.deletePasscode(code.keyboardPwd, lock.lockData, async () => {
-          console.log("TTLock: deleteCode success")
-          const res: any = await api.deleteCode(lockId, keyboardPwdId, deleteType || 1) // deleteType by default is 1, TODO gateway is 2
+        Ttlock.deleteCard(card.cardNumber, lock.lockData, async () => {
+          console.log("TTLock: deleteCard success")
+          const res: any = await api.deleteCard(store.lockId, cardId, deleteType || 1) // deleteType by default is 1, TODO gateway is 2
           store.setProp("isLoading", false)
           switch (res.kind) {
             case "ok":
               setTimeout(() => Toast.showWithGravity("Deleted", Toast.SHORT, Toast.CENTER), 200)
-              store.setProp("codes", store.codes.filter((c) => c.keyboardPwdId !== keyboardPwdId))
+              store.setProp("cards", store.cards.filter((c) => c.cardId !== cardId))
               return resolve(res.data)
             case "bad":
               Alert.alert(`code: ${res.code}`, res.msg)
@@ -309,8 +295,8 @@ export const CodeStoreModel = types
     return rest
   })
 
-export interface CodeStore extends Instance<typeof CodeStoreModel> {}
-export interface CodeStoreSnapshot extends SnapshotOut<typeof CodeStoreModel> {}
+export interface CardStore extends Instance<typeof CardStoreModel> {}
+export interface CardStoreSnapshot extends SnapshotOut<typeof CardStoreModel> {}
 
 // @demo remove-file
 

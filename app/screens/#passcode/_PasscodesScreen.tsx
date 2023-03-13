@@ -64,12 +64,13 @@ export class PasscodesScreen extends Component<IProps, IState> {
     })
     this.unsubscribe = this.props.navigation.addListener('focus', () => { // auto refresh after delete a code
       this.context.codeStore.updateLockId(this.props.route.params.lockId)
-      this.state.shouldRefresh && this.loadCodes()
-      this.setState({ shouldRefresh: false })
+      if (this.state.shouldRefresh) {
+        this.loadCodes()
+        this.setState({ shouldRefresh: false })
+      }
       this.forceUpdate()
     });
     // this.props.navigation.setParams({ forceUpdate: this.forceUpdate }); // TODO doesn't work
-    this.loadCodes()
   }
 
   needRefresh = () => {

@@ -9,8 +9,9 @@ import Spinner from "react-native-loading-spinner-overlay"
 import { observer } from "mobx-react"
 import { CustomButton, Screen } from "../components"
 import { spacing } from "../theme"
-import { NearbyLocksScreen, TutorialScreen, AssignNameScreen, FAQScreen } from "../screens/#addingLock"
 import { LocksScreen, LockScreen } from "../screens/#lock"
+import { NearbyLocksScreen, TutorialScreen, AssignNameScreen, FAQScreen } from "../screens/#addingLock"
+import { CardsScreen, AddCardScreen, PeriodScreen, CardInfoScreen } from "../screens/#card"
 import { PasscodesScreen, PasscodeInfoScreen, ChangePeriodScreen, RecordsScreen, GeneratePasscodeScreen } from "../screens/#passcode"
 import { useStores } from "../models"
 
@@ -41,13 +42,14 @@ const Stack = createStackNavigator();
 
 const LocksNavigator = observer(function (_props) {
   const {
-    codeStore: { isLoading: isCodeLoading },
     lockStore: { isLoading: isLockLoading },
+    codeStore: { isLoading: isCodeLoading },
+    cardStore: { isLoading: isCardLoading },
   } = useStores()
 
   return (
     <>
-      <Spinner visible={isCodeLoading || isLockLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
+      <Spinner visible={isCodeLoading || isLockLoading || isCardLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
       <Stack.Navigator
         screenOptions={{
           // headerShown: true,
@@ -79,6 +81,7 @@ const LocksNavigator = observer(function (_props) {
           component={LockScreen}
           options={() => ({ title: "Sifely" })}
         />
+        {/* Codes */}
         <Stack.Screen
           name="Passcodes"
           component={PasscodesScreen}
@@ -98,6 +101,23 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Records"
           component={RecordsScreen}
+        />
+        {/* Cards */}
+        <Stack.Screen
+          name="Cards"
+          component={CardsScreen}
+        />
+        <Stack.Screen
+          name="Add Card"
+          component={AddCardScreen}
+        />
+        <Stack.Screen
+          name="Validity Period"
+          component={PeriodScreen}
+        />
+        <Stack.Screen
+          name="Card Info"
+          component={CardInfoScreen}
         />
       </Stack.Navigator>
     </>

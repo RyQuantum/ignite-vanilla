@@ -118,7 +118,7 @@ export const LockScreen: FC<any> = observer(function LockHomeScreen(props) {
                   </Text>
                 </View>
               </TouchableWithoutFeedback>
-              <TouchableWithoutFeedback disabled={dayLeft < 0} onPress={() => console.log("touch")}>
+              <TouchableWithoutFeedback disabled={dayLeft < 0} onPress={() => props.navigation.navigate("Cards", { lockId })}>
                 <View style={$iconTile}>
                   <MaterialCommunityIcons
                     name="credit-card-wireless"

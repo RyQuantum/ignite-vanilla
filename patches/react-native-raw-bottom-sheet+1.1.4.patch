@@ -1,0 +1,18 @@
+diff --git a/node_modules/react-native-raw-bottom-sheet/src/index.js b/node_modules/react-native-raw-bottom-sheet/src/index.js
+index cc97c62..863d035 100644
+--- a/node_modules/react-native-raw-bottom-sheet/src/index.js
++++ b/node_modules/react-native-raw-bottom-sheet/src/index.js
+@@ -30,11 +30,13 @@ class RBSheet extends Component {
+       this.setState({ modalVisible: visible });
+       Animated.timing(animatedHeight, {
+         toValue: height,
++        useNativeDriver: false,
+         duration
+       }).start();
+     } else {
+       Animated.timing(animatedHeight, {
+         toValue: minClosingHeight,
++        useNativeDriver: false,
+         duration
+       }).start(() => {
+         pan.setValue({ x: 0, y: 0 });
