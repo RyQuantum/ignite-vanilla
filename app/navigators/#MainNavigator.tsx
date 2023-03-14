@@ -11,7 +11,7 @@ import { CustomButton, Screen } from "../components"
 import { spacing } from "../theme"
 import { LocksScreen, LockScreen } from "../screens/#lock"
 import { NearbyLocksScreen, TutorialScreen, AssignNameScreen, FAQScreen } from "../screens/#addingLock"
-import { CardsScreen, AddCardScreen, PeriodScreen, CardInfoScreen } from "../screens/#card"
+import { CardsScreen, AddCardScreen, PeriodScreen, CardInfoScreen, ChangePeriodScreen as CardChangePeriodScreen } from "../screens/#card"
 import { PasscodesScreen, PasscodeInfoScreen, ChangePeriodScreen, RecordsScreen, GeneratePasscodeScreen } from "../screens/#passcode"
 import { useStores } from "../models"
 
@@ -118,6 +118,11 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Card Info"
           component={CardInfoScreen}
+        />
+        <Stack.Screen
+          name="Card Change Period"
+          component={CardChangePeriodScreen}
+          options={() => ({ title: "Change Period" })}
         />
       </Stack.Navigator>
     </>

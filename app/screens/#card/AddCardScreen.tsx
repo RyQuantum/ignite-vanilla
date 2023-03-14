@@ -5,10 +5,9 @@ import { ListItem, Tab } from "@rneui/themed"
 import DateTimePickerModal from "react-native-modal-datetime-picker"
 import TimePicker from "react-native-24h-timepicker"
 import { useStores } from "../../models"
-import { Text, Screen, Button, CustomButton } from "../../components"
+import { Screen, CustomButton } from "../../components"
 import { colors } from "../../theme"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
-import { delay } from "../../utils/delay"
 
 export const AddCardScreen: FC<any> = observer(function AddCardScreen(props) {
   const {
@@ -164,7 +163,6 @@ export const AddCardScreen: FC<any> = observer(function AddCardScreen(props) {
           disabled={name === ""}
           onPress={async () => {
             Keyboard.dismiss()
-            await delay(500)
             let res
             if (index === 0) {
               res = await addCard(name, 0, 0)

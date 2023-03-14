@@ -380,8 +380,7 @@ export class Api {
       date: Date.now()
     }
     const response = await this.apisauce.post(
-      "identityCard/addForReversedCardNumber",
-      // "identityCard/add",
+      "identityCard/add",
 
       // formData,
       qs.stringify(body, { encode: true }),
@@ -412,6 +411,61 @@ export class Api {
     )
     return parseResponse(response)
   }
+
+  async clearCards(lockId: number) {
+    const response = await this.apisauce.post(
+      "identityCard/clear",
+      qs.stringify({
+        lockId,
+        date: Date.now() // TODO new system is not needed
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
+
+  async updateCard(lockId: number, cardId: number, startDate: number, endDate: number, changeType: number) {
+    const response = await this.apisauce.post(
+      "identityCard/changePeriod",
+      qs.stringify({
+        lockId,
+        cardId,
+        startDate,
+        endDate,
+        changeType,
+        date: Date.now() // TODO new system is not needed
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
+
+  async updateCardName(lockId: number, cardId: number, cardName: string) {
+    const response = await this.apisauce.post(
+      "identityCard/rename",
+      qs.stringify({
+        lockId,
+        cardId,
+        cardName,
+        date: Date.now() // TODO new system is not needed
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
+
 }
 
 function parseResponse(response) {

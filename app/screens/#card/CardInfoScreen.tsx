@@ -1,38 +1,48 @@
-import React, { FC } from "react"
+import React, { FC, useCallback, useEffect } from "react"
 import { observer } from "mobx-react"
 import { useStores } from "../../models"
-import { Alert, Text, View, ViewStyle } from "react-native"
+import { Text, View, ViewStyle } from "react-native"
 import { ListItem } from "react-native-elements"
 import { fire } from "react-native-alertbox"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import moment from "moment-timezone"
 import { Screen } from "../../components"
-import { convertTimeStampToDate } from "./CardsScreen"
-
-function Period({ card }) {
-  switch (card.cardType) {
-    case 1:
-      if (card.startDate === 0 && card.endDate === 0) {
-        return <Text style={{ fontSize: 16 }}>Permanent</Text>
-      }
-      return (
-        <View>
-          <Text style={{ fontSize: 12 }}>{moment(card.startDate).format("YYYY-MM-DD HH:mm")}</Text>
-          <Text style={{ fontSize: 12 }}>{moment(card.endDate).format("YYYY-MM-DD HH:mm")}</Text>
-        </View>
-      )
-    case 4:
-      return <Text>{`${convertTimeStampToDate(card.startDate)} - ${convertTimeStampToDate(card.endDate)}`}</Text>
-    default:
-      return <Text>Invalid cardType: {card.cardType}</Text>
-  }
-}
+import { convertTimeStampToDate } from "../../utils/ttlock2nd"
 
 export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
+
+  useEffect(() => {
+    saveCardId(props.route.params.cardId)
+  }, [])
+
   const {
-    cardStore: { cardList },
+    cardStore: { cardList, saveCardId, deleteCard, updateCardName },
   } = useStores()
+
   const card = cardList.find(c => c.cardId === props.route.params.cardId)!
+  const renderPeriod = useCallback(() => {
+    switch (card.cardType) {
+      case 1:
+        if (card.startDate === 0 && card.endDate === 0) {
+          return <Text style={{ fontSize: 16 }}>Permanent</Text>
+        }
+        return (
+          <View>
+            <Text style={{ fontSize: 12 }}>{moment(card.startDate).format("YYYY-MM-DD HH:mm")}</Text>
+            <Text style={{ fontSize: 12 }}>{moment(card.endDate).format("YYYY-MM-DD HH:mm")}</Text>
+          </View>
+        )
+      case 4:
+        return <Text>{`${convertTimeStampToDate(card.startDate)} - ${convertTimeStampToDate(card.endDate)}`}</Text>
+      default:
+        return <Text>Invalid cardType: {card.cardType}</Text>
+    }
+  }, [card])
+
+  if (!card) { // After delete the code, the code will be removed from the store immediately. So return null.
+    props.navigation.goBack()
+    return null
+  }
 
   return (
     <Screen
@@ -61,8 +71,7 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
                 {
                   text: "OK",
                   onPress: async (data) => {
-                    // TODO add funciton
-                    // const res = await updateCodeName(code.keyboardPwdId, data.name)
+                    const res = await updateCardName(data.name)
                   },
                 },
               ],
@@ -70,6 +79,7 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
                 {
                   name: "name",
                   defaultValue: card.cardName,
+                  placeholder: "Please enter a Name"
                 },
               ],
             })
@@ -83,13 +93,13 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
         </ListItem>
         <ListItem
           bottomDivider
-          onPress={() => props.navigation.navigate("Validity Period", { card })}
+          onPress={() => props.navigation.navigate("Card Change Period", { card })}
         >
           <ListItem.Content>
             <ListItem.Title>Validity Period</ListItem.Title>
           </ListItem.Content>
           <ListItem.Subtitle>
-            <Period card={card} />
+            {renderPeriod()}
           </ListItem.Subtitle>
           <ListItem.Chevron />
         </ListItem>
@@ -136,21 +146,24 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
           topDivider
           bottomDivider
           containerStyle={{ justifyContent: "center" }}
-          onPress={async () =>
-            Alert.alert("Delete?", undefined, [
-              {
-                text: "Cancel",
-                onPress: () => console.log("Cancel Pressed"),
-                style: "cancel",
-              },
-              {
-                text: "Delete",
-                onPress: async () => {
-                  const res = await deleteCode(code.lockId, code.keyboardPwdId)
-                  // if (res) this.props.navigation.goBack()
+          onPress={() =>
+            fire({
+              title: "Delete?",
+              actions: [
+                {
+                  text: "Cancel",
+                  style: "cancel",
                 },
-              },
-            ])
+                {
+                  text: "Delete",
+                  onPress: async () => {
+                    const res = await deleteCard(card.cardId)
+                    // if (res) props.navigation.goBack()
+                  },
+                },
+              ],
+              fields: [],
+            })
           }
         >
           <ListItem.Title style={{ color: "red" }}>Delete</ListItem.Title>
