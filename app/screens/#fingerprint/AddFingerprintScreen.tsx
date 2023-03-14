@@ -173,7 +173,7 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
             //   props.route.params.refreshRef.current = true
             //   props.navigation.goBack()
             // }
-            props.navigation.navigate("Learn Fingerprint")
+            props.navigation.navigate("Fingerprint Tutorial")
           }}
         >
           Next

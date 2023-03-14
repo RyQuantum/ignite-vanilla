@@ -18,6 +18,7 @@ import {
   AddFingerprintScreen,
   FingerprintInfoScreen,
   ChangePeriodScreen as FingerprintChangePeriodScreen,
+  TutorialScreen as FingerprintTutorialScreen,
   LearnFingerprintScreen,
 } from "../screens/#fingerprint"
 import { useStores } from "../models"
@@ -140,6 +141,10 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Add Fingerprint"
           component={AddFingerprintScreen}
+        />
+        <Stack.Screen
+          name="Fingerprint Tutorial"
+          component={FingerprintTutorialScreen}
         />
         <Stack.Screen
           name="Learn Fingerprint"
