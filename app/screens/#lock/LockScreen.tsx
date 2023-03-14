@@ -131,7 +131,7 @@ export const LockScreen: FC<any> = observer(function LockHomeScreen(props) {
                 </View>
               </TouchableWithoutFeedback>
               {isSupportFingerprint && (
-                <TouchableWithoutFeedback disabled={dayLeft < 0} onPress={() => console.log("touch")}>
+                <TouchableWithoutFeedback disabled={dayLeft < 0} onPress={() => props.navigation.navigate("Fingerprints", { lockId })}>
                   <View style={$iconTile}>
                     <MaterialCommunityIcons name="fingerprint" color={dayLeft >= 0 ? colors.tint : colors.border} size={35} />
                     <Text size="xs" style={$iconTileLabel}>

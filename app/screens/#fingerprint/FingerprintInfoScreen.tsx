@@ -9,37 +9,37 @@ import moment from "moment-timezone"
 import { Screen } from "../../components"
 import { convertTimeStampToDate } from "../../utils/ttlock2nd"
 
-export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
+export const FingerprintInfoScreen: FC<any> = observer(function FingerprintInfoScreen(props) {
 
   const {
-    cardStore: { cardList, saveCardId, deleteCard, updateCardName },
+    fingerprintStore: { fingerprintList, saveFingerprintId, deleteFingerprint, updateFingerprintName },
   } = useStores()
 
   useEffect(() => {
-    saveCardId(props.route.params.cardId)
+    saveFingerprintId(props.route.params.fingerprintId)
   }, [])
 
-  const card = cardList.find(c => c.cardId === props.route.params.cardId)!
+  const fingerprint = fingerprintList.find(f => f.fingerprintId === props.route.params.fingerprintId)!
   const renderPeriod = useCallback(() => {
-    switch (card.cardType) {
+    switch (fingerprint.fingerprintType) {
       case 1:
-        if (card.startDate === 0 && card.endDate === 0) {
+        if (fingerprint.startDate === 0 && fingerprint.endDate === 0) {
           return <Text style={{ fontSize: 16 }}>Permanent</Text>
         }
         return (
           <View>
-            <Text style={{ fontSize: 12 }}>{moment(card.startDate).format("YYYY-MM-DD HH:mm")}</Text>
-            <Text style={{ fontSize: 12 }}>{moment(card.endDate).format("YYYY-MM-DD HH:mm")}</Text>
+            <Text style={{ fontSize: 12 }}>{moment(fingerprint.startDate).format("YYYY-MM-DD HH:mm")}</Text>
+            <Text style={{ fontSize: 12 }}>{moment(fingerprint.endDate).format("YYYY-MM-DD HH:mm")}</Text>
           </View>
         )
       case 4:
-        return <Text>{`${convertTimeStampToDate(card.startDate)} - ${convertTimeStampToDate(card.endDate)}`}</Text>
+        return <Text>{`${convertTimeStampToDate(fingerprint.startDate)} - ${convertTimeStampToDate(fingerprint.endDate)}`}</Text>
       default:
-        return <Text>Invalid cardType: {card.cardType}</Text>
+        return <Text>Invalid fingerprintType: {fingerprint.fingerprintType}</Text>
     }
-  }, [card])
+  }, [fingerprint])
 
-  if (!card) { // After delete the card, the card will be removed from the store immediately. So return null.
+  if (!fingerprint) { // After delete the fingerprint, the fingerprint will be removed from the store immediately. So return null.
     props.navigation.goBack()
     return null
   }
@@ -53,9 +53,9 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
       <View>
         <ListItem bottomDivider>
           <ListItem.Content>
-            <ListItem.Title>Card Number</ListItem.Title>
+            <ListItem.Title>Fingerprint Number</ListItem.Title>
           </ListItem.Content>
-          <ListItem.Subtitle>{card.cardNumber}</ListItem.Subtitle>
+          <ListItem.Subtitle>{fingerprint.fingerprintNumber}</ListItem.Subtitle>
         </ListItem>
         <ListItem
           bottomDivider
@@ -70,14 +70,14 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
                 {
                   text: "OK",
                   onPress: async (data) => {
-                    const res = await updateCardName(data.name)
+                    const res = await updateFingerprintName(data.name)
                   },
                 },
               ],
               fields: [
                 {
                   name: "name",
-                  defaultValue: card.cardName,
+                  defaultValue: fingerprint.fingerprintName,
                   placeholder: "Please enter a Name"
                 },
               ],
@@ -87,12 +87,12 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
           <ListItem.Content>
             <ListItem.Title>Name</ListItem.Title>
           </ListItem.Content>
-          <ListItem.Subtitle>{card.cardName}</ListItem.Subtitle>
+          <ListItem.Subtitle>{fingerprint.fingerprintName}</ListItem.Subtitle>
           <ListItem.Chevron />
         </ListItem>
         <ListItem
           bottomDivider
-          onPress={() => props.navigation.navigate("Card Change Period", { card })}
+          onPress={() => props.navigation.navigate("Fingerprint Change Period", { fingerprint })}
         >
           <ListItem.Content>
             <ListItem.Title>Validity Period</ListItem.Title>
@@ -102,19 +102,19 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
           </ListItem.Subtitle>
           <ListItem.Chevron />
         </ListItem>
-        {card.cardType === 4 && ( // TODO TTLock doesn't support
+        {fingerprint.fingerprintType === 4 && ( // TODO check whether TTLock supports it
           <>
             <ListItem topDivider bottomDivider>
               <ListItem.Content>
                 <ListItem.Title>Cycle Time</ListItem.Title>
               </ListItem.Content>
-              <ListItem.Subtitle>{moment(card.startDate).format("HH:mm")} - {moment(card.endDate).format("HH:mm")}</ListItem.Subtitle>
+              <ListItem.Subtitle>{moment(fingerprint.startDate).format("HH:mm")} - {moment(fingerprint.endDate).format("HH:mm")}</ListItem.Subtitle>
             </ListItem>
             <ListItem topDivider bottomDivider>
               <ListItem.Content>
                 <ListItem.Title>Cycle on</ListItem.Title>
               </ListItem.Content>
-              <ListItem.Subtitle>{card.cardName}</ListItem.Subtitle>
+              <ListItem.Subtitle>{fingerprint.fingerprintName}</ListItem.Subtitle>
             </ListItem>
           </>
         )}
@@ -123,14 +123,14 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
           <ListItem.Content>
             <ListItem.Title>Operator</ListItem.Title>
           </ListItem.Content>
-          <ListItem.Subtitle>{card.senderUsername}</ListItem.Subtitle>
+          <ListItem.Subtitle>{fingerprint.senderUsername}</ListItem.Subtitle>
         </ListItem>
         <ListItem bottomDivider>
           <ListItem.Content>
             <ListItem.Title>Time</ListItem.Title>
           </ListItem.Content>
           <ListItem.Subtitle>
-            {moment(card.createDate).format("YYYY-MM-DD HH:mm")}
+            {moment(fingerprint.createDate).format("YYYY-MM-DD HH:mm")}
           </ListItem.Subtitle>
         </ListItem>
         <DemoDivider />
@@ -156,7 +156,7 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
                 {
                   text: "Delete",
                   onPress: async () => {
-                    const res = await deleteCard(card.cardId)
+                    const res = await deleteFingerprint(fingerprint.fingerprintId)
                     // if (res) props.navigation.goBack()
                   },
                 },

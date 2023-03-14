@@ -1,23 +1,23 @@
 import { Alert } from "react-native"
 import { destroy, getRoot, Instance, SnapshotOut, types } from "mobx-state-tree"
 import { api } from "../services/api"
-import { CardModel } from "./Card"
+import { FingerprintModel } from "./Fingerprint"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 import { Ttlock } from "react-native-ttlock"
 import Toast from 'react-native-simple-toast';
 
-export const CardStoreModel = types
-  .model("CardStore")
+export const FingerprintStoreModel = types
+  .model("FingerprintStore")
   .props({
     isRefreshing: false,
     isLoading: false,
     lockId: 0,
-    cardId: 0,
-    cards: types.array(CardModel),
+    fingerprintId: 0,
+    fingerprints: types.array(FingerprintModel),
   })
   .views((store) => ({
-    get cardList() {
-      return store.cards.slice()
+    get fingerprintList() {
+      return store.fingerprints.slice()
     },
   }))
   .actions(withSetPropAction)
@@ -27,38 +27,38 @@ export const CardStoreModel = types
       store.lockId = id
     },
 
-    saveCardId(id: number) {
-      store.cardId = id
+    saveFingerprintId(id: number) {
+      store.fingerprintId = id
     },
 
-    updateCardNameToStore(cardId: number, cardName: string) {
-      store.cards.find((c) => c.cardId === cardId)!.cardName = cardName
+    updateFingerprintNameToStore(fingerprintId: number, fingerprintName: string) {
+      store.fingerprints.find((f) => f.fingerprintId === fingerprintId)!.fingerprintName = fingerprintName
     },
 
-    updateCardPeriodToStore(cardId: number, startDate: number, endDate: number) {
-      const card = store.cards.find((c) => c.cardId === cardId)!
-      card.startDate = startDate
-      card.endDate = endDate
+    updateFingerprintPeriodToStore(fingerprintId: number, startDate: number, endDate: number) {
+      const fingerprint = store.fingerprints.find((f) => f.fingerprintId === fingerprintId)!
+      fingerprint.startDate = startDate
+      fingerprint.endDate = endDate
     },
 
-    removeCardFromStore(cardId: number) {
-      destroy(store.cards.find((c) => c.cardId === cardId))
+    removeFingerprintFromStore(fingerprintId: number) {
+      destroy(store.fingerprints.find((f) => f.fingerprintId === fingerprintId))
     },
 
-    removeAllCardsFromStore() {
-      destroy(store.cards)
+    removeAllFingerprintsFromStore() {
+      destroy(store.fingerprints)
     },
   }))
   .actions((store) => ({
     // async actions
-    async getCardList() {
+    async getFingerprintList() {
       store.isRefreshing = true
-      const res: any = await api.getCardList(store.lockId) // TODO add pagination
+      const res: any = await api.getFingerprintList(store.lockId) // TODO add pagination
       store.setProp("isRefreshing", false)
       switch (res.kind) {
         case "ok":
           if (res.data?.list) {
-            store.setProp("cards", res.data.list)
+            store.setProp("fingerprints", res.data.list)
             // return res.data.list
           } else {
             alert(JSON.stringify(res))
@@ -103,18 +103,18 @@ export const CardStoreModel = types
       })
     },
 
-    async updateCard(startDate: number, endDate: number, changeType = 1) { // TODO changeType can be 2 for gateway
+    async updateFingerprint(startDate: number, endDate: number, changeType = 1) { // TODO changeType can be 2 for gateway
       store.isLoading = true
-      const card = store.cards.find((c) => c.cardId === store.cardId)!
+      const fingerprint = store.fingerprints.find((f) => f.fingerprintId === store.fingerprintId)!
       const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
       return new Promise((resolve) => {
-        Ttlock.modifyCardValidityPeriod(card.cardNumber, null, startDate, endDate, lock.lockData, async () => {
-          console.log("TTLock: modify card success")
-          const res: any = await api.updateCard(lock.lockId, card.cardId, startDate, endDate, changeType)
+        Ttlock.modifyFingerprintValidityPeriod(fingerprint.fingerprintNumber, null, startDate, endDate, lock.lockData, async () => {
+          console.log("TTLock: modify fingerprint success")
+          const res: any = await api.updateFingerprint(lock.lockId, fingerprint.fingerprintId, startDate, endDate, changeType)
           store.setProp("isLoading", false)
           switch (res.kind) {
             case "ok":
-              store.updateCardPeriodToStore(card.cardId, startDate, endDate)
+              store.updateFingerprintPeriodToStore(fingerprint.fingerprintId, startDate, endDate)
               setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
               return resolve(res.data)
             case "bad":
@@ -132,13 +132,13 @@ export const CardStoreModel = types
       })
     },
 
-    async updateCardName(cardName: string) {
+    async updateFingerprintName(fingerprintName: string) {
       store.isLoading = true
-      const res: any = await api.updateCardName(store.lockId, store.cardId, cardName)
+      const res: any = await api.updateFingerprintName(store.lockId, store.fingerprintId, fingerprintName)
       store.setProp("isLoading", false)
       switch (res.kind) {
         case "ok":
-          store.updateCardNameToStore(store.cardId, cardName)
+          store.updateFingerprintNameToStore(store.fingerprintId, fingerprintName)
           setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
           return res.data
         case "bad":
@@ -150,18 +150,18 @@ export const CardStoreModel = types
       return null
     },
 
-    async deleteCard(cardId: number, deleteType?: number) { // TODO make TTLock library promisable
+    async deleteFingerprint(fingerprintId: number, deleteType?: number) { // TODO make TTLock library promisable
       store.isLoading = true
-      const card = store.cards.find((c) => c.cardId === cardId)!
+      const fingerprint = store.fingerprints.find((f) => f.fingerprintId === fingerprintId)!
       const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
       return new Promise((resolve) => {
-        Ttlock.deleteCard(card.cardNumber, lock.lockData, async () => {
-          console.log("TTLock: deleteCard success")
-          const res: any = await api.deleteCard(store.lockId, cardId, deleteType || 1) // deleteType by default is 1, TODO gateway is 2
+        Ttlock.deleteFingerprint(fingerprint.fingerprintNumber, lock.lockData, async () => {
+          console.log("TTLock: deleteFingerprint success")
+          const res: any = await api.deleteFingerprint(store.lockId, fingerprintId, deleteType || 1) // deleteType by default is 1, TODO gateway is 2
           store.setProp("isLoading", false)
           switch (res.kind) {
             case "ok":
-              store.removeCardFromStore(cardId)
+              store.removeFingerprintFromStore(fingerprintId)
               setTimeout(() => Toast.showWithGravity("Deleted", Toast.SHORT, Toast.CENTER), 200)
               return resolve(res.data)
             case "bad":
@@ -179,17 +179,17 @@ export const CardStoreModel = types
       })
     },
 
-    async clearAllCards() {
+    async clearAllFingerprints() {
       store.isLoading = true
       const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
       return new Promise((resolve) => {
-        Ttlock.clearAllCards(lock.lockData, async () => {
-          console.log("TTLock: reset cards success")
-          const res: any = await api.clearCards(lock.lockId)
+        Ttlock.clearAllFingerprints(lock.lockData, async () => {
+          console.log("TTLock: reset fingerprints success")
+          const res: any = await api.clearFingerprints(lock.lockId)
           store.setProp("isLoading", false)
           switch (res.kind) {
             case "ok":
-              store.removeAllCardsFromStore()
+              store.removeAllFingerprintsFromStore()
               setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
               return resolve(res.data)
             case "bad":
@@ -218,7 +218,7 @@ export const CardStoreModel = types
     return rest
   })
 
-export interface CardStore extends Instance<typeof CardStoreModel> {}
-export interface CardStoreSnapshot extends SnapshotOut<typeof CardStoreModel> {}
+export interface FingerprintStore extends Instance<typeof FingerprintStoreModel> {}
+export interface FingerprintStoreSnapshot extends SnapshotOut<typeof FingerprintStoreModel> {}
 
 // @demo remove-file

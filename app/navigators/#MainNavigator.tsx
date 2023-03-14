@@ -13,6 +13,13 @@ import { LocksScreen, LockScreen } from "../screens/#lock"
 import { NearbyLocksScreen, TutorialScreen, AssignNameScreen, FAQScreen } from "../screens/#addingLock"
 import { CardsScreen, AddCardScreen, PeriodScreen, CardInfoScreen, ChangePeriodScreen as CardChangePeriodScreen } from "../screens/#card"
 import { PasscodesScreen, PasscodeInfoScreen, ChangePeriodScreen, RecordsScreen, GeneratePasscodeScreen } from "../screens/#passcode"
+import {
+  FingerprintsScreen,
+  AddFingerprintScreen,
+  FingerprintInfoScreen,
+  ChangePeriodScreen as FingerprintChangePeriodScreen,
+  LearnFingerprintScreen,
+} from "../screens/#fingerprint"
 import { useStores } from "../models"
 
 function Settings({ navigation }) {
@@ -45,11 +52,12 @@ const LocksNavigator = observer(function (_props) {
     lockStore: { isLoading: isLockLoading },
     codeStore: { isLoading: isCodeLoading },
     cardStore: { isLoading: isCardLoading },
+    fingerprintStore: { isLoading: isFingerprintLoading },
   } = useStores()
 
   return (
     <>
-      <Spinner visible={isCodeLoading || isLockLoading || isCardLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
+      <Spinner visible={isCodeLoading || isLockLoading || isCardLoading || isFingerprintLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
       <Stack.Navigator
         screenOptions={{
           // headerShown: true,
@@ -122,6 +130,28 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Card Change Period"
           component={CardChangePeriodScreen}
+          options={() => ({ title: "Change Period" })}
+        />
+        {/* Fingerprints */}
+        <Stack.Screen
+          name="Fingerprints"
+          component={FingerprintsScreen}
+        />
+        <Stack.Screen
+          name="Add Fingerprint"
+          component={AddFingerprintScreen}
+        />
+        <Stack.Screen
+          name="Learn Fingerprint"
+          component={LearnFingerprintScreen}
+        />
+        <Stack.Screen
+          name="Fingerprint Info"
+          component={FingerprintInfoScreen}
+        />
+        <Stack.Screen
+          name="Fingerprint Change Period"
+          component={FingerprintChangePeriodScreen}
           options={() => ({ title: "Change Period" })}
         />
       </Stack.Navigator>

@@ -466,6 +466,91 @@ export class Api {
     return parseResponse(response)
   }
 
+  async getFingerprintList(lockId: number, pageNo = 1, pageSize = 20) {
+    const formData = new FormData()
+    formData.append("lockId", lockId.toString())
+    formData.append("pageNo", pageNo.toString())
+    formData.append("pageSize", pageSize.toString())
+    formData.append("date", Date.now().toString())
+    const response = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
+      "fingerprint/list",
+      formData
+    )
+    return parseResponse(response)
+  }
+
+  async updateFingerprint(lockId: number, fingerprintId: number, startDate: number, endDate: number, changeType: number) {
+    const response = await this.apisauce.post(
+      "fingerprint/changePeriod",
+      qs.stringify({
+        lockId,
+        fingerprintId,
+        startDate,
+        endDate,
+        changeType,
+        date: Date.now() // TODO new system is not needed
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
+
+  async updateFingerprintName(lockId: number, fingerprintId: number, fingerprintName: string) {
+    const response = await this.apisauce.post(
+      "fingerprint/rename",
+      qs.stringify({
+        lockId,
+        fingerprintId,
+        fingerprintName,
+        date: Date.now() // TODO new system is not needed
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
+
+  async deleteFingerprint(lockId: number, fingerprintId: number, deleteType: number) {
+    const response = await this.apisauce.post(
+      "fingerprint/delete",
+      // formData,
+      qs.stringify({
+        lockId,
+        fingerprintId,
+        deleteType,
+        date: Date.now()
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
+
+  async clearFingerprints(lockId: number) {
+    const response = await this.apisauce.post(
+      "fingerprint/clear",
+      qs.stringify({
+        lockId,
+        date: Date.now() // TODO new system is not needed
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
 }
 
 function parseResponse(response) {

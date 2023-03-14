@@ -12,52 +12,52 @@ import { fire } from "react-native-alertbox"
 
 const noData = require("../../../assets/images/noData2nd.png")
 
-function getValidity(card) {
+function getValidity(fingerprint) {
   const currentTime = Date.now()
-  switch (card.cardType) {
+  switch (fingerprint.fingerprintType) {
     case 1:
-      if (card.startDate === 0 && card.endDate === 0) { // Permanent
+      if (fingerprint.startDate === 0 && fingerprint.endDate === 0) { // Permanent
         return ""
       }
       // Timed
-      return card.startDate > currentTime ? "Inactive" : (card.endDate < currentTime ? "Invalid" : "")
+      return fingerprint.startDate > currentTime ? "Inactive" : (fingerprint.endDate < currentTime ? "Invalid" : "")
     case 4: // Recurring
-      return (card.startDate < currentTime && card.endDate > currentTime) || "Invalid"
+      return (fingerprint.startDate < currentTime && fingerprint.endDate > currentTime) || "Invalid"
     default:
-      return `Invalid cardType: ${card.cardType}`
+      return `Invalid fingerprintType: ${fingerprint.fingerprintType}`
   }
 }
 
-function generateCardInfo(card) {
-  switch (card.cardType) {
+function generateFingerprintInfo(fingerprint) {
+  switch (fingerprint.fingerprintType) {
     case 1:
-      if (card.startDate === 0 && card.endDate === 0) { // Permanent
-        return convertTimeStamp(card.createDate) + " Permanent"
+      if (fingerprint.startDate === 0 && fingerprint.endDate === 0) { // Permanent
+        return convertTimeStamp(fingerprint.createDate) + " Permanent"
       }
       // Timed
-      return `${convertTimeStamp(card.startDate)} - ${convertTimeStamp(card.endDate)} Timed`
+      return `${convertTimeStamp(fingerprint.startDate)} - ${convertTimeStamp(fingerprint.endDate)} Timed`
     case 4: // Recurring
-      return `${convertTimeStampToDate(card.startDate)} - ${convertTimeStampToDate(card.endDate)} Recurring`
+      return `${convertTimeStampToDate(fingerprint.startDate)} - ${convertTimeStampToDate(fingerprint.endDate)} Recurring`
     default:
-      return `Invalid cardType: ${card.cardType}`
+      return `Invalid fingerprintType: ${fingerprint.fingerprintType}`
   }
 }
 
-export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
+export const FingerprintsScreen: FC<any> = observer(function FingerprintsScreen(props) {
   const {
-    cardStore: { cardList, isRefreshing, saveLockId, getCardList, removeAllCardsFromStore, deleteCard, clearAllCards }
+    fingerprintStore: { fingerprintList, isRefreshing, saveLockId, getFingerprintList, removeAllFingerprintsFromStore, deleteFingerprint, clearAllFingerprints }
   } = useStores()
 
   const [searchText, setSearchText] = useState<string>("")
   const refreshRef = useRef(true)
 
   useEffect(() => {
-    removeAllCardsFromStore() // clean card store at the beginning
+    removeAllFingerprintsFromStore() // clean fingerprint store at the beginning
     saveLockId(props.route.params.lockId)
     props.navigation.setOptions({
       headerRight: () => (
         <HeaderButtons>
-          {/* <OverflowMenu // TODO for adding card by gateway */}
+          {/* <OverflowMenu // TODO for adding fingerprint by gateway */}
           {/*   style={{ marginHorizontal: 10 }} */}
           {/*   OverflowIcon={({ color }) => <MaterialIcons name="more-vert" size={23} color="white" />} */}
           {/* > */}
@@ -69,7 +69,7 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
             buttonStyle={{ color: "white" }}
             onPress={() =>
               fire({
-                title: "ALL Passcodes for this Lock will be DELETED",
+                title: "ALL Fingerprints for this Lock will be DELETED",
                 actions: [
                   {
                     text: "Cancel",
@@ -78,7 +78,7 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
                   {
                     text: "Delete",
                     onPress: async () => {
-                      const res = await clearAllCards()
+                      const res = await clearAllFingerprints()
                     },
                   },
                 ],
@@ -89,9 +89,9 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
         </HeaderButtons>
       ),
     })
-    const unsubscribe = props.navigation.addListener('focus', () => { // auto refresh after delete a card
+    const unsubscribe = props.navigation.addListener('focus', () => { // auto refresh after delete a fingerprint
       if (refreshRef.current) {
-        getCardList()
+        getFingerprintList()
         refreshRef.current = false
       }
     });
@@ -114,17 +114,17 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
         contentContainerStyle={$screenContentContainer}
       >
         <FlatList
-          data={cardList}
-          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={getCardList} />}
+          data={fingerprintList}
+          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={getFingerprintList} />}
           renderItem={({ item, index }) => {
-            const cardId = item.cardId
+            const fingerprintId = item.fingerprintId
             return (
               <Observer>
                 {() => (
                   <ListItem
                     topDivider
                     bottomDivider
-                    onPress={() => props.navigation.navigate("Card Info", { cardId })}
+                    onPress={() => props.navigation.navigate("Fingerprint Info", { fingerprintId })}
                     onLongPress={() =>
                       fire({
                         title: "Delete?",
@@ -136,7 +136,7 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
                           {
                             text: "Delete",
                             onPress: async () => {
-                              const res = await deleteCard(item.cardId)
+                              const res = await deleteFingerprint(item.fingerprintId)
                               // if (res) this.props.navigation.goBack()
                             },
                           },
@@ -149,7 +149,7 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
                     <Avatar
                       rounded
                       icon={{
-                        name: "credit-card-wireless",
+                        name: "fingerprint",
                         type: "material-community",
                         color: "white",
                         size: 26,
@@ -167,12 +167,12 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
                             minWidth: 260,
                           }}
                         >
-                          <Text style={{ fontSize: 18 }}>{item.cardName}</Text>
+                          <Text style={{ fontSize: 18 }}>{item.fingerprintName}</Text>
                           <Text style={{ color: "red" }}>{getValidity(item)}</Text>
                         </View>
                       </ListItem.Title>
                       <ListItem.Subtitle style={{ color: colors.palette.neutral300, fontSize: 13 }}>
-                        {generateCardInfo(item)}
+                        {generateFingerprintInfo(item)}
                       </ListItem.Subtitle>
                     </ListItem.Content>
                   </ListItem>
@@ -216,13 +216,13 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
               />
             )}
             onPress={() =>
-              props.navigation.navigate("Add Card", {
+              props.navigation.navigate("Add Fingerprint", {
                 lockId: props.route.params.lockId,
                 refreshRef,
               })
             }
           >
-            Add Card
+            Add Fingerprint
           </Button>
         </View>
       </Screen>

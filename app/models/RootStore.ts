@@ -4,6 +4,7 @@ import { EpisodeStoreModel } from "./EpisodeStore" // @demo remove-current-line
 import { LockStoreModel } from "./LockStore"
 import { CodeStoreModel } from "./CodeStore"
 import { CardStoreModel } from "./CardStore"
+import { FingerprintStoreModel } from "./FingerprintStore"
 
 /**
  * A RootStore model.
@@ -14,6 +15,7 @@ export const RootStoreModel = types.model("RootStore").props({
   lockStore: types.optional(LockStoreModel, {}), // @demo remove-current-line
   codeStore: types.optional(CodeStoreModel, {}), // @demo remove-current-line
   cardStore: types.optional(CardStoreModel, {}), // @demo remove-current-line
+  fingerprintStore: types.optional(FingerprintStoreModel, {}), // @demo remove-current-line
 })
 
 /**

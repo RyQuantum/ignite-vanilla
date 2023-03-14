@@ -9,9 +9,9 @@ import { Screen, CustomButton } from "../../components"
 import { colors } from "../../theme"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 
-export const AddCardScreen: FC<any> = observer(function AddCardScreen(props) {
+export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScreen(props) {
   const {
-    cardStore: { addCard },
+    fingerprintStore: { addFingerprint },
   } = useStores()
 
   const [index, setIndex] = useState<number>(0)
@@ -162,20 +162,21 @@ export const AddCardScreen: FC<any> = observer(function AddCardScreen(props) {
           style={{ margin: 20 }}
           disabled={name === ""}
           onPress={async () => {
-            Keyboard.dismiss()
-            let res
-            if (index === 0) {
-              res = await addCard(name, 0, 0)
-            } else {
-              res = await addCard(name, new Date(`${startDate} ${startTime}`).getTime(), new Date(`${endDate} ${endTime}`).getTime())
-            }
-            if (res) {
-              props.route.params.refreshRef.current = true
-              props.navigation.goBack()
-            }
+            // Keyboard.dismiss()
+            // let res
+            // if (index === 0) {
+            //   res = await addFingerprint(name, 0, 0)
+            // } else {
+            //   res = await addFingerprint(name, new Date(`${startDate} ${startTime}`).getTime(), new Date(`${endDate} ${endTime}`).getTime())
+            // }
+            // if (res) {
+            //   props.route.params.refreshRef.current = true
+            //   props.navigation.goBack()
+            // }
+            props.navigation.navigate("Learn Fingerprint")
           }}
         >
-          OK
+          Next
         </CustomButton>
       </View>
       <DateTimePickerModal

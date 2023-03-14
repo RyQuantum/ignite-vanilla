@@ -57,6 +57,7 @@
     "react-native-svg": "^13.7.0",
     "react-native-ttlock": "^2.0.3",
     "react-native-vector-icons": "^9.2.0",
+    "react-native-video": "^6.0.0-alpha.5",
     "react-navigation-header-buttons": "^10.0.0",
     "reactotron-mst": "^3.1.4",
     "reactotron-react-js": "^3.3.8",
