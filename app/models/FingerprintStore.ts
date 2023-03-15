@@ -73,6 +73,28 @@ export const FingerprintStoreModel = types
       return []
     },
 
+    async uploadFingerprint() { // TODO unfinished
+      store.isLoading = true
+      const res: any = await api.uploadFingerprint(store.lockId)
+      store.setProp("isLoading", false)
+      switch (res.kind) {
+        case "ok":
+          if (res.data?.list) {
+            store.setProp("fingerprints", res.data.list)
+            // return res.data.list
+          } else {
+            alert(JSON.stringify(res))
+          }
+          break
+        case "bad":
+          Alert.alert(`code: ${res.code}`, res.msg)
+          break
+        default:
+          Alert.alert(res.kind, res.msg)
+      }
+      return []
+    },
+
     async addCard(cardName: string, startDate: number, endDate: number, addType = 1) { // TODO addType can be 2 for gateway
       store.isLoading = true
       const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
