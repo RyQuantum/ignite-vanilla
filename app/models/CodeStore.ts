@@ -60,9 +60,7 @@ export const CodeStoreModel = types
 
     async getCodeList(lockId: number): Promise<object[]> {
       store.isRefreshing = true
-      console.log(1)
       const res: any = await api.getCodeList(lockId) // TODO add pagination
-      console.log(2)
       store.setProp("isRefreshing", false)
       switch (res.kind) {
         case "ok":

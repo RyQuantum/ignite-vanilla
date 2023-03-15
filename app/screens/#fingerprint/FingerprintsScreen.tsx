@@ -217,7 +217,7 @@ export const FingerprintsScreen: FC<any> = observer(function FingerprintsScreen(
             )}
             onPress={() =>
               props.navigation.navigate("Add Fingerprint", {
-                lockId: props.route.params.lockId,
+                // lockId: props.route.params.lockId,
                 refreshRef,
               })
             }

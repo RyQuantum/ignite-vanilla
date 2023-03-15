@@ -114,7 +114,7 @@ export const FingerprintInfoScreen: FC<any> = observer(function FingerprintInfoS
               <ListItem.Content>
                 <ListItem.Title>Cycle on</ListItem.Title>
               </ListItem.Content>
-              <ListItem.Subtitle>{fingerprint.fingerprintName}</ListItem.Subtitle>
+              <ListItem.Subtitle>{fingerprint.cyclicConfig.map((item) => [null, "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][item.weekDay]).join(", ")}</ListItem.Subtitle>
             </ListItem>
           </>
         )}

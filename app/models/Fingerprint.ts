@@ -1,6 +1,12 @@
 import { Instance, SnapshotIn, SnapshotOut, types } from "mobx-state-tree"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 
+const CyclicConfig = types.model({
+      weekDay: types.number,
+      startTime: types.number,
+      endTime: types.number,
+})
+
 /**
  * This represents a fingerprint of a lock.
  */
@@ -19,6 +25,7 @@ export const FingerprintModel = types
       senderUsername: types.string,
       createDate: types.number,
       status: types.number,
+      cyclicConfig: types.array(CyclicConfig)
   })
   .actions(withSetPropAction)
   // .views((code) => ({}))

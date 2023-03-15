@@ -479,6 +479,31 @@ export class Api {
     return parseResponse(response)
   }
 
+  async uploadFingerprint(lockId: number, fingerprintNumber: number, fingerprintType: number, fingerprintName: string, startDate: number, endDate: number, cyclicConfig: object[] | null) {
+    const body: { lockId: number, fingerprintNumber: number, fingerprintType: number, fingerprintName: string, startDate: number, endDate: number, date: number, cyclicConfig?: string } = {
+      lockId,
+      fingerprintNumber,
+      fingerprintType,
+      fingerprintName,
+      startDate,
+      endDate,
+      date: Date.now()
+    }
+    if (cyclicConfig) {
+      body.cyclicConfig = JSON.stringify(cyclicConfig)
+    }
+    const response = await this.apisauce.post(
+      "fingerprint/add",
+      qs.stringify(body, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
+
   async updateFingerprint(lockId: number, fingerprintId: number, startDate: number, endDate: number, changeType: number) {
     const response = await this.apisauce.post(
       "fingerprint/changePeriod",

@@ -14,11 +14,33 @@ export const FingerprintStoreModel = types
     lockId: 0,
     fingerprintId: 0,
     fingerprints: types.array(FingerprintModel),
+    index: 0, // 0: Permanent, 1: Timed, 2: Recurring
+    fingerprintName: "",
+    cycleDays: types.optional(types.array(types.number), []),
+    startDate: new Date().toLocaleDateString("en-CA"),
+    startTime: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00",
+    endDate: new Date().toLocaleDateString("en-CA"),
+    endTime: new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00",
   })
   .views((store) => ({
     get fingerprintList() {
       return store.fingerprints.slice()
     },
+    get addFingerprintParams () {
+      const startDate = store.index === 0 ? 0 : new Date(`${store.startDate} ${store.startTime}`).getTime()
+      const endDate = store.index === 0 ? 0 : new Date(`${store.endDate} ${store.endTime}`).getTime()
+      const startTime = parseInt(store.startTime.slice(0, 2)) * 60 + parseInt(store.startTime.slice(3, 5))
+      const endTime = parseInt(store.endTime.slice(0, 2)) * 60 + parseInt(store.endTime.slice(3, 5))
+      const cyclicConfig =
+        store.cycleDays.length > 0
+          ? store.cycleDays.map((day) => ({
+            weekDay: [7, 1, 2, 3, 4, 5, 6][day],
+            startTime,
+            endTime,
+          }))
+          : null
+      return { startDate, endDate, cyclicConfig}
+    }
   }))
   .actions(withSetPropAction)
   .actions((store) => ({
@@ -30,6 +52,30 @@ export const FingerprintStoreModel = types
     saveFingerprintId(id: number) {
       store.fingerprintId = id
     },
+
+    setIndex(index) {
+      store.index = index
+    },
+
+    setCycleDays(days) {
+      store.cycleDays = days.sort()
+    },
+
+    // setStartDate(date) {
+    //   store.startDate = date
+    // },
+    //
+    // setEndDate(date) {
+    //   store.endDate = date
+    // },
+    //
+    // setStartTime(time) {
+    //   store.startTime = time
+    // },
+    //
+    // setStartDate(date) {
+    //   store.startDate = date
+    // },
 
     updateFingerprintNameToStore(fingerprintId: number, fingerprintName: string) {
       store.fingerprints.find((f) => f.fingerprintId === fingerprintId)!.fingerprintName = fingerprintName
@@ -48,6 +94,16 @@ export const FingerprintStoreModel = types
     removeAllFingerprintsFromStore() {
       destroy(store.fingerprints)
     },
+
+    removeAllFingerprintParams() {
+      store.index = 0
+      store.fingerprintName = ""
+      destroy(store.cycleDays)
+      store.startDate = new Date().toLocaleDateString("en-CA")
+      store.startTime = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00"
+      store.endDate = new Date().toLocaleDateString("en-CA")
+      store.endTime = new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00"
+    }
   }))
   .actions((store) => ({
     // async actions
@@ -73,19 +129,16 @@ export const FingerprintStoreModel = types
       return []
     },
 
-    async uploadFingerprint() { // TODO unfinished
+    async uploadFingerprint(fingerprintNumber: string) {
       store.isLoading = true
-      const res: any = await api.uploadFingerprint(store.lockId)
+      const fingerprintType = store.index === 2 ? 4 : 1
+      const { startDate, endDate, cyclicConfig } = store.addFingerprintParams
+      const res: any = await api.uploadFingerprint(store.lockId, parseInt(fingerprintNumber), fingerprintType, store.fingerprintName, startDate, endDate, cyclicConfig)
       store.setProp("isLoading", false)
       switch (res.kind) {
         case "ok":
-          if (res.data?.list) {
-            store.setProp("fingerprints", res.data.list)
-            // return res.data.list
-          } else {
-            alert(JSON.stringify(res))
-          }
-          break
+          setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 500)
+          return res.data
         case "bad":
           Alert.alert(`code: ${res.code}`, res.msg)
           break
@@ -93,36 +146,6 @@ export const FingerprintStoreModel = types
           Alert.alert(res.kind, res.msg)
       }
       return []
-    },
-
-    async addCard(cardName: string, startDate: number, endDate: number, addType = 1) { // TODO addType can be 2 for gateway
-      store.isLoading = true
-      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
-      return new Promise((resolve) => {
-        Toast.showWithGravity("Connecting with Lock. Please wait...", Toast.SHORT, Toast.CENTER)
-        Ttlock.addCard(null, startDate, endDate, lock.lockData,
-          () => Toast.showWithGravity("Connected. Place the Card against the Card Reader Sensor on the Smart Lock.", Toast.SHORT, Toast.CENTER),
-          async (cardNumber) => {
-            console.log("TTLock: addCard success", cardNumber)
-            const res: any = await api.addCard(lock.lockId, cardNumber, cardName, startDate, endDate, addType) // addType by default is 1, TODO gateway is 2
-            store.setProp("isLoading", false)
-            switch (res.kind) {
-              case "ok":
-                setTimeout(() => Toast.showWithGravity("Added Successfully", Toast.SHORT, Toast.CENTER), 200)
-                return resolve(res.data)
-              case "bad":
-                Alert.alert(`code: ${res.code}`, res.msg)
-                break
-              default:
-                Alert.alert(res.kind, res.msg)
-            }
-            return resolve(null)
-          }, (errorCode, errorDesc) => { // TODO print error in the log
-            store.setProp("isLoading", false)
-            Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
-            return resolve(null)
-          })
-      })
     },
 
     async updateFingerprint(startDate: number, endDate: number, changeType = 1) { // TODO changeType can be 2 for gateway
@@ -232,7 +255,7 @@ export const FingerprintStoreModel = types
   .preProcessSnapshot((snapshot) => {
     // remove sensitive data from snapshot to avoid secrets
     // being stored in AsyncStorage in plain text if backing up store
-    const { isLoading, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { isLoading, index, startDate, startTime, endDate, endTime, cycleDays, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
 
     // see the following for strategies to consider storing secrets on device
     // https://reactnative.dev/docs/security#storing-sensitive-info

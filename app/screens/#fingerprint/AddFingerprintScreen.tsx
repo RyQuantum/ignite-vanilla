@@ -1,5 +1,5 @@
-import React, { FC, useRef, useState } from "react"
-import { Keyboard, View, ViewStyle } from "react-native"
+import React, { FC, useCallback, useEffect, useRef, useState } from "react"
+import { Keyboard, Text, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react"
 import { ListItem, Tab } from "@rneui/themed"
 import DateTimePickerModal from "react-native-modal-datetime-picker"
@@ -8,13 +8,16 @@ import { useStores } from "../../models"
 import { Screen, CustomButton } from "../../components"
 import { colors } from "../../theme"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
+import moment from "moment-timezone"
+import { HeaderButtons, Item } from "react-navigation-header-buttons"
+import { fire } from "react-native-alertbox"
 
 export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScreen(props) {
   const {
-    fingerprintStore: { addFingerprint },
+    fingerprintStore: { index, cycleDays, startDate: startDate2, endDate: endDate2, startTime: startTime2, endTime: endTime2, removeAllFingerprintParams, setIndex, setProp },
   } = useStores()
 
-  const [index, setIndex] = useState<number>(0)
+  // const [index, setIndex] = useState<number>(0)
   const [name, setName] = useState<string>("")
   const [date, setDate] = useState<Date>(new Date())  // for datetime modal picker
   const [hour, setHour] = useState<string>(new Date().getHours().toString())
@@ -26,7 +29,19 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
   const [isStart, setIsStart] = useState<boolean>(false)
   const timePicker = useRef(null)
 
-  const [days, setDays] = useState<boolean[]>([true, true, true, true, true, true, true])
+  // const [cycleDays, setCycleDays] = useState<number[] | null>(null)
+
+  useEffect(() => {
+    removeAllFingerprintParams()
+  }, [])
+
+  const updateDateTime = useCallback((params) => {
+    setStartDate(params.startDate)
+    setStartTime(params.startTime)
+    setEndDate(params.endDate)
+    setEndTime(params.endTime)
+    // setCycleDays(params.cycleDays)
+  }, [])
 
   return (
     <Screen
@@ -47,10 +62,7 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
             titleStyle={{ color: index === 0 ? "skyblue" : colors.text }}
             title="Permanent"
           />
-          <Tab.Item
-            titleStyle={{ color: index === 1 ? "skyblue" : colors.text }}
-            title="Timed"
-          />
+          <Tab.Item titleStyle={{ color: index === 1 ? "skyblue" : colors.text }} title="Timed" />
           <Tab.Item
             titleStyle={{ color: index === 2 ? "skyblue" : colors.text }}
             title="Recurring"
@@ -61,19 +73,11 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
 
         <ListItem topDivider bottomDivider>
           <ListItem.Title>Name</ListItem.Title>
-          <ListItem.Input
-            value={name}
-            onChangeText={setName}
-            placeholder="Please enter a Name"
-          />
+          <ListItem.Input value={name} onChangeText={setName} placeholder="Please enter a Name" />
         </ListItem>
         <DemoDivider />
 
-        {index === 0 && (
-          <>
-
-          </>
-        )}
+        {index === 0 && <></>}
 
         {index === 1 && (
           <>
@@ -113,67 +117,52 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
           <>
             <ListItem
               bottomDivider
-              onPress={() => props.navigation.navigate("Validity Period")}
+              onPress={() => props.navigation.navigate("Fingerprint Validity Period", { updateDateTime })}
             >
               <ListItem.Title>Validity Period</ListItem.Title>
               <ListItem.Content />
               <ListItem.Subtitle>
-                {startDate} {endDate}
+                {cycleDays.length > 0 && (
+                  <View>
+                    <Text style={{ fontSize: 12 }}>{startDate2}</Text>
+                    <Text style={{ fontSize: 12 }}>{endDate2}</Text>
+                  </View>
+                )}
               </ListItem.Subtitle>
               <ListItem.Chevron />
             </ListItem>
-            <ListItem
-              bottomDivider
-              onPress={() => {
-                this.setState({
-                  date: new Date(`${this.state.endDate} ${this.state.endTime}`),
-                  dateVisible: true,
-                  isStart: false,
-                })
-              }}
-            >
-              <ListItem.Title>Cycle Time</ListItem.Title>
-              <ListItem.Content />
-              <ListItem.Subtitle>
-                {startTime}-{endTime}
-              </ListItem.Subtitle>
-            </ListItem>
-            <ListItem
-              bottomDivider
-              onPress={() => {
-                this.setState({
-                  date: new Date(`${this.state.endDate} ${this.state.endTime}`),
-                  dateVisible: true,
-                  isStart: false,
-                })
-              }}
-            >
-              <ListItem.Title>Cycle on</ListItem.Title>
-              <ListItem.Content />
-              <ListItem.Subtitle>
-                {DAYS.filter((d, i) => days[i]).join(", ")}
-              </ListItem.Subtitle>
-            </ListItem>
+            {cycleDays.length > 0 && (
+              <>
+                <ListItem bottomDivider>
+                  <ListItem.Title>Cycle Time</ListItem.Title>
+                  <ListItem.Content />
+                  <ListItem.Subtitle>
+                    {startTime2}-{endTime2}
+                  </ListItem.Subtitle>
+                </ListItem>
+                <ListItem bottomDivider>
+                  <ListItem.Title>Cycle on</ListItem.Title>
+                  <ListItem.Content />
+                  <ListItem.Subtitle>{cycleDays.map((d) => DAYS[d]).join(", ")}</ListItem.Subtitle>
+                </ListItem>
+              </>
+            )}
           </>
         )}
 
         <CustomButton
           preset="filled"
           style={{ margin: 20 }}
-          disabled={name === ""}
+          disabled={name === "" || (index === 2 && cycleDays.length === 0)}
           onPress={async () => {
-            // Keyboard.dismiss()
-            // let res
-            // if (index === 0) {
-            //   res = await addFingerprint(name, 0, 0)
-            // } else {
-            //   res = await addFingerprint(name, new Date(`${startDate} ${startTime}`).getTime(), new Date(`${endDate} ${endTime}`).getTime())
-            // }
-            // if (res) {
-            //   props.route.params.refreshRef.current = true
-            //   props.navigation.goBack()
-            // }
-            props.navigation.navigate("Fingerprint Tutorial")
+            if (index === 1) {
+              setProp("startDate", startDate)
+              setProp("endDate", endDate)
+              setProp("startTime", startTime)
+              setProp("endTime", endTime)
+            }
+            setProp("fingerprintName", name)
+            props.navigation.navigate("Fingerprint Tutorial", { refreshRef: props.route.params.refreshRef })
           }}
         >
           Next
@@ -195,7 +184,7 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
             if (start >= new Date(`${endDate} ${endTime}`)) {
               const end = new Date(new Date(date).setHours(date.getHours() + 1))
               setEndDate(end.toLocaleDateString("en-CA"))
-              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
+              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: "2-digit" }) + ":00")
             }
           } else {
             setHour(parseInt(endTime.slice(0, 2)).toString())
@@ -204,7 +193,7 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
             if (end <= new Date(`${startDate} ${startTime}`)) {
               const start = new Date(new Date(end).setHours(end.getHours() - 1))
               setStartDate(start.toLocaleDateString("en-CA"))
-              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
+              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit" }) + ":00")
             }
           }
           setTimeout(() => timePicker.current.open(), 500)

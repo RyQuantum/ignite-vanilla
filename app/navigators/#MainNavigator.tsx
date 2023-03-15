@@ -11,11 +11,24 @@ import { CustomButton, Screen } from "../components"
 import { spacing } from "../theme"
 import { LocksScreen, LockScreen } from "../screens/#lock"
 import { NearbyLocksScreen, TutorialScreen, AssignNameScreen, FAQScreen } from "../screens/#addingLock"
-import { CardsScreen, AddCardScreen, PeriodScreen, CardInfoScreen, ChangePeriodScreen as CardChangePeriodScreen } from "../screens/#card"
-import { PasscodesScreen, PasscodeInfoScreen, ChangePeriodScreen, RecordsScreen, GeneratePasscodeScreen } from "../screens/#passcode"
+import {
+  PasscodesScreen,
+  PasscodeInfoScreen,
+  ChangePeriodScreen,
+  RecordsScreen,
+  GeneratePasscodeScreen,
+} from "../screens/#passcode"
+import {
+  CardsScreen,
+  AddCardScreen,
+  PeriodScreen as CardPeriodScreen,
+  CardInfoScreen,
+  ChangePeriodScreen as CardChangePeriodScreen,
+} from "../screens/#card"
 import {
   FingerprintsScreen,
   AddFingerprintScreen,
+  PeriodScreen as FingerprintPeriodScreen,
   FingerprintInfoScreen,
   ChangePeriodScreen as FingerprintChangePeriodScreen,
   TutorialScreen as FingerprintTutorialScreen,
@@ -122,7 +135,7 @@ const LocksNavigator = observer(function (_props) {
         />
         <Stack.Screen
           name="Validity Period"
-          component={PeriodScreen}
+          component={CardPeriodScreen}
         />
         <Stack.Screen
           name="Card Info"
@@ -141,6 +154,10 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Add Fingerprint"
           component={AddFingerprintScreen}
+        />
+        <Stack.Screen
+          name="Fingerprint Validity Period"
+          component={FingerprintPeriodScreen}
         />
         <Stack.Screen
           name="Fingerprint Tutorial"

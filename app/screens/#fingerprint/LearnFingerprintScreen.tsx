@@ -7,18 +7,20 @@ import { useStores } from "../../models"
 import { Screen, Text } from "../../components"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import { spacing } from "../../theme"
+import Spinner from "react-native-loading-spinner-overlay"
 
 const video = require("../../../assets/videos/fingerprint.mp4")
 export const LearnFingerprintScreen: FC<any> = observer(function LearnFingerprintScreen(props) {
   const {
-    fingerprintStore: { uploadFingerprint, lockId },
+    fingerprintStore: { uploadFingerprint, lockId, addFingerprintParams },
     lockStore: { lockList }
   } = useStores()
 
+  const [isLoading, setIsLoading] = useState(true)
   const player = useRef(null)
   const [paused, setPaused] = useState(true)
 
-  const [isRunning, setIsRunning] = useState(true)
+  const isRunning = useRef(true)
   const [isConnecting, setIsConnecting] = useState(false)
   const [count, setCount] = useState(0)
 
@@ -27,20 +29,23 @@ export const LearnFingerprintScreen: FC<any> = observer(function LearnFingerprin
   useEffect(() => {
     props.navigation.setOptions({
       title: "Add Fingerprint",
-      headerLeft: () => null,
-      gestureEnabled: false
+      // headerLeft: () => null,
+      // gestureEnabled: false
     })
     addFingerprint()
 
-    const backHandler = BackHandler.addEventListener("hardwareBackPress", () => true)
+    // const backHandler = BackHandler.addEventListener("hardwareBackPress", () => true)
     return () => {
-      backHandler.remove()
-      setIsRunning(false)
+      // backHandler.remove()
+      isRunning.current = false
     }
   }, [])
 
   const addFingerprint = useCallback(() => {
-    Ttlock.addFingerprint(null, 0, 0, lock.lockData, (currentCount, totalCount) => {
+    const { startDate, endDate, cyclicConfig } = addFingerprintParams
+    console.log("addFingerprintParams", startDate, endDate, cyclicConfig) // TODO test more scenario
+    Ttlock.addFingerprint(cyclicConfig, startDate, endDate, lock.lockData, (currentCount, totalCount) => {
+      setIsLoading(false)
       console.log("currentCount", currentCount, "totalCount", totalCount)
       if (currentCount === 0) {
         setIsConnecting(true)
@@ -49,17 +54,22 @@ export const LearnFingerprintScreen: FC<any> = observer(function LearnFingerprin
         setTimeout(() => setPaused(true), 750)
         setCount((count) => count + 1)
       }
-    }, (fingerprintNumber) => {
+    }, async (fingerprintNumber) => {
       console.log("fingerprintNumber", fingerprintNumber)
       setPaused(false)
       setCount(4)
-      alert(`success - fingerprintNumber: ${fingerprintNumber}`)
+      const res = await uploadFingerprint(fingerprintNumber)
+      props.route.params.refreshRef.current = true // request to refresh
+      if (res) props.navigation.navigate("Fingerprints")
     }, (errorCode, errorDesc) => {
       console.log("err", errorCode, errorDesc)
       setIsConnecting(false)
-      player.current.seek(0)
+      player.current?.seek(0)
       setCount(0)
-      isRunning && addFingerprint()
+      if (isRunning.current) {
+        addFingerprint()
+        setIsLoading(true)
+      }
     })
   }, [])
 
@@ -69,6 +79,7 @@ export const LearnFingerprintScreen: FC<any> = observer(function LearnFingerprin
       safeAreaEdges={["bottom"]}
       contentContainerStyle={$screenContentContainer}
     >
+      <Spinner visible={isLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
       <DemoDivider />
       {isConnecting ? (
         <Text style={$text}>Place your Finger on the Sensor</Text>
@@ -79,9 +90,6 @@ export const LearnFingerprintScreen: FC<any> = observer(function LearnFingerprin
       <Video
         source={video} // Can be a URL or a local file.
         ref={player} // Store reference
-        // onBuffer={this.onBuffer}                // Callback when remote video is buffering
-        // onError={this.videoError}               // Callback when video cannot be loaded
-        // repeat
         paused={paused}
         style={$backgroundVideo}
       />
