@@ -134,7 +134,7 @@ export const CardInfoScreen: FC<any> = observer(function CardInfoScreen(props) {
           </ListItem.Subtitle>
         </ListItem>
         <DemoDivider />
-        <ListItem bottomDivider onPress={() => props.navigation.navigate("Records")}>
+        <ListItem bottomDivider onPress={() => props.navigation.navigate("Passcode Records")}>
           <ListItem.Content>
             <ListItem.Title>Records</ListItem.Title>
           </ListItem.Content>

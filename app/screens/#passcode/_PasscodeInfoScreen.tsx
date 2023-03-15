@@ -221,7 +221,7 @@ export class PasscodeInfoScreen extends Component<IProps, IState> {
             </ListItem.Subtitle>
           </ListItem>
           <DemoDivider />
-          <ListItem bottomDivider onPress={() => this.props.navigation.navigate("Records")}>
+          <ListItem bottomDivider onPress={() => this.props.navigation.navigate("Passcode Records")}>
             <ListItem.Content>
               <ListItem.Title>Records</ListItem.Title>
             </ListItem.Content>

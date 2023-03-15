@@ -576,6 +576,19 @@ export class Api {
     )
     return parseResponse(response)
   }
+
+  async getRecordList(lockId: number, pageNo = 1, pageSize = 100) {
+    const formData = new FormData()
+    formData.append("lockId", lockId.toString())
+    formData.append("pageNo", pageNo.toString())
+    formData.append("pageSize", pageSize.toString())
+    formData.append("date", Date.now().toString())
+    const response = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
+      "lockRecord/list",
+      formData
+    )
+    return parseResponse(response)
+  }
 }
 
 function parseResponse(response) {

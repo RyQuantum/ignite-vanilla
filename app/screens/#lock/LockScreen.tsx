@@ -158,7 +158,7 @@ export const LockScreen: FC<any> = observer(function LockHomeScreen(props) {
               </TouchableWithoutFeedback>}
             </>
           )}
-          <TouchableWithoutFeedback disabled={dayLeft < 0} onPress={() => console.log("touch")}>
+          <TouchableWithoutFeedback disabled={dayLeft < 0} onPress={() => props.navigation.navigate("Records", { lockId })}>
             <View style={$iconTile}>
               <MaterialCommunityIcons name="history" color={dayLeft >= 0 ? colors.tint : colors.border} size={35} />
               <Text size="xs" style={$iconTileLabel}>

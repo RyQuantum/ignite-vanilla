@@ -15,7 +15,7 @@ import {
   PasscodesScreen,
   PasscodeInfoScreen,
   ChangePeriodScreen,
-  RecordsScreen,
+  RecordsScreen as PasscodeRecordsScreen,
   GeneratePasscodeScreen,
 } from "../screens/#passcode"
 import {
@@ -34,6 +34,8 @@ import {
   TutorialScreen as FingerprintTutorialScreen,
   LearnFingerprintScreen,
 } from "../screens/#fingerprint"
+import { RecordsScreen } from "../screens/#record"
+
 import { useStores } from "../models"
 
 function Settings({ navigation }) {
@@ -121,8 +123,8 @@ const LocksNavigator = observer(function (_props) {
           component={ChangePeriodScreen}
         />
         <Stack.Screen
-          name="Records"
-          component={RecordsScreen}
+          name="Passcode Records"
+          component={PasscodeRecordsScreen}
         />
         {/* Cards */}
         <Stack.Screen
@@ -175,6 +177,11 @@ const LocksNavigator = observer(function (_props) {
           name="Fingerprint Change Period"
           component={FingerprintChangePeriodScreen}
           options={() => ({ title: "Change Period" })}
+        />
+        {/* Records */}
+        <Stack.Screen
+          name="Records"
+          component={RecordsScreen}
         />
       </Stack.Navigator>
     </>
