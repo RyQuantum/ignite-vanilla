@@ -504,17 +504,21 @@ export class Api {
     return parseResponse(response)
   }
 
-  async updateFingerprint(lockId: number, fingerprintId: number, startDate: number, endDate: number, changeType: number) {
+  async updateFingerprint(lockId: number, fingerprintId: number, startDate: number, endDate: number, changeType: number, cyclicConfig?: object[]) {
+    const body: { lockId: number, fingerprintId: number, startDate: number, endDate: number, changeType: number, date: number, cyclicConfig?: string } = {
+      lockId,
+      fingerprintId,
+      startDate,
+      endDate,
+      changeType,
+      date: Date.now()
+    }
+    if (cyclicConfig) {
+      body.cyclicConfig = JSON.stringify(cyclicConfig)
+    }
     const response = await this.apisauce.post(
       "fingerprint/changePeriod",
-      qs.stringify({
-        lockId,
-        fingerprintId,
-        startDate,
-        endDate,
-        changeType,
-        date: Date.now() // TODO new system is not needed
-      }, { encode: true }),
+      qs.stringify(body, { encode: true }),
       {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -586,6 +590,21 @@ export class Api {
     const response = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
       "lockRecord/list",
       formData
+    )
+    return parseResponse(response)
+  }
+
+  async getRecordList2(lockId: number, pageNum = 2, pageSize = 200) {
+    const params = { pageNum, pageSize }
+    const formData = new FormData()
+    formData.append("lockId", lockId.toString())
+    // formData.append("pageNo", pageNo.toString())
+    // formData.append("pageSize", pageSize.toString())
+    // formData.append("date", Date.now().toString())
+    const response = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
+      "lockRecordCall/list",
+      formData,
+      { params }
     )
     return parseResponse(response)
   }

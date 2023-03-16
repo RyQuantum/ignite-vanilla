@@ -24,7 +24,7 @@ export const CardModel = types
   // .views((code) => ({}))
 
 export interface Card extends Instance<typeof CardModel> {}
-export interface CodeSnapshotOut extends SnapshotOut<typeof CardModel> {}
-export interface CodeSnapshotIn extends SnapshotIn<typeof CardModel> {}
+export interface CardSnapshotOut extends SnapshotOut<typeof CardModel> {}
+export interface CardSnapshotIn extends SnapshotIn<typeof CardModel> {}
 
 // @demo remove-file

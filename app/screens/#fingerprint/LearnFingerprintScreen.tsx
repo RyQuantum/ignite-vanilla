@@ -42,8 +42,8 @@ export const LearnFingerprintScreen: FC<any> = observer(function LearnFingerprin
   }, [])
 
   const addFingerprint = useCallback(() => {
-    const { startDate, endDate, cyclicConfig } = addFingerprintParams
-    console.log("addFingerprintParams", startDate, endDate, cyclicConfig) // TODO test more scenario
+    console.log("addFingerprintParams", addFingerprintParams) // TODO test more scenario
+    const { cyclicConfig, startDate, endDate } = addFingerprintParams
     Ttlock.addFingerprint(cyclicConfig, startDate, endDate, lock.lockData, (currentCount, totalCount) => {
       setIsLoading(false)
       console.log("currentCount", currentCount, "totalCount", totalCount)

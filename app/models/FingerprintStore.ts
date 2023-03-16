@@ -16,31 +16,43 @@ export const FingerprintStoreModel = types
     fingerprints: types.array(FingerprintModel),
     index: 0, // 0: Permanent, 1: Timed, 2: Recurring
     fingerprintName: "",
-    cycleDays: types.optional(types.array(types.number), []),
-    startDate: new Date().toLocaleDateString("en-CA"),
-    startTime: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00",
-    endDate: new Date().toLocaleDateString("en-CA"),
-    endTime: new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00",
+    startDate: "2000-01-01",
+    startTime: "00:00:00",
+    endDate: "2000-01-01",
+    endTime: "00:00:00",
+    cycleDays: types.maybeNull(types.array(types.number)),
   })
   .views((store) => ({
     get fingerprintList() {
       return store.fingerprints.slice()
     },
     get addFingerprintParams () {
-      const startDate = store.index === 0 ? 0 : new Date(`${store.startDate} ${store.startTime}`).getTime()
-      const endDate = store.index === 0 ? 0 : new Date(`${store.endDate} ${store.endTime}`).getTime()
+      let startDate = 0
+      let endDate = 0
+      switch (store.index) {
+        case 0:
+          break
+        case 1:
+          startDate = new Date(`${store.startDate} ${store.startTime}`).getTime()
+          endDate = new Date(`${store.endDate} ${store.endTime}`).getTime()
+          break
+        case 2:
+          startDate = new Date(`${store.startDate} 00:00:00`).getTime()
+          endDate = new Date(`${store.endDate} 23:59:59`).getTime()
+          break
+      }
       const startTime = parseInt(store.startTime.slice(0, 2)) * 60 + parseInt(store.startTime.slice(3, 5))
       const endTime = parseInt(store.endTime.slice(0, 2)) * 60 + parseInt(store.endTime.slice(3, 5))
       const cyclicConfig =
-        store.cycleDays.length > 0
-          ? store.cycleDays.map((day) => ({
-            weekDay: [7, 1, 2, 3, 4, 5, 6][day],
-            startTime,
-            endTime,
-          }))
+        store.index === 2
+          ? store.cycleDays!.map((day) => ({
+              weekDay: [7, 1, 2, 3, 4, 5, 6][day],
+              startTime,
+              endTime,
+            }))
           : null
-      return { startDate, endDate, cyclicConfig}
-    }
+      return { startDate, endDate, cyclicConfig }
+    },
   }))
   .actions(withSetPropAction)
   .actions((store) => ({
@@ -57,34 +69,15 @@ export const FingerprintStoreModel = types
       store.index = index
     },
 
-    setCycleDays(days) {
-      store.cycleDays = days.sort()
-    },
-
-    // setStartDate(date) {
-    //   store.startDate = date
-    // },
-    //
-    // setEndDate(date) {
-    //   store.endDate = date
-    // },
-    //
-    // setStartTime(time) {
-    //   store.startTime = time
-    // },
-    //
-    // setStartDate(date) {
-    //   store.startDate = date
-    // },
-
     updateFingerprintNameToStore(fingerprintId: number, fingerprintName: string) {
       store.fingerprints.find((f) => f.fingerprintId === fingerprintId)!.fingerprintName = fingerprintName
     },
 
-    updateFingerprintPeriodToStore(fingerprintId: number, startDate: number, endDate: number) {
+    updateFingerprintPeriodToStore(fingerprintId: number, startDate: number, endDate: number, cyclicConfig?: object[]) {
       const fingerprint = store.fingerprints.find((f) => f.fingerprintId === fingerprintId)!
       fingerprint.startDate = startDate
       fingerprint.endDate = endDate
+      if (cyclicConfig) fingerprint.cyclicConfig = cyclicConfig
     },
 
     removeFingerprintFromStore(fingerprintId: number) {
@@ -98,11 +91,11 @@ export const FingerprintStoreModel = types
     removeAllFingerprintParams() {
       store.index = 0
       store.fingerprintName = ""
-      destroy(store.cycleDays)
-      store.startDate = new Date().toLocaleDateString("en-CA")
-      store.startTime = new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00"
-      store.endDate = new Date().toLocaleDateString("en-CA")
-      store.endTime = new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00"
+      store.cycleDays = null
+      store.startDate = "2000-01-01"
+      store.startTime = "00:00:00"
+      store.endDate = "2000-01-01"
+      store.endTime = "00:00:00"
     }
   }))
   .actions((store) => ({
@@ -148,18 +141,18 @@ export const FingerprintStoreModel = types
       return []
     },
 
-    async updateFingerprint(startDate: number, endDate: number, changeType = 1) { // TODO changeType can be 2 for gateway
+    async updateFingerprint(startDate: number, endDate: number, cyclicConfig?: object[], changeType = 1) { // TODO changeType can be 2 for gateway
       store.isLoading = true
       const fingerprint = store.fingerprints.find((f) => f.fingerprintId === store.fingerprintId)!
       const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
       return new Promise((resolve) => {
         Ttlock.modifyFingerprintValidityPeriod(fingerprint.fingerprintNumber, null, startDate, endDate, lock.lockData, async () => {
           console.log("TTLock: modify fingerprint success")
-          const res: any = await api.updateFingerprint(lock.lockId, fingerprint.fingerprintId, startDate, endDate, changeType)
+          const res: any = await api.updateFingerprint(lock.lockId, fingerprint.fingerprintId, startDate, endDate, changeType, cyclicConfig)
           store.setProp("isLoading", false)
           switch (res.kind) {
             case "ok":
-              store.updateFingerprintPeriodToStore(fingerprint.fingerprintId, startDate, endDate)
+              store.updateFingerprintPeriodToStore(fingerprint.fingerprintId, startDate, endDate, cyclicConfig)
               setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
               return resolve(res.data)
             case "bad":

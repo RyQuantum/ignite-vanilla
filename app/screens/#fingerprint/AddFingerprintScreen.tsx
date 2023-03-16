@@ -14,33 +14,35 @@ import { fire } from "react-native-alertbox"
 
 export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScreen(props) {
   const {
-    fingerprintStore: { index, cycleDays, startDate: startDate2, endDate: endDate2, startTime: startTime2, endTime: endTime2, removeAllFingerprintParams, setIndex, setProp },
+    fingerprintStore: { index, removeAllFingerprintParams, setIndex, setProp },
   } = useStores()
 
-  // const [index, setIndex] = useState<number>(0)
   const [name, setName] = useState<string>("")
   const [date, setDate] = useState<Date>(new Date())  // for datetime modal picker
   const [hour, setHour] = useState<string>(new Date().getHours().toString())
   const [startDate, setStartDate] = useState<string>(new Date().toLocaleDateString("en-CA"))
   const [startTime, setStartTime] = useState<string>(new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
-  const [endDate, setEndDate] = useState<string>(new Date(Date.now() + 3600000).toLocaleDateString("en-CA"),)
+  const [endDate, setEndDate] = useState<string>(new Date(Date.now() + 3600000).toLocaleDateString("en-CA"))
   const [endTime, setEndTime] = useState<string>(new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
+  const [startDate2, setStartDate2] = useState<string>(startDate)
+  const [startTime2, setStartTime2] = useState<string>(startTime)
+  const [endDate2, setEndDate2] = useState<string>(endDate)
+  const [endTime2, setEndTime2] = useState<string>(endTime)
+  const [cycleDays2, setCycleDays2] = useState<number[]>([])
   const [dateVisible, setDateVisible] = useState<boolean>(false)
   const [isStart, setIsStart] = useState<boolean>(false)
   const timePicker = useRef(null)
-
-  // const [cycleDays, setCycleDays] = useState<number[] | null>(null)
 
   useEffect(() => {
     removeAllFingerprintParams()
   }, [])
 
   const updateDateTime = useCallback((params) => {
-    setStartDate(params.startDate)
-    setStartTime(params.startTime)
-    setEndDate(params.endDate)
-    setEndTime(params.endTime)
-    // setCycleDays(params.cycleDays)
+    setStartDate2(params.startDate)
+    setStartTime2(params.startTime)
+    setEndDate2(params.endDate)
+    setEndTime2(params.endTime)
+    setCycleDays2(params.cycleDays)
   }, [])
 
   return (
@@ -76,8 +78,6 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
           <ListItem.Input value={name} onChangeText={setName} placeholder="Please enter a Name" />
         </ListItem>
         <DemoDivider />
-
-        {index === 0 && <></>}
 
         {index === 1 && (
           <>
@@ -117,12 +117,12 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
           <>
             <ListItem
               bottomDivider
-              onPress={() => props.navigation.navigate("Fingerprint Validity Period", { updateDateTime })}
+              onPress={() => props.navigation.navigate("Fingerprint Validity Period", { updateDateTime, startDate2, startTime2, endDate2, endTime2, cycleDays2 })}
             >
               <ListItem.Title>Validity Period</ListItem.Title>
               <ListItem.Content />
               <ListItem.Subtitle>
-                {cycleDays.length > 0 && (
+                {cycleDays2.length > 0 && (
                   <View>
                     <Text style={{ fontSize: 12 }}>{startDate2}</Text>
                     <Text style={{ fontSize: 12 }}>{endDate2}</Text>
@@ -131,7 +131,7 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
               </ListItem.Subtitle>
               <ListItem.Chevron />
             </ListItem>
-            {cycleDays.length > 0 && (
+            {cycleDays2.length > 0 && (
               <>
                 <ListItem bottomDivider>
                   <ListItem.Title>Cycle Time</ListItem.Title>
@@ -143,7 +143,7 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
                 <ListItem bottomDivider>
                   <ListItem.Title>Cycle on</ListItem.Title>
                   <ListItem.Content />
-                  <ListItem.Subtitle>{cycleDays.map((d) => DAYS[d]).join(", ")}</ListItem.Subtitle>
+                  <ListItem.Subtitle>{cycleDays2.map((d) => DAYS[d]).join(", ")}</ListItem.Subtitle>
                 </ListItem>
               </>
             )}
@@ -153,15 +153,26 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
         <CustomButton
           preset="filled"
           style={{ margin: 20 }}
-          disabled={name === "" || (index === 2 && cycleDays.length === 0)}
+          disabled={name === "" || (index === 2 && cycleDays2.length === 0)}
           onPress={async () => {
-            if (index === 1) {
-              setProp("startDate", startDate)
-              setProp("endDate", endDate)
-              setProp("startTime", startTime)
-              setProp("endTime", endTime)
-            }
             setProp("fingerprintName", name)
+            switch (index) {
+              case 1:
+                setProp("startDate", startDate)
+                setProp("startTime", startTime)
+                setProp("endDate", endDate)
+                setProp("endTime", endTime)
+                break
+              case 2:
+                setProp("startDate", startDate2)
+                setProp("startTime", startTime2)
+                setProp("endDate", endDate2)
+                setProp("endTime", endTime2)
+                setProp("cycleDays", cycleDays2)
+                break
+              default:
+                console.log(`index error: index=${index}`)
+            }
             props.navigation.navigate("Fingerprint Tutorial", { refreshRef: props.route.params.refreshRef })
           }}
         >

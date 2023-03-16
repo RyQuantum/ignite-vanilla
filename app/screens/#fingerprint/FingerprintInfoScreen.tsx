@@ -12,7 +12,7 @@ import { convertTimeStampToDate } from "../../utils/ttlock2nd"
 export const FingerprintInfoScreen: FC<any> = observer(function FingerprintInfoScreen(props) {
 
   const {
-    fingerprintStore: { fingerprintList, saveFingerprintId, deleteFingerprint, updateFingerprintName },
+    fingerprintStore: { fingerprintList, saveFingerprintId, deleteFingerprint, updateFingerprintName, updateFingerprint },
   } = useStores()
 
   useEffect(() => {
@@ -38,6 +38,29 @@ export const FingerprintInfoScreen: FC<any> = observer(function FingerprintInfoS
         return <Text>Invalid fingerprintType: {fingerprint.fingerprintType}</Text>
     }
   }, [fingerprint])
+
+  const submit = useCallback(() => {
+    const { startDate, endDate, cyclicConfig } = fingerprint
+    const startDate2 = new Date(startDate).toLocaleDateString("en-CA")
+    const endDate2 = new Date(endDate).toLocaleDateString("en-CA")
+    const startTime2 = `${Math.floor(cyclicConfig[0].startTime / 60).toString().padStart(2, "0")}:${(cyclicConfig[0].startTime % 60).toString().padStart(2, "0")}`
+    const endTime2 = `${Math.floor(cyclicConfig[0].endTime / 60).toString().padStart(2, "0")}:${(cyclicConfig[0].endTime % 60).toString().padStart(2, "0")}`
+    const cycleDays2 = cyclicConfig.map(c => c.weekDay === 7 ? 0 : c.weekDay)
+    const updateDateTime = async (config) => {
+      const startDate = new Date(`${config.startDate} 00:00:00`).getTime()
+      const endDate = new Date(`${config.endDate} 23:59:59`).getTime()
+      const startTime = parseInt(config.startTime.slice(0, 2)) * 60 + parseInt(config.startTime.slice(3, 5))
+      const endTime = parseInt(config.endTime.slice(0, 2)) * 60 + parseInt(config.endTime.slice(3, 5))
+      const cyclicConfig = config.cycleDays!.map((day) => ({
+        weekDay: [7, 1, 2, 3, 4, 5, 6][day],
+        startTime,
+        endTime,
+      }))
+      const res = await updateFingerprint(startDate, endDate, cyclicConfig)
+      if (res) props.navigation.goBack()
+    }
+    props.navigation.navigate("Fingerprint Validity Period", { updateDateTime, startDate2, startTime2, endDate2, endTime2, cycleDays2 })
+  }, [])
 
   if (!fingerprint) { // After delete the fingerprint, the fingerprint will be removed from the store immediately. So return null.
     props.navigation.goBack()
@@ -92,7 +115,7 @@ export const FingerprintInfoScreen: FC<any> = observer(function FingerprintInfoS
         </ListItem>
         <ListItem
           bottomDivider
-          onPress={() => props.navigation.navigate("Fingerprint Change Period", { fingerprint })}
+          onPress={fingerprint.fingerprintType === 4 ? submit : () => props.navigation.navigate("Fingerprint Change Period", { fingerprint })}
         >
           <ListItem.Content>
             <ListItem.Title>Validity Period</ListItem.Title>
@@ -104,17 +127,19 @@ export const FingerprintInfoScreen: FC<any> = observer(function FingerprintInfoS
         </ListItem>
         {fingerprint.fingerprintType === 4 && ( // TODO check whether TTLock supports it
           <>
-            <ListItem topDivider bottomDivider>
+            <ListItem topDivider bottomDivider onPress={submit}>
               <ListItem.Content>
                 <ListItem.Title>Cycle Time</ListItem.Title>
               </ListItem.Content>
-              <ListItem.Subtitle>{moment(fingerprint.startDate).format("HH:mm")} - {moment(fingerprint.endDate).format("HH:mm")}</ListItem.Subtitle>
+              <ListItem.Subtitle>{Math.floor(fingerprint.cyclicConfig[0].startTime / 60).toString().padStart(2, "0")}:{(fingerprint.cyclicConfig[0].startTime % 60).toString().padStart(2, "0")} - {Math.floor(fingerprint.cyclicConfig[0].endTime / 60).toString().padStart(2, "0")}:{(fingerprint.cyclicConfig[0].endTime % 60).toString().padStart(2, "0")}</ListItem.Subtitle>
+              <ListItem.Chevron />
             </ListItem>
-            <ListItem topDivider bottomDivider>
+            <ListItem topDivider bottomDivider onPress={submit}>
               <ListItem.Content>
                 <ListItem.Title>Cycle on</ListItem.Title>
               </ListItem.Content>
               <ListItem.Subtitle>{fingerprint.cyclicConfig.map((item) => [null, "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][item.weekDay]).join(", ")}</ListItem.Subtitle>
+              <ListItem.Chevron />
             </ListItem>
           </>
         )}
@@ -130,7 +155,7 @@ export const FingerprintInfoScreen: FC<any> = observer(function FingerprintInfoS
             <ListItem.Title>Time</ListItem.Title>
           </ListItem.Content>
           <ListItem.Subtitle>
-            {moment(fingerprint.createDate).format("YYYY-MM-DD HH:mm")}
+            {moment(fingerprint.createDate).format("YYYY-MM-DD HH:mm:ss")}
           </ListItem.Subtitle>
         </ListItem>
         <DemoDivider />

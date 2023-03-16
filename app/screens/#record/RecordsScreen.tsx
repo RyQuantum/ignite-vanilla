@@ -119,7 +119,6 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
                   <ListItem
                     topDivider
                     bottomDivider
-                    onPress={() => props.navigation.navigate("Card Info", { cardId })}
                     onLongPress={() =>
                       fire({
                         title: "Delete?",
@@ -162,12 +161,13 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
                             minWidth: 260,
                           }}
                         >
-                          <Text style={{ fontSize: 18 }}>{item.cardName}</Text>
+                          <Text style={{ fontSize: 18 }}>{item.username}</Text>
                           {/* <Text style={{ color: "red" }}>{getValidity(item)}</Text> */}
                         </View>
                       </ListItem.Title>
                       <ListItem.Subtitle style={{ color: colors.palette.neutral300, fontSize: 13 }}>
                         {/* {generateCardInfo(item)} */}
+                        {new Date(item.lockDate).toLocaleTimeString([], { hour12: false })}
                       </ListItem.Subtitle>
                     </ListItem.Content>
                   </ListItem>

@@ -30,8 +30,8 @@ export const FingerprintModel = types
   .actions(withSetPropAction)
   // .views((code) => ({}))
 
-export interface Card extends Instance<typeof FingerprintModel> {}
-export interface CodeSnapshotOut extends SnapshotOut<typeof FingerprintModel> {}
-export interface CodeSnapshotIn extends SnapshotIn<typeof FingerprintModel> {}
+export interface Fingerprint extends Instance<typeof FingerprintModel> {}
+export interface FingerprintSnapshotOut extends SnapshotOut<typeof FingerprintModel> {}
+export interface FingerprintSnapshotIn extends SnapshotIn<typeof FingerprintModel> {}
 
 // @demo remove-file

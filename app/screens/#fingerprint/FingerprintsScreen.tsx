@@ -22,7 +22,10 @@ function getValidity(fingerprint) {
       // Timed
       return fingerprint.startDate > currentTime ? "Inactive" : (fingerprint.endDate < currentTime ? "Invalid" : "")
     case 4: // Recurring
-      return (fingerprint.startDate < currentTime && fingerprint.endDate > currentTime) || "Invalid"
+      const startDate = new Date(fingerprint.startDate).toLocaleDateString("en-CA")
+      const endDate = new Date(fingerprint.endDate).toLocaleDateString("en-CA")
+      const currentDate = new Date().toLocaleDateString("en-CA")
+      return currentDate < startDate ? "Inactive" : currentDate > endDate ? "Invalid" : ""
     default:
       return `Invalid fingerprintType: ${fingerprint.fingerprintType}`
   }

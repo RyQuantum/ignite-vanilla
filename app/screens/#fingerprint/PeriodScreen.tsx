@@ -2,25 +2,22 @@ import React, { FC, useEffect, useRef, useState } from "react"
 import { ViewStyle, Text, View } from "react-native"
 import { ButtonGroup, ListItem } from "@rneui/themed"
 import { observer } from "mobx-react"
-import { useStores } from "../../models"
-import { Screen } from "../../components"
+import { CustomButton, Screen } from "../../components"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 import DateTimePickerModal from "react-native-modal-datetime-picker"
 import TimePicker from "react-native-24h-timepicker"
 
 export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
-  const {
-    fingerprintStore: { cycleDays, startDate, startTime, endDate, endTime, setCycleDays, setProp },
-  } = useStores()
+
+  const { updateDateTime, startDate2, startTime2, endDate2, endTime2, cycleDays2 } = props.route.params;
 
   const [date, setDate] = useState<Date>(new Date())  // for datetime modal picker
-  // const [hour, setHour] = useState<string>(new Date().getHours().toString())
   const [time, setTime] = useState<string>("00:00")
-  // const [startDate, setStartDate] = useState<string>(new Date().toLocaleDateString("en-CA"))
-  // const [startTime, setStartTime] = useState<string>(new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
-  // const [endDate, setEndDate] = useState<string>(new Date(Date.now() + 3600000).toLocaleDateString("en-CA"),)
-  // const [endTime, setEndTime] = useState<string>(new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
-  // const [cycleDays, setCycleDays] = useState<number[]>([])
+  const [startDate, setStartDate] = useState<string>(startDate2)
+  const [startTime, setStartTime] = useState<string>(startTime2)
+  const [endDate, setEndDate] = useState<string>(endDate2)
+  const [endTime, setEndTime] = useState<string>(endTime2)
+  const [cycleDays, setCycleDays] = useState<number[]>(cycleDays2)
   const [dateVisible, setDateVisible] = useState<boolean>(false)
   const [isStart, setIsStart] = useState<boolean>(false)
   const timePicker = useRef(null)
@@ -104,18 +101,17 @@ export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
         <ListItem.Subtitle>{endDate}</ListItem.Subtitle>
         <ListItem.Chevron />
       </ListItem>
-      {/* <CustomButton */}
-      {/*   preset="filled" */}
-      {/*   style={{ margin: 20 }} */}
-      {/*   // textStyle={{ color: "white" }} */}
-      {/*   disabled={cycleDays.length === 0} */}
-      {/*   onPress={() => { */}
-      {/*     props.route.params.updateDateTime({ startDate, endDate, startTime, endTime }) */}
-      {/*     props.navigation.goBack() */}
-      {/*   }} */}
-      {/* > */}
-      {/*   OK */}
-      {/* </CustomButton> */}
+      <CustomButton
+        preset="filled"
+        style={{ margin: 20 }}
+        // textStyle={{ color: "white" }}
+        disabled={cycleDays.length === 0}
+        onPress={async () => {
+          await updateDateTime({ startDate, endDate, startTime, endTime, cycleDays })
+        }}
+      >
+        OK
+      </CustomButton>
       <DateTimePickerModal
         isVisible={dateVisible}
         mode="date"
@@ -126,20 +122,20 @@ export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
           console.log("A date has been picked: ", date.toLocaleDateString("en-CA"))
           setDateVisible(false)
           if (isStart) {
-            setProp("startDate", date.toLocaleDateString("en-CA"))
-            // setStartDate(date.toLocaleDateString("en-CA"))
+            // setProp("startDate", date.toLocaleDateString("en-CA"))
+            setStartDate(date.toLocaleDateString("en-CA"))
             const start = new Date(`${date.toLocaleDateString("en-CA")}`)
             if (start > new Date(`${endDate}`)) {
-              setProp("endDate", date.toLocaleDateString("en-CA"))
-              // setEndDate(date.toLocaleDateString("en-CA"))
+              // setProp("endDate", date.toLocaleDateString("en-CA"))
+              setEndDate(date.toLocaleDateString("en-CA"))
             }
           } else {
-            setProp("endDate", date.toLocaleDateString("en-CA"))
-            // setEndDate(date.toLocaleDateString("en-CA"))
+            // setProp("endDate", date.toLocaleDateString("en-CA"))
+            setEndDate(date.toLocaleDateString("en-CA"))
             const end = new Date(`${date.toLocaleDateString("en-CA")}`)
             if (end < new Date(`${startDate}`)) {
-              setProp("startDate", date.toLocaleDateString("en-CA"))
-              // setStartDate(date.toLocaleDateString("en-CA"))
+              // setProp("startDate", date.toLocaleDateString("en-CA"))
+              setStartDate(date.toLocaleDateString("en-CA"))
             }
           }
         }}
@@ -160,11 +156,11 @@ export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
                 end = new Date(`2000 ${start}`)
                 start = "23:58"
               }
-              setProp("endTime", end.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
-              // setEndTime(end.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
+              // setProp("endTime", end.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
+              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
             }
-            setProp("startTime", start)
-            // setStartTime(start)
+            // setProp("startTime", start)
+            setStartTime(start)
           } else {
             let end = `${hour.padStart(2, "0")}:${minute}`
             if (end <= startTime) {
@@ -173,11 +169,11 @@ export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
                 start = new Date(`2000 ${start}`)
                 end = "00:01"
               }
-              setProp("startTime", start.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
-              // setStartTime(start.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
+              // setProp("startTime", start.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
+              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
             }
-            setProp("endTime", end)
-            // setEndTime(end)
+            // setProp("endTime", end)
+            setEndTime(end)
           }
         }}
         onCancel={() => timePicker.current.close()}

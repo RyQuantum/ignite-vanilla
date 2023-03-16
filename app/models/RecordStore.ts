@@ -50,10 +50,32 @@ export const RecordStoreModel = types
   }))
   .actions((store) => ({
     // async actions
+    async getRecordList2() {
+      store.isRefreshing = true
+      const res: any = await api.getRecordList(store.lockId) // TODO add pagination
+      store.setProp("isRefreshing", false)
+      switch (res.kind) {
+        case "ok":
+          if (res.data?.list) {
+            store.setProp("records", res.data.list)
+            // return res.data.list
+          } else {
+            alert(JSON.stringify(res))
+          }
+          break
+        case "bad":
+          Alert.alert(`code: ${res.code}`, res.msg)
+          break
+        default:
+          Alert.alert(res.kind, res.msg)
+      }
+      return []
+    },
+
     async getRecordList() {
       store.isRefreshing = true
-      console.log(123)
-      const res: any = await api.getRecordList(store.lockId) // TODO add pagination
+      // const res: any = await api.getRecordList(store.lockId) // TODO add pagination
+      const res: any = await api.getRecordList2(store.lockId) // TODO add pagination
       store.setProp("isRefreshing", false)
       switch (res.kind) {
         case "ok":
