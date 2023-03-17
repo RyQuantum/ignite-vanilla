@@ -34,7 +34,7 @@ import {
   TutorialScreen as FingerprintTutorialScreen,
   LearnFingerprintScreen,
 } from "../screens/#fingerprint"
-import { RecordsScreen } from "../screens/#record"
+import { ExportedScreen, RecordsScreen } from "../screens/#record"
 
 import { useStores } from "../models"
 
@@ -69,11 +69,12 @@ const LocksNavigator = observer(function (_props) {
     codeStore: { isLoading: isCodeLoading },
     cardStore: { isLoading: isCardLoading },
     fingerprintStore: { isLoading: isFingerprintLoading },
+    recordStore: { isLoading: isRecordLoading },
   } = useStores()
 
   return (
     <>
-      <Spinner visible={isCodeLoading || isLockLoading || isCardLoading || isFingerprintLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
+      <Spinner visible={isCodeLoading || isLockLoading || isCardLoading || isFingerprintLoading || isRecordLoading} overlayColor="rgba(0, 0, 0, 0)" color="black" />
       <Stack.Navigator
         screenOptions={{
           // headerShown: true,
@@ -182,6 +183,10 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Records"
           component={RecordsScreen}
+        />
+        <Stack.Screen
+          name="Exported Result"
+          component={ExportedScreen}
         />
       </Stack.Navigator>
     </>

@@ -12,6 +12,7 @@ import {
 } from "apisauce"
 import qs from 'qs';
 import { getUniqueId } from 'react-native-device-info';
+import RNFS from "react-native-fs"
 import Config from "../../config"
 import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem" // @demo remove-current-line
 import type {
@@ -20,7 +21,8 @@ import type {
   ApiGetKeyListResponse,
   ApiLoginResponse, // @demo remove-current-line
 } from "./api.types"
-import type { EpisodeSnapshotIn } from "../../models/Episode" // @demo remove-current-line
+import type { EpisodeSnapshotIn } from "../../models/Episode"
+import * as Constants from "constants" // @demo remove-current-line
 
 /**
  * Configuring the apisauce instance.
@@ -594,11 +596,11 @@ export class Api {
     return parseResponse(response)
   }
 
-  async getRecordList2(lockId: number, pageNum = 2, pageSize = 200) {
+  async getRecordList2(lockId: number, text?: string, pageNum = 1, pageSize = 20) {
     const params = { pageNum, pageSize }
     const formData = new FormData()
     formData.append("lockId", lockId.toString())
-    // formData.append("pageNo", pageNo.toString())
+    if (text) formData.append("username", text)
     // formData.append("pageSize", pageSize.toString())
     // formData.append("date", Date.now().toString())
     const response = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
@@ -607,6 +609,48 @@ export class Api {
       { params }
     )
     return parseResponse(response)
+  }
+
+  async uploadRecords(lockId: number, records: string) {
+    const response = await this.apisauce.post(
+      "lockRecord/upload",
+      qs.stringify({
+        lockId,
+        records,
+        date: Date.now()
+      }, { encode: true }),
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        }
+      }
+    )
+    return parseResponse(response)
+  }
+
+  async deleteRecord(lockId: number, recordId: number) {
+    // const params = { lockId, recordId }
+    const formData = new FormData()
+    formData.append("lockId", lockId.toString())
+    formData.append("recordIds", recordId.toString())
+    const response = await this.apisauce.delete( // TODO ApiLoginResponse => ApiGetKeyListResponse
+      `lockRecordCall/${recordId}`,
+      formData,
+      // { params }
+    )
+    return parseResponse(response)
+  }
+
+  async exportExcel(lockId: number, beginLockDate: number, endLockDate: number) {
+    const localFile = `${RNFS.DocumentDirectoryPath}/records.xlsx`;
+    const res = await RNFS.downloadFile({
+      fromUrl: `http://54.177.251.43:5030/v3/lockRecordCall/export?lockId=${lockId}&beginLockDate=${beginLockDate}&endLockDate=${endLockDate}`,
+      toFile: localFile,
+      headers: {
+        Authorization: this.apisauce.headers.Authorization
+      },
+    }).promise;
+    return localFile
   }
 }
 

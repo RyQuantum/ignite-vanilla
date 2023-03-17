@@ -1,10 +1,11 @@
 import { Alert } from "react-native"
 import { destroy, getRoot, Instance, SnapshotOut, types } from "mobx-state-tree"
+import FileViewer from "react-native-file-viewer";
+import Toast from 'react-native-simple-toast';
+import { LockRecordType, Ttlock } from "react-native-ttlock"
 import { api } from "../services/api"
 import { RecordModel } from "./Record"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { Ttlock } from "react-native-ttlock"
-import Toast from 'react-native-simple-toast';
 
 export const RecordStoreModel = types
   .model("RecordStore")
@@ -13,11 +14,26 @@ export const RecordStoreModel = types
     isLoading: false,
     lockId: 0,
     records: types.array(RecordModel),
+    path: "",
   })
   .views((store) => ({
     get recordList() {
       return store.records.slice()
     },
+    get recordList2() {
+      const list = store.records
+      const res = {}
+      list.forEach(item => {
+        const date = item.lockDateDescribe.slice(0, 10)
+        if (!res[date]) {
+          res[date] = [item]
+        } else {
+          res[date].push(item)
+        }
+      })
+      // console.log("recordList2", Object.keys(res).map(date => ({ title: date, children: res[date] })))
+      return Object.keys(res).map(date => ({ title: date, children: res[date] }))
+    }
   }))
   .actions(withSetPropAction)
   .actions((store) => ({
@@ -26,22 +42,22 @@ export const RecordStoreModel = types
       store.lockId = id
     },
 
-    saveCardId(id: number) {
-      store.cardId = id
-    },
+    // saveCardId(id: number) {
+    //   store.cardId = id
+    // },
 
-    updateCardNameToStore(cardId: number, cardName: string) {
-      store.cards.find((c) => c.cardId === cardId)!.cardName = cardName
-    },
+    // updateCardNameToStore(cardId: number, cardName: string) {
+    //   store.cards.find((c) => c.cardId === cardId)!.cardName = cardName
+    // },
 
-    updateCardPeriodToStore(cardId: number, startDate: number, endDate: number) {
-      const card = store.cards.find((c) => c.cardId === cardId)!
-      card.startDate = startDate
-      card.endDate = endDate
-    },
+    // updateCardPeriodToStore(cardId: number, startDate: number, endDate: number) {
+    //   const card = store.cards.find((c) => c.cardId === cardId)!
+    //   card.startDate = startDate
+    //   card.endDate = endDate
+    // },
 
-    removeCardFromStore(cardId: number) {
-      destroy(store.cards.find((c) => c.cardId === cardId))
+    removeRecordFromStore(recordId: number) {
+      destroy(store.records.find((r) => r.recordId === recordId))
     },
 
     removeAllRecordsFromStore() {
@@ -50,7 +66,7 @@ export const RecordStoreModel = types
   }))
   .actions((store) => ({
     // async actions
-    async getRecordList2() {
+    async getRecordList(text?: string) {
       store.isRefreshing = true
       const res: any = await api.getRecordList(store.lockId) // TODO add pagination
       store.setProp("isRefreshing", false)
@@ -72,11 +88,11 @@ export const RecordStoreModel = types
       return []
     },
 
-    async getRecordList() {
-      store.isRefreshing = true
-      // const res: any = await api.getRecordList(store.lockId) // TODO add pagination
-      const res: any = await api.getRecordList2(store.lockId) // TODO add pagination
-      store.setProp("isRefreshing", false)
+    async getRecordList2(text?: string) {
+      store.isLoading = true
+      // text && store.removeAllRecordsFromStore()
+      const res: any = await api.getRecordList2(store.lockId, text) // TODO add pagination
+      store.setProp("isLoading", false)
       switch (res.kind) {
         case "ok":
           if (res.data?.list) {
@@ -93,6 +109,83 @@ export const RecordStoreModel = types
           Alert.alert(res.kind, res.msg)
       }
       return []
+    },
+
+
+    async uploadRecords() {
+      store.isLoading = true
+      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
+      return new Promise((resolve) => {
+        Ttlock.getLockOperationRecord(LockRecordType.Latest, lock.lockData, async (records) => {
+          console.log(`TTLock: get lock records success: ${(records)}`)
+          if (!records) {
+            store.setProp("isLoading", false)
+            setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
+            return "No new record"
+          }
+          const res: any = await api.uploadRecords(lock.lockId, records)
+          store.setProp("isLoading", false)
+          switch (res.kind) {
+            case "ok":
+              setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
+              return resolve(res.data)
+            case "bad":
+              Alert.alert(`code: ${res.code}`, res.msg)
+              break
+            default:
+              Alert.alert(res.kind, res.msg)
+          }
+          return resolve(null)
+        }, (errorCode, errorDesc) => { // TODO print error in the log
+          store.setProp("isLoading", false)
+          Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
+          return resolve(null)
+        })
+      })
+    },
+
+    async deleteRecord(recordId: number) {
+      store.isLoading = true
+      const res: any = await api.deleteRecord(store.lockId, recordId) // TODO add pagination
+      store.setProp("isLoading", false)
+      switch (res.kind) {
+        case "ok":
+          store.removeRecordFromStore(recordId)
+          Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER)
+          return res.data
+        case "bad":
+          Alert.alert(`code: ${res.code}`, res.msg)
+          break
+        default:
+          Alert.alert(res.kind, res.msg)
+      }
+      return null
+    },
+
+
+    async exportExcel(startDate: number, endDate: number) {
+      store.isLoading = true
+      const path: any = await api.exportExcel(store.lockId, startDate, endDate) // TODO add pagination
+      store.setProp("isLoading", false)
+      // const res = await FileViewer.open(path)
+      store.setProp("path", path)
+      return "success"
+      // switch (res.kind) { TODO check error case
+      //   case "ok":
+      //     if (res.data?.list) {
+      //       store.setProp("records", res.data.list)
+      //       // return res.data.list
+      //     } else {
+      //       alert(JSON.stringify(res))
+      //     }
+      //     break
+      //   case "bad":
+      //     Alert.alert(`code: ${res.code}`, res.msg)
+      //     break
+      //   default:
+      //     Alert.alert(res.kind, res.msg)
+      // }
+      // return null
     },
 
     async addCard(cardName: string, startDate: number, endDate: number, addType = 1) { // TODO addType can be 2 for gateway

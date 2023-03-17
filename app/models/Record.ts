@@ -16,7 +16,9 @@ export const RecordModel = types
       keyName: types.maybe(types.string),
       keyboardPwd: types.string,
       lockDate: types.number,
-      username: types.maybeNull(types.string)
+      username: types.maybeNull(types.string),
+      recordTypeDescribe: types.string,
+      lockDateDescribe: types.string,
   })
   .actions(withSetPropAction)
   // .views((code) => ({}))
