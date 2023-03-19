@@ -13,6 +13,9 @@ export const RecordStoreModel = types
     isRefreshing: false,
     isLoading: false,
     lockId: 0,
+    searchText: "",
+    pageNo: 1,
+    pages: -1,
     records: types.array(RecordModel),
     path: "",
   })
@@ -88,15 +91,24 @@ export const RecordStoreModel = types
       return []
     },
 
-    async getRecordList2(text?: string) {
+    async getRecordList2(searchText = "", pageNo?: number) {
+      if (searchText !== store.searchText || pageNo === 1) {
+        store.removeAllRecordsFromStore()
+        store.searchText = searchText
+        store.pageNo = 1
+        store.pages = -1 // TODO needs to verify whether it's needed
+      } else {
+        store.pageNo += 1
+        if (store.pages < store.pageNo) return "No more"
+      }
       store.isLoading = true
-      // text && store.removeAllRecordsFromStore()
-      const res: any = await api.getRecordList2(store.lockId, text) // TODO add pagination
+      const res: any = await api.getRecordList2(store.lockId, searchText, store.pageNo) // TODO add pagination
       store.setProp("isLoading", false)
       switch (res.kind) {
         case "ok":
           if (res.data?.list) {
-            store.setProp("records", res.data.list)
+            store.setProp("records", [...store.records, ...res.data.list])
+            store.setProp("pages", res.data.pages)
             // return res.data.list
           } else {
             alert(JSON.stringify(res))
@@ -325,7 +337,7 @@ export const RecordStoreModel = types
   .preProcessSnapshot((snapshot) => {
     // remove sensitive data from snapshot to avoid secrets
     // being stored in AsyncStorage in plain text if backing up store
-    const { isLoading, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { isLoading, searchText, pageNo, pages, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
 
     // see the following for strategies to consider storing secrets on device
     // https://reactnative.dev/docs/security#storing-sensitive-info

@@ -596,8 +596,8 @@ export class Api {
     return parseResponse(response)
   }
 
-  async getRecordList2(lockId: number, text?: string, pageNum = 1, pageSize = 20) {
-    const params = { pageNum, pageSize }
+  async getRecordList2(lockId: number, text?: string, pageNo = 1, pageSize = 20) {
+    const params = { pageNo, pageSize }
     const formData = new FormData()
     formData.append("lockId", lockId.toString())
     if (text) formData.append("username", text)

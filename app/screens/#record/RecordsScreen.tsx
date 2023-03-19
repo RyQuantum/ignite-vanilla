@@ -65,7 +65,7 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    removeAllRecordsFromStore() // clean card store at the beginning
+    // removeAllRecordsFromStore() // clean card store at the beginning
     saveLockId(props.route.params.lockId)
     props.navigation.setOptions({
       headerRight: () => (
@@ -108,7 +108,7 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
         </HeaderButtons>
       ),
     })
-    getRecordList2()
+    getRecordList2(undefined, 1)
     const unsubscribe = props.navigation.addListener('focus', () => { // auto refresh after delete a card
       // if (refreshRef.current) {
       //   getCardList()
@@ -171,7 +171,7 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
         onChangeText={setSearchText}
         value={searchText}
         returnKeyType="search"
-        onSubmitEditing={({ nativeEvent: { text } }) => getRecordList2(text)}
+        onSubmitEditing={({ nativeEvent: { text } }) => getRecordList2(text, 1)}
       />
       <Screen
         preset="fixed"
@@ -184,7 +184,9 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
             // keyExtractor={(_, i) => i + ""}
             data={recordList2}
             // data={recordList}
-            refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={getRecordList2} />}
+            onEndReached={() => getRecordList2(searchText)}
+            onEndReachedThreshold={0.5}
+            refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => getRecordList2(searchText, 1)} />}
             renderHeader={({ item, index }) => {
               return (
                 <Text
@@ -239,7 +241,7 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
                     </ListItem.Title>
                     <ListItem.Subtitle style={{ color: colors.palette.neutral300, fontSize: 13 }}>
                       {/* {generateCardInfo(item)} */}
-                      {item.lockDateDescribe.slice(0, 10)} {item.recordTypeDescribe}
+                      {item.lockDateDescribe.slice(12)} {item.recordTypeDescribe}
                     </ListItem.Subtitle>
                   </ListItem.Content>
                 </ListItem>
