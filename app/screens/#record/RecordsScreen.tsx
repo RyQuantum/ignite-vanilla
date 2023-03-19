@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from "react"
+import React, { FC, useCallback, useEffect, useRef, useState } from "react"
 import {
   Image,
   RefreshControl,
@@ -75,7 +75,7 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
             OverflowIcon={({ color }) => (
               <FeatherIcons name="more-vertical" size={23} color="white" />
             )}
-            onPress={overflowMenuPressHandlerDropdownMenu}
+            // onPress={overflowMenuPressHandlerDropdownMenu}
           >
             <HiddenItem title="Refresh Records" onPress={uploadRecords} />
             {props.route.params.isAdmin && (
@@ -135,6 +135,29 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
   //   scrollView2?.current?.scrollToOffset({ offset: -65, animated: true })
   // }
 
+  const fireDeleteAlert = useCallback(
+    (item) => () =>
+      fire({
+        title: "Continue to delete the record?",
+        message: "The record cannot be recovered after deleting",
+        actions: [
+          {
+            text: "Cancel",
+            style: "cancel",
+          },
+          {
+            text: "Delete",
+            onPress: async () => {
+              const res = await deleteRecord(item.recordId)
+              // if (res) this.props.navigation.goBack()
+            },
+          },
+        ],
+        fields: [],
+      }),
+    [],
+  )
+
 
   return (
     <>
@@ -158,10 +181,11 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
         {recordList2.length > 0 ? ( // TODO fix android version issue or add comment
           <StickyHeaderFlatlist // TODO optimize flatlist
             ref={scrollView2}
-            keyExtractor={(_, i) => i + ""}
+            // keyExtractor={(_, i) => i + ""}
             data={recordList2}
+            // data={recordList}
             refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={getRecordList2} />}
-            renderHeader={({ item }) => {
+            renderHeader={({ item, index }) => {
               return (
                 <Text
                   style={{
@@ -169,7 +193,8 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
                     paddingLeft: 20,
                     backgroundColor: "#eee",
                   }}
-                  key={(Math.random() + 1).toString(36).substring(2)}
+                  // key={(Math.random() + 1).toString(36).substring(2)}
+                  key={index}
                 >
                   {item.title}
                 </Text>
@@ -180,29 +205,11 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
                 <Observer>
                   {() => (
                 <ListItem
-                  key={(Math.random() + 1).toString(36).substring(2)}
+                  // key={(Math.random() + 1).toString(36).substring(2)}
+                  key={item.recordId}
                   topDivider
                   bottomDivider
-                  onLongPress={() =>
-                    fire({
-                      title: "Continue to delete the record?",
-                      message: "The record cannot be recovered after deleting",
-                      actions: [
-                        {
-                          text: "Cancel",
-                          style: "cancel",
-                        },
-                        {
-                          text: "Delete",
-                          onPress: async () => {
-                            const res = await deleteRecord(item.recordId)
-                            // if (res) this.props.navigation.goBack()
-                          },
-                        },
-                      ],
-                      fields: [],
-                    })
-                  }
+                  onLongPress={fireDeleteAlert(item)}
                   containerStyle={{ width: "100%" }}
                 >
                   <Avatar
