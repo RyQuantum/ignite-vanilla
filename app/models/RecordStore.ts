@@ -1,12 +1,14 @@
 import { Alert } from "react-native"
 import { destroy, getRoot, Instance, SnapshotOut, types } from "mobx-state-tree"
-import FileViewer from "react-native-file-viewer";
 import Toast from 'react-native-simple-toast';
 import { LockRecordType, Ttlock } from "react-native-ttlock"
 import { api } from "../services/api"
-import { RecordModel } from "./Record"
+import { Record, RecordModel } from "./Record"
 import { withSetPropAction } from "./helpers/withSetPropAction"
 
+type Title = {
+  title: string
+}
 export const RecordStoreModel = types
   .model("RecordStore")
   .props({
@@ -14,28 +16,27 @@ export const RecordStoreModel = types
     isLoading: false,
     lockId: 0,
     searchText: "",
+    recordType: 0,
     pageNo: 1,
     pages: -1,
     records: types.array(RecordModel),
     path: "",
   })
   .views((store) => ({
-    get recordList() {
-      return store.records.slice()
-    },
-    get recordList2() {
-      const list = store.records
-      const res = {}
-      list.forEach(item => {
+    get recordListAndIndices() {
+      const dates: string[] = []
+      const indices: number[] = []
+      const recordList: Record | Title[] = []
+      store.records.forEach(item => {
         const date = item.lockDateDescribe.slice(0, 10)
-        if (!res[date]) {
-          res[date] = [item]
-        } else {
-          res[date].push(item)
+        if (dates[dates.length - 1] !== date) {
+          dates.push(date)
+          indices.push(recordList.length)
+          recordList.push({ title: date })
         }
+        recordList.push(item)
       })
-      // console.log("recordList2", Object.keys(res).map(date => ({ title: date, children: res[date] })))
-      return Object.keys(res).map(date => ({ title: date, children: res[date] }))
+      return { indices, recordList }
     }
   }))
   .actions(withSetPropAction)
@@ -44,20 +45,6 @@ export const RecordStoreModel = types
     saveLockId(id: number) {
       store.lockId = id
     },
-
-    // saveCardId(id: number) {
-    //   store.cardId = id
-    // },
-
-    // updateCardNameToStore(cardId: number, cardName: string) {
-    //   store.cards.find((c) => c.cardId === cardId)!.cardName = cardName
-    // },
-
-    // updateCardPeriodToStore(cardId: number, startDate: number, endDate: number) {
-    //   const card = store.cards.find((c) => c.cardId === cardId)!
-    //   card.startDate = startDate
-    //   card.endDate = endDate
-    // },
 
     removeRecordFromStore(recordId: number) {
       destroy(store.records.find((r) => r.recordId === recordId))
@@ -69,9 +56,9 @@ export const RecordStoreModel = types
   }))
   .actions((store) => ({
     // async actions
-    async getRecordList(text?: string) {
+    async getRecordList0(text?: string) {
       store.isRefreshing = true
-      const res: any = await api.getRecordList(store.lockId) // TODO add pagination
+      const res: any = await api.getRecordList0(store.lockId) // TODO add pagination
       store.setProp("isRefreshing", false)
       switch (res.kind) {
         case "ok":
@@ -91,25 +78,33 @@ export const RecordStoreModel = types
       return []
     },
 
-    async getRecordList2(searchText = "", pageNo?: number) {
+    async getRecordList(searchText = "", recordType?: number, pageNo?: number) {
       if (searchText !== store.searchText || pageNo === 1) {
-        store.removeAllRecordsFromStore()
         store.searchText = searchText
+        if (recordType) {
+          store.recordType = recordType
+        } else {
+          store.recordType = 0
+        }
         store.pageNo = 1
         store.pages = -1 // TODO needs to verify whether it's needed
       } else {
+        if (store.pages < store.pageNo + 1) return null
         store.pageNo += 1
-        if (store.pages < store.pageNo) return "No more"
       }
       store.isLoading = true
-      const res: any = await api.getRecordList2(store.lockId, searchText, store.pageNo) // TODO add pagination
+      const res: any = await api.getRecordList(store.lockId, store.searchText, store.recordType, store.pageNo)
       store.setProp("isLoading", false)
       switch (res.kind) {
         case "ok":
           if (res.data?.list) {
-            store.setProp("records", [...store.records, ...res.data.list])
+            if (pageNo === 1) {
+              store.setProp("records", res.data.list)
+            } else {
+              store.setProp("records", [...store.records, ...res.data.list])
+            }
             store.setProp("pages", res.data.pages)
-            // return res.data.list
+            return res.data.list
           } else {
             alert(JSON.stringify(res))
           }
@@ -122,7 +117,6 @@ export const RecordStoreModel = types
       }
       return []
     },
-
 
     async uploadRecords() {
       store.isLoading = true
@@ -158,12 +152,12 @@ export const RecordStoreModel = types
 
     async deleteRecord(recordId: number) {
       store.isLoading = true
-      const res: any = await api.deleteRecord(store.lockId, recordId) // TODO add pagination
+      const res: any = await api.deleteRecords(store.lockId, [recordId])
       store.setProp("isLoading", false)
       switch (res.kind) {
         case "ok":
           store.removeRecordFromStore(recordId)
-          Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER)
+          setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
           return res.data
         case "bad":
           Alert.alert(`code: ${res.code}`, res.msg)
@@ -179,159 +173,11 @@ export const RecordStoreModel = types
       store.isLoading = true
       const path: any = await api.exportExcel(store.lockId, startDate, endDate) // TODO add pagination
       store.setProp("isLoading", false)
-      // const res = await FileViewer.open(path)
+      if (typeof path !== "string") {
+        return Alert.alert(path.message)
+      }
       store.setProp("path", path)
       return "success"
-      // switch (res.kind) { TODO check error case
-      //   case "ok":
-      //     if (res.data?.list) {
-      //       store.setProp("records", res.data.list)
-      //       // return res.data.list
-      //     } else {
-      //       alert(JSON.stringify(res))
-      //     }
-      //     break
-      //   case "bad":
-      //     Alert.alert(`code: ${res.code}`, res.msg)
-      //     break
-      //   default:
-      //     Alert.alert(res.kind, res.msg)
-      // }
-      // return null
-    },
-
-    async addCard(cardName: string, startDate: number, endDate: number, addType = 1) { // TODO addType can be 2 for gateway
-      store.isLoading = true
-      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
-      return new Promise((resolve) => {
-        Toast.showWithGravity("Connecting with Lock. Please wait...", Toast.SHORT, Toast.CENTER)
-        Ttlock.addCard(null, startDate, endDate, lock.lockData,
-          () => Toast.showWithGravity("Connected. Place the Card against the Card Reader Sensor on the Smart Lock.", Toast.SHORT, Toast.CENTER),
-          async (cardNumber) => {
-            console.log("TTLock: addCard success", cardNumber)
-            const res: any = await api.addCard(lock.lockId, cardNumber, cardName, startDate, endDate, addType) // addType by default is 1, TODO gateway is 2
-            store.setProp("isLoading", false)
-            switch (res.kind) {
-              case "ok":
-                setTimeout(() => Toast.showWithGravity("Added Successfully", Toast.SHORT, Toast.CENTER), 200)
-                return resolve(res.data)
-              case "bad":
-                Alert.alert(`code: ${res.code}`, res.msg)
-                break
-              default:
-                Alert.alert(res.kind, res.msg)
-            }
-            return resolve(null)
-          }, (errorCode, errorDesc) => { // TODO print error in the log
-            store.setProp("isLoading", false)
-            Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
-            return resolve(null)
-          })
-      })
-    },
-
-    async updateCard(startDate: number, endDate: number, changeType = 1) { // TODO changeType can be 2 for gateway
-      store.isLoading = true
-      const card = store.cards.find((c) => c.cardId === store.cardId)!
-      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
-      return new Promise((resolve) => {
-        Ttlock.modifyCardValidityPeriod(card.cardNumber, null, startDate, endDate, lock.lockData, async () => {
-          console.log("TTLock: modify card success")
-          const res: any = await api.updateCard(lock.lockId, card.cardId, startDate, endDate, changeType)
-          store.setProp("isLoading", false)
-          switch (res.kind) {
-            case "ok":
-              store.updateCardPeriodToStore(card.cardId, startDate, endDate)
-              setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
-              return resolve(res.data)
-            case "bad":
-              Alert.alert(`code: ${res.code}`, res.msg)
-              break
-            default:
-              Alert.alert(res.kind, res.msg)
-          }
-          return resolve(null)
-        }, (errorCode, errorDesc) => { // TODO print error in the log
-          store.setProp("isLoading", false)
-          Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
-          return resolve(null)
-        })
-      })
-    },
-
-    async updateCardName(cardName: string) {
-      store.isLoading = true
-      const res: any = await api.updateCardName(store.lockId, store.cardId, cardName)
-      store.setProp("isLoading", false)
-      switch (res.kind) {
-        case "ok":
-          store.updateCardNameToStore(store.cardId, cardName)
-          setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
-          return res.data
-        case "bad":
-          Alert.alert(`code: ${res.code}`, res.msg)
-          break
-        default:
-          Alert.alert(res.kind, res.msg)
-      }
-      return null
-    },
-
-    async deleteCard(cardId: number, deleteType?: number) { // TODO make TTLock library promisable
-      store.isLoading = true
-      const card = store.cards.find((c) => c.cardId === cardId)!
-      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
-      return new Promise((resolve) => {
-        Ttlock.deleteCard(card.cardNumber, lock.lockData, async () => {
-          console.log("TTLock: deleteCard success")
-          const res: any = await api.deleteCard(store.lockId, cardId, deleteType || 1) // deleteType by default is 1, TODO gateway is 2
-          store.setProp("isLoading", false)
-          switch (res.kind) {
-            case "ok":
-              store.removeCardFromStore(cardId)
-              setTimeout(() => Toast.showWithGravity("Deleted", Toast.SHORT, Toast.CENTER), 200)
-              return resolve(res.data)
-            case "bad":
-              Alert.alert(`code: ${res.code}`, res.msg)
-              break
-            default:
-              Alert.alert(res.kind, res.msg)
-          }
-          return resolve(null)
-        }, (errorCode, errorDesc) => {
-          store.setProp("isLoading", false)
-          Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
-          return resolve(null)
-        })
-      })
-    },
-
-    async clearAllCards() {
-      store.isLoading = true
-      const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
-      return new Promise((resolve) => {
-        Ttlock.clearAllCards(lock.lockData, async () => {
-          console.log("TTLock: reset cards success")
-          const res: any = await api.clearCards(lock.lockId)
-          store.setProp("isLoading", false)
-          switch (res.kind) {
-            case "ok":
-              store.removeAllCardsFromStore()
-              setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
-              return resolve(res.data)
-            case "bad":
-              Alert.alert(`code: ${res.code}`, res.msg)
-              break
-            default:
-              Alert.alert(res.kind, res.msg)
-          }
-          return resolve(null)
-        }, (errorCode, errorDesc) => { // TODO print error in the log
-          store.setProp("isLoading", false)
-          Alert.alert(`Code: ${errorCode}`, `${errorDesc}`)
-          return resolve(null)
-        })
-      })
     },
   }))
   .preProcessSnapshot((snapshot) => {

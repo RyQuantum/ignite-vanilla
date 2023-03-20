@@ -4,68 +4,62 @@ import {
   RefreshControl,
   View,
   ViewStyle,
-  FlatList,
-  ScrollView,
-  Platform,
   TouchableWithoutFeedback,
+  Keyboard,
 } from "react-native"
 import { Observer, observer } from "mobx-react"
 // import { Avatar, ListItem, SearchBar } from "react-native-elements"
-import { Avatar, Dialog, Divider, ListItem, SearchBar } from "@rneui/themed"
-import StickyHeaderFlatlist from "react-native-sticky-header-flatlist"
+import { Avatar, Dialog, Divider, ListItem, SearchBar, Button } from "@rneui/themed"
+import { FlashList } from "@shopify/flash-list"
 import FeatherIcons from "react-native-vector-icons/Feather"
 import { HeaderButtons, HiddenItem, OverflowMenu, overflowMenuPressHandlerDropdownMenu } from "react-navigation-header-buttons"
 import Icon from "react-native-vector-icons/FontAwesome"
 import { useStores } from "../../models"
 import { colors } from "../../theme"
 import { Text, Screen } from "../../components"
-import { convertTimeStamp, convertTimeStampToDate } from "../../utils/ttlock2nd"
 import { fire } from "react-native-alertbox"
 import DateTimePickerModal from "react-native-modal-datetime-picker"
 
 const noData = require("../../../assets/images/noData2nd.png")
 
-// function getValidity(card) {
-//   const currentTime = Date.now()
-//   switch (card.cardType) {
-//     case 1:
-//       if (card.startDate === 0 && card.endDate === 0) { // Permanent
-//         return ""
-//       }
-//       // Timed
-//       return card.startDate > currentTime ? "Inactive" : (card.endDate < currentTime ? "Invalid" : "")
-//     case 4: // Recurring
-//       return (card.startDate < currentTime && card.endDate > currentTime) || "Invalid"
-//     default:
-//       return `Invalid cardType: ${card.cardType}`
-//   }
-// }
-//
-// function generateCardInfo(card) {
-//   switch (card.cardType) {
-//     case 1:
-//       if (card.startDate === 0 && card.endDate === 0) { // Permanent
-//         return convertTimeStamp(card.createDate) + " Permanent"
-//       }
-//       // Timed
-//       return `${convertTimeStamp(card.startDate)} - ${convertTimeStamp(card.endDate)} Timed`
-//     case 4: // Recurring
-//       return `${convertTimeStampToDate(card.startDate)} - ${convertTimeStampToDate(card.endDate)} Recurring`
-//     default:
-//       return `Invalid cardType: ${card.cardType}`
-//   }
-// }
+const dictionary = {
+  1: "account",
+  4: "dots-grid",
+  7: "credit-card-wireless",
+  8: "fingerprint",
+  11: "account",
+  12: "router-wireless",
+  48: "alert-outline",
+  55: "remote",
+}
+const MyAvatar = ({ item }) => {
+  const name = dictionary[item.recordType] || "blank"
+  const backgroundColor = item.recordType === 48 ? "red" : "skyblue"
+  return (
+    <Avatar
+      rounded
+      icon={{
+        name,
+        type: "material-community",
+        color: "white",
+        size: 26,
+      }}
+      containerStyle={{ backgroundColor }}
+    />
+  )
+}
 
 export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
   const {
-    recordStore: { recordList, recordList2, isRefreshing, saveLockId, getRecordList2, removeAllRecordsFromStore, uploadRecords, deleteRecord, exportExcel }
+    recordStore: { recordListAndIndices: { indices, recordList }, isRefreshing, saveLockId, getRecordList, removeAllRecordsFromStore, uploadRecords, deleteRecord, exportExcel }
   } = useStores()
 
   const [searchText, setSearchText] = useState<string>("")
+  const [optionsVisible, setOptionsVisible] = useState(false)
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    // removeAllRecordsFromStore() // clean card store at the beginning
+    removeAllRecordsFromStore() // clean card store at the beginning
     saveLockId(props.route.params.lockId)
     props.navigation.setOptions({
       headerRight: () => (
@@ -75,7 +69,7 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
             OverflowIcon={({ color }) => (
               <FeatherIcons name="more-vertical" size={23} color="white" />
             )}
-            // onPress={overflowMenuPressHandlerDropdownMenu}
+            onPress={overflowMenuPressHandlerDropdownMenu}
           >
             <HiddenItem title="Refresh Records" onPress={uploadRecords} />
             {props.route.params.isAdmin && (
@@ -108,14 +102,7 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
         </HeaderButtons>
       ),
     })
-    getRecordList2(undefined, 1)
-    const unsubscribe = props.navigation.addListener('focus', () => { // auto refresh after delete a card
-      // if (refreshRef.current) {
-      //   getCardList()
-      //   refreshRef.current = false
-      // }
-    });
-    return unsubscribe
+    getRecordList(undefined, undefined, 1)
   }, [])
 
   // const [startDate, setStartDate] = useState<string>(new Date().toLocaleDateString("en-CA"))
@@ -126,14 +113,6 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
   const [isStart, setIsStart] = useState<boolean>(false)
 
   const scrollView = useRef(null)
-  const scrollView2 = useRef(null)
-
-  // if (isRefreshing === true && Platform.OS === "ios") { // TODO fix ios indicator display issue
-  //   console.log("scrollView", scrollView?.current?.scrollToOffset)
-  //   console.log("scrollView2", scrollView2?.current?.scrollToOffset)
-  //   scrollView?.current?.scrollToOffset({ offset: -65, animated: true })
-  //   scrollView2?.current?.scrollToOffset({ offset: -65, animated: true })
-  // }
 
   const fireDeleteAlert = useCallback(
     (item) => () =>
@@ -158,6 +137,12 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
     [],
   )
 
+  const getRecordListByRecordType = async (recordType: number) => {
+    Keyboard.dismiss()
+    setOptionsVisible(false)
+    const res = await getRecordList(undefined, recordType, 1)
+    scrollView.current?.scrollToOffset(0)
+  }
 
   return (
     <>
@@ -171,23 +156,46 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
         onChangeText={setSearchText}
         value={searchText}
         returnKeyType="search"
-        onSubmitEditing={({ nativeEvent: { text } }) => getRecordList2(text, 1)}
+        onTouchStart={() => setOptionsVisible(true)}
+        onKeyPress={() => setOptionsVisible(false)}
+        onCancel={() => setOptionsVisible(false)}
+        onSubmitEditing={async () => {
+          const res = await getRecordList(searchText, undefined, 1)
+          scrollView.current?.scrollToOffset(0)
+        }}
       />
+      {optionsVisible && (
+        <View style={{ flexDirection: "row", justifyContent: "space-around", flexWrap: "wrap", padding: 20, backgroundColor: colors.background }}>
+          <Button type="outline" size="sm" onPress={() => getRecordListByRecordType(1)} containerStyle={{ margin: 5, backgroundColor: "white" }} title="Unlock with App" />
+          <Button type="outline" size="sm" onPress={() => getRecordListByRecordType(11)} containerStyle={{ margin: 5, backgroundColor: "white" }} title="Lock with App" />
+          <Button type="outline" size="sm" onPress={() => getRecordListByRecordType(7)} containerStyle={{ margin: 5, backgroundColor: "white" }} title="IC" />
+          <Button type="outline" size="sm" onPress={() => getRecordListByRecordType(4)} containerStyle={{ margin: 5, backgroundColor: "white" }} title="Passcode" />
+          <Button type="outline" size="sm" onPress={() => getRecordListByRecordType(8)} containerStyle={{ margin: 5, backgroundColor: "white" }} title="Fingerprint" />
+          <Button type="outline" size="sm" onPress={() => getRecordListByRecordType(55)} containerStyle={{ margin: 5, backgroundColor: "white" }} title="Remote" />
+        </View>
+      )}
       <Screen
         preset="fixed"
-        safeAreaEdges={["bottom"]}
         contentContainerStyle={$screenContentContainer}
       >
-        {recordList2.length > 0 ? ( // TODO fix android version issue or add comment
-          <StickyHeaderFlatlist // TODO optimize flatlist
-            ref={scrollView2}
-            // keyExtractor={(_, i) => i + ""}
-            data={recordList2}
-            // data={recordList}
-            onEndReached={() => getRecordList2(searchText)}
-            onEndReachedThreshold={0.5}
-            refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => getRecordList2(searchText, 1)} />}
-            renderHeader={({ item, index }) => {
+        <FlashList
+          ref={scrollView}
+          // keyExtractor={(_, i) => i + ""}
+          data={recordList}
+          stickyHeaderIndices={indices}
+          onEndReached={() => recordList.length > 0 && getRecordList(searchText)} // FlashList bug: execute onEndReached function if the list is empty on loading
+          onEndReachedThreshold={0}
+          refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={() => getRecordList(searchText, undefined, 1)} />}
+          ListEmptyComponent={
+            <View style={{ paddingTop: 100 }}>
+              <View style={{ alignItems: "center" }}>
+                <Image resizeMode="center" source={noData} style={{ height: 100 }} />
+                <Text style={{ color: colors.palette.neutral400 }}>No Data</Text>
+              </View>
+            </View>
+          }
+          renderItem={({ item, index }) => {
+            if (indices.includes(index)) {
               return (
                 <Text
                   style={{
@@ -195,78 +203,48 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
                     paddingLeft: 20,
                     backgroundColor: "#eee",
                   }}
-                  // key={(Math.random() + 1).toString(36).substring(2)}
                   key={index}
                 >
                   {item.title}
                 </Text>
               )
-            }}
-            renderItem={({ item, index }) => {
-              return (
-                <Observer>
-                  {() => (
-                <ListItem
-                  // key={(Math.random() + 1).toString(36).substring(2)}
-                  key={item.recordId}
-                  topDivider
-                  bottomDivider
-                  onLongPress={fireDeleteAlert(item)}
-                  containerStyle={{ width: "100%" }}
-                >
-                  <Avatar
-                    rounded
-                    icon={{
-                      name: "credit-card-wireless",
-                      type: "material-community",
-                      color: "white",
-                      size: 26,
-                    }}
-                    containerStyle={{ backgroundColor: "skyblue" }}
-                  />
-                  <ListItem.Content>
-                    <ListItem.Title>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          width: "100%",
-                          minWidth: 260,
-                        }}
-                      >
-                        <Text style={{ fontSize: 18 }}>{item.username}</Text>
-                        {/* <Text style={{ color: "red" }}>{getValidity(item)}</Text> */}
-                      </View>
-                    </ListItem.Title>
-                    <ListItem.Subtitle style={{ color: colors.palette.neutral300, fontSize: 13 }}>
-                      {/* {generateCardInfo(item)} */}
-                      {item.lockDateDescribe.slice(12)} {item.recordTypeDescribe}
-                    </ListItem.Subtitle>
-                  </ListItem.Content>
-                </ListItem>
-                  )}
-                </Observer>
-              )
-            }}
-            contentContainerStyle={{ paddingBottom: 80 }}
-          />
-        ) : (
-          <FlatList
-            ref={scrollView}
-            refreshControl={<RefreshControl refreshing={isRefreshing} onRefresh={getRecordList2} />}
-            contentContainerStyle={{
-              height: "100%",
-              justifyContent: "center",
-            }}
-            style={{minHeight: 100}}
-          >
-            <View style={{ alignItems: "center" }}>
-              <Image resizeMode="center" source={noData} style={{ height: 100 }} />
-              <Text style={{ color: colors.palette.neutral400 }}>No Data</Text>
-            </View>
-          </FlatList>
-        )}
+            }
+            return (
+              <Observer>
+                {() => (
+              <ListItem
+                key={item.recordId}
+                topDivider
+                bottomDivider
+                onLongPress={fireDeleteAlert(item)}
+                containerStyle={{ width: "100%" }}
+              >
+                <MyAvatar item={item} />
+                <ListItem.Content>
+                  <ListItem.Title>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        width: "100%",
+                        minWidth: 260,
+                      }}
+                    >
+                      <Text style={{ fontSize: 18 }}>{item.recordType === 48 ? "WARNING!" : item.username}</Text>
+                    </View>
+                  </ListItem.Title>
+                  <ListItem.Subtitle style={{ color: colors.palette.neutral500, fontSize: 13 }}>
+                    {item.lockDateDescribe.slice(11)} {item.recordTypeDescribe} {item.recordType === 4 && (item.keyboardPwd.slice(0, item.keyboardPwd.length - 3) + "*** ")}{item.success === 0 && "failed"}
+                  </ListItem.Subtitle>
+                </ListItem.Content>
+              </ListItem>
+                )}
+              </Observer>
+            )
+          }}
+          contentContainerStyle={{ paddingBottom: 80 }}
+        />
         <Dialog
           isVisible={visible}
           onBackdropPress={() => setVisible(v => !v)}

@@ -52,9 +52,9 @@ export class Api {
         Accept: "application/json",
       },
     })
-    this.apisauce.axiosInstance.interceptors.request.use(({ baseURL, url, data, method, ...rest }) => {
-      console.log(`Request:[${method}] ${baseURL}${url} data:${JSON.stringify(data)} Authorization:${rest.headers.Authorization}`)
-      return { baseURL, url, data, method, ...rest };
+    this.apisauce.axiosInstance.interceptors.request.use(({ baseURL, url, params, data, method, ...rest }) => {
+      console.log(`Request:[${method}] ${baseURL}${url} ${params ? `params:${JSON.stringify(params)} ` : ""}${data ? `data:${JSON.stringify(data)} ` : ""}Authorization:${rest.headers.Authorization}`)
+      return { baseURL, url, params, data, method, ...rest };
     })
     this.apisauce.axiosInstance.interceptors.response.use(null, (error) => {
       console.log("Error:", error)
@@ -583,7 +583,7 @@ export class Api {
     return parseResponse(response)
   }
 
-  async getRecordList(lockId: number, pageNo = 1, pageSize = 100) {
+  async getRecordList0(lockId: number, pageNo = 1, pageSize = 100) {
     const formData = new FormData()
     formData.append("lockId", lockId.toString())
     formData.append("pageNo", pageNo.toString())
@@ -596,13 +596,12 @@ export class Api {
     return parseResponse(response)
   }
 
-  async getRecordList2(lockId: number, text?: string, pageNo = 1, pageSize = 20) {
+  async getRecordList(lockId: number, searchText?: string, recordType?: number, pageNo = 1, pageSize = 20) {
     const params = { pageNo, pageSize }
     const formData = new FormData()
     formData.append("lockId", lockId.toString())
-    if (text) formData.append("username", text)
-    // formData.append("pageSize", pageSize.toString())
-    // formData.append("date", Date.now().toString())
+    if (searchText) formData.append("username", searchText)
+    else if (recordType) formData.append("recordType", recordType!.toString())
     const response = await this.apisauce.post( // TODO ApiLoginResponse => ApiGetKeyListResponse
       "lockRecordCall/list",
       formData,
@@ -628,28 +627,34 @@ export class Api {
     return parseResponse(response)
   }
 
-  async deleteRecord(lockId: number, recordId: number) {
-    // const params = { lockId, recordId }
-    const formData = new FormData()
-    formData.append("lockId", lockId.toString())
-    formData.append("recordIds", recordId.toString())
+  async deleteRecords(lockId: number, recordIds: number[]) {
+    // const params = { lockId, recordIds: arr }
+    // const formData = new FormData()
+    // formData.append("lockId", lockId.toString())
+    // formData.append("recordIds", recordIds.toString())
     const response = await this.apisauce.delete( // TODO ApiLoginResponse => ApiGetKeyListResponse
-      `lockRecordCall/${recordId}`,
-      formData,
-      // { params }
+      // `lockRecordCall/${recordIds}`,
+      `lockRecordCall/${recordIds}`,
+      // formData,
+      // { ...params }
     )
     return parseResponse(response)
   }
 
   async exportExcel(lockId: number, beginLockDate: number, endLockDate: number) {
     const localFile = `${RNFS.DocumentDirectoryPath}/records.xlsx`;
-    const res = await RNFS.downloadFile({
-      fromUrl: `http://54.177.251.43:5030/v3/lockRecordCall/export?lockId=${lockId}&beginLockDate=${beginLockDate}&endLockDate=${endLockDate}`,
-      toFile: localFile,
-      headers: {
-        Authorization: this.apisauce.headers.Authorization
-      },
-    }).promise;
+    try {
+      const res = await RNFS.downloadFile({
+        fromUrl: `${this.apisauce.getBaseURL()}lockRecordCall/export?lockId=${lockId}&beginLockDate=${beginLockDate}&endLockDate=${endLockDate}`,
+        toFile: localFile,
+        headers: {
+          Authorization: this.apisauce.headers.Authorization
+        },
+      }).promise;
+    } catch (err) {
+      console.log('err', err)
+      return err
+    }
     return localFile
   }
 }
