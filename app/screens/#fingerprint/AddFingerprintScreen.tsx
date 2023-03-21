@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from "react"
-import { Text, View, ViewStyle } from "react-native"
+import { Text, TextStyle, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react"
 import { ListItem, Tab } from "@rneui/themed"
 import DateTimePickerModal from "react-native-modal-datetime-picker"
@@ -16,11 +16,11 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
 
   const [name, setName] = useState<string>("")
   const [date, setDate] = useState<Date>(new Date())  // for datetime modal picker
-  const [hour, setHour] = useState<string>(new Date().getHours().toString())
+  const [time, setTime] = useState<string>(new Date().toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
   const [startDate, setStartDate] = useState<string>(new Date().toLocaleDateString("en-CA"))
-  const [startTime, setStartTime] = useState<string>(new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
-  const [endDate, setEndDate] = useState<string>(new Date(Date.now() + 3600000).toLocaleDateString("en-CA"))
-  const [endTime, setEndTime] = useState<string>(new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
+  const [startTime, setStartTime] = useState<string>(new Date().toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
+  const [endDate, setEndDate] = useState<string>(new Date(Date.now() + 60000).toLocaleDateString("en-CA"))
+  const [endTime, setEndTime] = useState<string>(new Date(Date.now() + 60000).toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
   const [startDate2, setStartDate2] = useState<string>(startDate)
   const [startTime2, setStartTime2] = useState<string>(startTime)
   const [endDate2, setEndDate2] = useState<string>(endDate)
@@ -40,6 +40,7 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
     setEndDate2(params.endDate)
     setEndTime2(params.endTime)
     setCycleDays2(params.cycleDays)
+    props.navigation.goBack()
   }, [])
 
   return (
@@ -58,12 +59,12 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
           style={$tab}
         >
           <Tab.Item
-            titleStyle={{ color: index === 0 ? "skyblue" : colors.text }}
+            titleStyle={index === 0 ? $tabTitleHighlight : $tabTitle}
             title="Permanent"
           />
-          <Tab.Item titleStyle={{ color: index === 1 ? "skyblue" : colors.text }} title="Timed" />
+          <Tab.Item titleStyle={index === 1 ? $tabTitleHighlight : $tabTitle} title="Timed" />
           <Tab.Item
-            titleStyle={{ color: index === 2 ? "skyblue" : colors.text }}
+            titleStyle={index === 2 ? $tabTitleHighlight : $tabTitle}
             title="Recurring"
           />
         </Tab>
@@ -121,8 +122,8 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
               <ListItem.Subtitle>
                 {cycleDays2.length > 0 && (
                   <View>
-                    <Text style={{ fontSize: 12 }}>{startDate2}</Text>
-                    <Text style={{ fontSize: 12 }}>{endDate2}</Text>
+                    <Text style={$smallText}>{startDate2}</Text>
+                    <Text style={$smallText}>{endDate2}</Text>
                   </View>
                 )}
               </ListItem.Subtitle>
@@ -186,22 +187,22 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
           console.log("A date has been picked: ", date.toLocaleDateString("en-CA"))
           setDateVisible(false)
           if (isStart) {
-            setHour(parseInt(startTime.slice(0, 2)).toString())
+            setTime(startTime)
             setStartDate(date.toLocaleDateString("en-CA"))
             const start = new Date(`${date.toLocaleDateString("en-CA")} ${startTime}`)
             if (start >= new Date(`${endDate} ${endTime}`)) {
-              const end = new Date(new Date(date).setHours(date.getHours() + 1))
+              const end = new Date(new Date(start).setMinutes(start.getMinutes() + 1))
               setEndDate(end.toLocaleDateString("en-CA"))
-              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: "2-digit" }) + ":00")
+              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
           } else {
-            setHour(parseInt(endTime.slice(0, 2)).toString())
+            setTime(endTime)
             setEndDate(date.toLocaleDateString("en-CA"))
             const end = new Date(`${date.toLocaleDateString("en-CA")} ${endTime}`)
             if (end <= new Date(`${startDate} ${startTime}`)) {
-              const start = new Date(new Date(end).setHours(end.getHours() - 1))
+              const start = new Date(new Date(end).setMinutes(end.getMinutes() - 1))
               setStartDate(start.toLocaleDateString("en-CA"))
-              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit" }) + ":00")
+              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
           }
           setTimeout(() => timePicker.current.open(), 500)
@@ -210,27 +211,27 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
       />
       <TimePicker
         ref={timePicker}
-        minuteInterval={60}
-        selectedHour={hour}
+        selectedHour={parseInt(time.slice(0, 2)).toString()}
+        selectedMinute={time.slice(-2)}
         onConfirm={(hour, minute) => {
+          timePicker.current.close()
           if (isStart) {
-            setStartTime(hour.padStart(2, "0") + ":00")
-            const start = new Date(`${startDate} ${hour.padStart(2, "0") + ":00"}`)
+            setStartTime(`${hour.padStart(2, "0")}:${minute}`)
+            const start = new Date(`${startDate} ${hour.padStart(2, "0")}:${minute}`)
             if (start >= new Date(`${endDate} ${endTime}`)) {
-              const end = new Date(new Date(start).setHours(start.getHours() + 1))
+              const end = new Date(new Date(start).setMinutes(start.getMinutes() + 1))
               setEndDate(end.toLocaleDateString("en-CA"))
-              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: "2-digit" }) + ":00")
+              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
           } else {
-            setEndTime(hour.padStart(2, "0") + ":00")
-            const end = new Date(`${endDate} ${hour.padStart(2, "0") + ":00"}`)
+            setEndTime(`${hour.padStart(2, "0")}:${minute}`)
+            const end = new Date(`${endDate} ${hour.padStart(2, "0")}:${minute}`)
             if (end <= new Date(`${startDate} ${startTime}`)) {
-              const start = new Date(new Date(end).setHours(end.getHours() - 1))
+              const start = new Date(new Date(end).setMinutes(end.getMinutes() - 1))
               setStartDate(start.toLocaleDateString("en-CA"))
-              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit" }) + ":00")
+              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
           }
-          timePicker.current.close()
         }}
         onCancel={() => timePicker.current.close()}
       />
@@ -253,6 +254,18 @@ const $tabIndicator: ViewStyle = {
 
 const $tab: ViewStyle = {
   backgroundColor: "white",
+}
+
+const $tabTitleHighlight: TextStyle = {
+  color: "skyblue",
+}
+
+const $tabTitle: TextStyle = {
+  color: colors.text,
+}
+
+const $smallText: TextStyle = {
+  fontSize: 12,
 }
 
 const $customButton: ViewStyle = {

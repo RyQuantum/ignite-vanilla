@@ -19,9 +19,9 @@ export const AddCardScreen: FC<any> = observer(function AddCardScreen(props) {
   const [date, setDate] = useState<Date>(new Date())  // for datetime modal picker
   const [time, setTime] = useState<string>(new Date().toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
   const [startDate, setStartDate] = useState<string>(new Date().toLocaleDateString("en-CA"))
-  const [startTime, setStartTime] = useState<string>(new Date().toLocaleTimeString([], { hour12: false,hour: "2-digit", minute: "2-digit" }))
-  const [endDate, setEndDate] = useState<string>(new Date(Date.now() + 3600000).toLocaleDateString("en-CA"))
-  const [endTime, setEndTime] = useState<string>(new Date(Date.now() + 3600000).toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
+  const [startTime, setStartTime] = useState<string>(new Date().toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
+  const [endDate, setEndDate] = useState<string>(new Date(Date.now() + 60000).toLocaleDateString("en-CA"))
+  const [endTime, setEndTime] = useState<string>(new Date(Date.now() + 60000).toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
   const [dateVisible, setDateVisible] = useState<boolean>(false)
   const [isStart, setIsStart] = useState<boolean>(false)
   const timePicker = useRef(null)
@@ -212,11 +212,10 @@ export const AddCardScreen: FC<any> = observer(function AddCardScreen(props) {
       />
       <TimePicker
         ref={timePicker}
-        // minuteInterval={60}
-        // selectedHour={hour}
-        selectedHour={time.slice(0, 2)}
+        selectedHour={parseInt(time.slice(0, 2)).toString()}
         selectedMinute={time.slice(-2)}
         onConfirm={(hour, minute) => {
+          timePicker.current.close()
           if (isStart) {
             setStartTime(`${hour.padStart(2, "0")}:${minute}`)
             const start = new Date(`${startDate} ${hour.padStart(2, "0")}:${minute}`)
@@ -234,7 +233,6 @@ export const AddCardScreen: FC<any> = observer(function AddCardScreen(props) {
               setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
           }
-          timePicker.current.close()
         }}
         onCancel={() => timePicker.current.close()}
       />

@@ -121,19 +121,15 @@ export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
           console.log("A date has been picked: ", date.toLocaleDateString("en-CA"))
           setDateVisible(false)
           if (isStart) {
-            // setProp("startDate", date.toLocaleDateString("en-CA"))
             setStartDate(date.toLocaleDateString("en-CA"))
             const start = new Date(`${date.toLocaleDateString("en-CA")}`)
             if (start > new Date(`${endDate}`)) {
-              // setProp("endDate", date.toLocaleDateString("en-CA"))
               setEndDate(date.toLocaleDateString("en-CA"))
             }
           } else {
-            // setProp("endDate", date.toLocaleDateString("en-CA"))
             setEndDate(date.toLocaleDateString("en-CA"))
             const end = new Date(`${date.toLocaleDateString("en-CA")}`)
             if (end < new Date(`${startDate}`)) {
-              // setProp("startDate", date.toLocaleDateString("en-CA"))
               setStartDate(date.toLocaleDateString("en-CA"))
             }
           }
@@ -142,7 +138,6 @@ export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
       />
       <TimePicker
         ref={timePicker}
-        // minuteInterval={60}
         selectedHour={parseInt(time.slice(0, 2)).toString()}
         selectedMinute={time.slice(3, 5)}
         onConfirm={(hour, minute) => {
@@ -152,26 +147,22 @@ export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
             if (start >= endTime) {
               let end = new Date(new Date(`2000 ${start}`).setMinutes(new Date(`2000 ${start}`).getMinutes() + 1))
               if (start === "23:59") {
-                end = new Date(`2000 ${start}`)
+                end = new Date(`2000 23:59`)
                 start = "23:58"
               }
-              // setProp("endTime", end.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
-              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
+              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
-            // setProp("startTime", start)
             setStartTime(start)
           } else {
             let end = `${hour.padStart(2, "0")}:${minute}`
             if (end <= startTime) {
               let start = new Date(new Date(`2000 ${end}`).setMinutes(new Date(`2000 ${end}`).getMinutes() - 1))
               if (end === "00:00") {
-                start = new Date(`2000 ${start}`)
+                start = new Date(`2000 00:00`)
                 end = "00:01"
               }
-              // setProp("startTime", start.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
-              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' }))
+              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
-            // setProp("endTime", end)
             setEndTime(end)
           }
         }}

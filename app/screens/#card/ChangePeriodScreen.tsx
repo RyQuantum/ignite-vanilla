@@ -103,9 +103,10 @@ export const ChangePeriodScreen: FC<any> = observer(function ChangePeriodScreen(
       />
       <TimePicker
         ref={timePicker}
-        selectedHour={time.slice(0, 2)}
+        selectedHour={parseInt(time.slice(0, 2)).toString()}
         selectedMinute={time.slice(-2)}
         onConfirm={(hour, minute) => {
+          timePicker.current.close()
           if (isStart) {
             setStartTime(`${hour.padStart(2, "0")}:${minute}`)
             const start = new Date(`${startDate} ${hour.padStart(2, "0")}:${minute}`)
@@ -123,7 +124,6 @@ export const ChangePeriodScreen: FC<any> = observer(function ChangePeriodScreen(
               setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
           }
-          timePicker.current.close()
         }}
         onCancel={() => timePicker.current.close()}
       />
