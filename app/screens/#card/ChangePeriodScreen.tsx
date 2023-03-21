@@ -14,14 +14,14 @@ export const ChangePeriodScreen: FC<any> = observer(function ChangePeriodScreen(
   } = useStores()
 
   const startDateObj = props.route.params.card.startDate === 0 ? new Date() : new Date(props.route.params.card.startDate)
-  const endDateObj = props.route.params.card.endDate === 0 ? new Date(Date.now() + 3600000) : new Date(props.route.params.card.endDate)
+  const endDateObj = props.route.params.card.endDate === 0 ? new Date(Date.now() + 60000) : new Date(props.route.params.card.endDate)
 
   const [date, setDate] = useState<Date>(new Date())  // for datetime modal picker
-  const [hour, setHour] = useState<string>(new Date().getHours().toString())
+  const [time, setTime] = useState<string>(new Date().toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
   const [startDate, setStartDate] = useState<string>(startDateObj.toLocaleDateString("en-CA"))
-  const [startTime, setStartTime] = useState<string>(startDateObj.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
+  const [startTime, setStartTime] = useState<string>(startDateObj.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
   const [endDate, setEndDate] = useState<string>(endDateObj.toLocaleDateString("en-CA"),)
-  const [endTime, setEndTime] = useState<string>(endDateObj.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
+  const [endTime, setEndTime] = useState<string>(endDateObj.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
   const [dateVisible, setDateVisible] = useState<boolean>(false)
   const [isStart, setIsStart] = useState<boolean>(false)
   const timePicker = useRef(null)
@@ -79,22 +79,22 @@ export const ChangePeriodScreen: FC<any> = observer(function ChangePeriodScreen(
           console.log("A date has been picked: ", date.toLocaleDateString("en-CA"))
           setDateVisible(false)
           if (isStart) {
-            setHour(parseInt(startTime.slice(0, 2)).toString())
+            setTime(startTime)
             setStartDate(date.toLocaleDateString("en-CA"))
             const start = new Date(`${date.toLocaleDateString("en-CA")} ${startTime}`)
             if (start >= new Date(`${endDate} ${endTime}`)) {
-              const end = new Date(new Date(date).setHours(date.getHours() + 1))
+              const end = new Date(new Date(start).setMinutes(start.getMinutes() + 1))
               setEndDate(end.toLocaleDateString("en-CA"))
-              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
+              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
           } else {
-            setHour(parseInt(endTime.slice(0, 2)).toString())
+            setTime(endTime)
             setEndDate(date.toLocaleDateString("en-CA"))
             const end = new Date(`${date.toLocaleDateString("en-CA")} ${endTime}`)
             if (end <= new Date(`${startDate} ${startTime}`)) {
-              const start = new Date(new Date(end).setHours(end.getHours() - 1))
+              const start = new Date(new Date(end).setMinutes(end.getMinutes() - 1))
               setStartDate(start.toLocaleDateString("en-CA"))
-              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: '2-digit' }) + ":00")
+              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
           }
           setTimeout(() => timePicker.current.open(), 500)
@@ -103,24 +103,24 @@ export const ChangePeriodScreen: FC<any> = observer(function ChangePeriodScreen(
       />
       <TimePicker
         ref={timePicker}
-        minuteInterval={60}
-        selectedHour={hour}
+        selectedHour={time.slice(0, 2)}
+        selectedMinute={time.slice(-2)}
         onConfirm={(hour, minute) => {
           if (isStart) {
-            setStartTime(hour.padStart(2, "0") + ":00")
-            const start = new Date(`${startDate} ${hour.padStart(2, "0") + ":00"}`)
+            setStartTime(`${hour.padStart(2, "0")}:${minute}`)
+            const start = new Date(`${startDate} ${hour.padStart(2, "0")}:${minute}`)
             if (start >= new Date(`${endDate} ${endTime}`)) {
-              const end = new Date(new Date(start).setHours(start.getHours() + 1))
+              const end = new Date(new Date(start).setMinutes(start.getMinutes() + 1))
               setEndDate(end.toLocaleDateString("en-CA"))
-              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: "2-digit" }) + ":00")
+              setEndTime(end.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
           } else {
-            setEndTime(hour.padStart(2, "0") + ":00")
-            const end = new Date(`${endDate} ${hour.padStart(2, "0") + ":00"}`)
+            setEndTime(`${hour.padStart(2, "0")}:${minute}`)
+            const end = new Date(`${endDate} ${hour.padStart(2, "0")}:${minute}`)
             if (end <= new Date(`${startDate} ${startTime}`)) {
-              const start = new Date(new Date(end).setHours(end.getHours() - 1))
+              const start = new Date(new Date(end).setMinutes(end.getMinutes() - 1))
               setStartDate(start.toLocaleDateString("en-CA"))
-              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit" }) + ":00")
+              setStartTime(start.toLocaleTimeString([], { hour12: false, hour: "2-digit", minute: "2-digit" }))
             }
           }
           timePicker.current.close()
