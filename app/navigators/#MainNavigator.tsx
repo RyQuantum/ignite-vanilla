@@ -1,7 +1,7 @@
 import React from "react"
 import { View, Text, ActivityIndicator, ViewStyle } from "react-native"
-import { createStackNavigator } from '@react-navigation/stack';
-import { createDrawerNavigator } from '@react-navigation/drawer';
+import { createStackNavigator } from "@react-navigation/stack"
+import { createDrawerNavigator } from "@react-navigation/drawer"
 import Icon from "react-native-vector-icons/MaterialCommunityIcons"
 import AntDesignIcon from "react-native-vector-icons/AntDesign"
 import { HeaderButton, HeaderButtons, Item } from "react-navigation-header-buttons"
@@ -10,7 +10,12 @@ import { observer } from "mobx-react"
 import { CustomButton, Screen } from "../components"
 import { spacing } from "../theme"
 import { LocksScreen, LockScreen } from "../screens/#lock"
-import { NearbyLocksScreen, TutorialScreen, AssignNameScreen, FAQScreen } from "../screens/#addingLock"
+import {
+  NearbyLocksScreen,
+  TutorialScreen,
+  AssignNameScreen,
+  FAQScreen,
+} from "../screens/#addingLock"
 import {
   PasscodesScreen,
   PasscodeInfoScreen,
@@ -104,7 +109,7 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Lock Details"
           component={LockScreen}
-          options={() => ({ title: "Sifely" })}
+          options={{ title: "Sifely" }}
         />
         {/* Codes */}
         <Stack.Screen
@@ -147,7 +152,7 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Card Change Period"
           component={CardChangePeriodScreen}
-          options={() => ({ title: "Change Period" })}
+          options={{ title: "Change Period" }}
         />
         {/* Fingerprints */}
         <Stack.Screen
@@ -177,7 +182,7 @@ const LocksNavigator = observer(function (_props) {
         <Stack.Screen
           name="Fingerprint Change Period"
           component={FingerprintChangePeriodScreen}
-          options={() => ({ title: "Change Period" })}
+          options={{ title: "Change Period" }}
         />
         {/* Records */}
         <Stack.Screen

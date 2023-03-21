@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from "react"
-import { Alert, BackHandler, TextStyle, ViewStyle } from "react-native"
+import { TextStyle, ViewStyle } from "react-native"
 import { observer } from "mobx-react"
 import Video from 'react-native-video';
 import { Ttlock } from "react-native-ttlock"

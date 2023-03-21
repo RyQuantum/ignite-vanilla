@@ -1,5 +1,5 @@
 import React, { FC, useCallback, useEffect, useRef, useState } from "react"
-import { Keyboard, Text, View, ViewStyle } from "react-native"
+import { Text, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react"
 import { ListItem, Tab } from "@rneui/themed"
 import DateTimePickerModal from "react-native-modal-datetime-picker"
@@ -8,9 +8,6 @@ import { useStores } from "../../models"
 import { Screen, CustomButton } from "../../components"
 import { colors } from "../../theme"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
-import moment from "moment-timezone"
-import { HeaderButtons, Item } from "react-navigation-header-buttons"
-import { fire } from "react-native-alertbox"
 
 export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScreen(props) {
   const {
@@ -57,8 +54,8 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
           value={index}
           onChange={setIndex}
           dense
-          indicatorStyle={{ backgroundColor: "skyblue" }}
-          style={{ backgroundColor: "white" }}
+          indicatorStyle={$tabIndicator}
+          style={$tab}
         >
           <Tab.Item
             titleStyle={{ color: index === 0 ? "skyblue" : colors.text }}
@@ -152,7 +149,7 @@ export const AddFingerprintScreen: FC<any> = observer(function AddFingerprintScr
 
         <CustomButton
           preset="filled"
-          style={{ margin: 20 }}
+          style={$customButton}
           disabled={name === "" || (index === 2 && cycleDays2.length === 0)}
           onPress={async () => {
             setProp("fingerprintName", name)
@@ -248,4 +245,16 @@ const $screenContentContainer: ViewStyle = {
   // paddingHorizontal: spacing.medium,
   justifyContent: "space-between",
   height: "100%",
+}
+
+const $tabIndicator: ViewStyle = {
+  backgroundColor: "skyblue",
+}
+
+const $tab: ViewStyle = {
+  backgroundColor: "white",
+}
+
+const $customButton: ViewStyle = {
+  margin: 20,
 }

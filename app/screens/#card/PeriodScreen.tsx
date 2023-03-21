@@ -1,9 +1,9 @@
 import React, { FC, useState } from "react"
-import { ViewStyle, Text, View } from "react-native"
+import { ViewStyle, Text, View, TextStyle } from "react-native"
 import { ButtonGroup, ListItem } from "@rneui/themed"
 import { observer } from "mobx-react"
 import { useStores } from "../../models"
-import { Button, Screen } from "../../components"
+import { CustomButton, Screen } from "../../components"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
 
 export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
@@ -26,15 +26,15 @@ export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
       safeAreaEdges={["bottom"]}
       contentContainerStyle={$screenContentContainer}
     >
-      <View style={{ backgroundColor: "white" }}>
-        <Text style={{ fontSize: 16, padding: 20 }}>Cycle on</Text>
+      <View style={$cycleContainer}>
+        <Text style={$cycleText}>Cycle on</Text>
         <ButtonGroup
           buttons={["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]}
           selectMultiple
           selectedIndexes={selectedIndexes}
           onPress={setSelectedIndexes}
-          containerStyle={{ marginBottom: 20 }}
-          selectedButtonStyle={{ backgroundColor: "skyblue" }}
+          containerStyle={$buttonGroup}
+          selectedButtonStyle={$selectedButton}
         />
       </View>
       <ListItem
@@ -100,14 +100,9 @@ export const PeriodScreen: FC<any> = observer(function PeriodScreen(props) {
         <ListItem.Subtitle>{endDate}</ListItem.Subtitle>
         <ListItem.Chevron />
       </ListItem>
-      <Button
-        preset="filled"
-        style={{ margin: 20, backgroundColor: "skyblue" }}
-        textStyle={{ color: "white" }}
-        onPress={this.generatePasscode}
-      >
+      <CustomButton preset="filled" style={$customButton} onPress={this.generatePasscode}>
         OK
-      </Button>
+      </CustomButton>
     </Screen>
   )
 })
@@ -117,4 +112,25 @@ const $screenContentContainer: ViewStyle = {
   // paddingHorizontal: spacing.medium,
   // justifyContent: "space-between",
   height: "100%",
+}
+
+const $cycleContainer: ViewStyle = {
+  backgroundColor: "white",
+}
+
+const $cycleText: TextStyle = {
+  fontSize: 16,
+  padding: 20,
+}
+
+const $buttonGroup: ViewStyle = {
+  marginBottom: 20,
+}
+
+const $selectedButton: ViewStyle = {
+  backgroundColor: "skyblue",
+}
+
+const $customButton: ViewStyle = {
+  margin: 20,
 }

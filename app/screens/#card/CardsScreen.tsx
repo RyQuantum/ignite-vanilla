@@ -1,7 +1,7 @@
 import React, { FC, useEffect, useRef, useState } from "react"
 import { Observer, observer } from "mobx-react"
 import { Avatar, ListItem, SearchBar } from "react-native-elements"
-import { FlatList, Image, RefreshControl, Text, View, ViewStyle } from "react-native"
+import { FlatList, Image, ImageStyle, RefreshControl, Text, TextStyle, View, ViewStyle } from "react-native"
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons"
 import { HeaderButtons, Item } from "react-navigation-header-buttons"
 import { useStores } from "../../models"
@@ -66,7 +66,7 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
           {/* </OverflowMenu> */}
           <Item
             title="Reset"
-            buttonStyle={{ color: "white" }}
+            buttonStyle={$resetButton}
             onPress={() =>
               fire({
                 title: "ALL Passcodes for this Lock will be DELETED",
@@ -144,7 +144,7 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
                         fields: [],
                       })
                     }
-                    containerStyle={{ width: "100%" }}
+                    containerStyle={$ListItemContainer}
                   >
                     <Avatar
                       rounded
@@ -154,24 +154,16 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
                         color: "white",
                         size: 26,
                       }}
-                      containerStyle={{ backgroundColor: "skyblue" }}
+                      containerStyle={$avatarContainer}
                     />
                     <ListItem.Content>
                       <ListItem.Title>
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            width: "100%",
-                            minWidth: 260,
-                          }}
-                        >
-                          <Text style={{ fontSize: 18 }}>{item.cardName}</Text>
-                          <Text style={{ color: "red" }}>{getValidity(item)}</Text>
+                        <View style={$titleContainer}>
+                          <Text style={$title}>{item.cardName}</Text>
+                          <Text style={$validity}>{getValidity(item)}</Text>
                         </View>
                       </ListItem.Title>
-                      <ListItem.Subtitle style={{ color: colors.palette.neutral300, fontSize: 13 }}>
+                      <ListItem.Subtitle style={$info}>
                         {generateCardInfo(item)}
                       </ListItem.Subtitle>
                     </ListItem.Content>
@@ -181,32 +173,18 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
             )
           }}
           ListEmptyComponent={
-            <View style={{ height: 400, justifyContent: "center", alignItems: "center" }}>
-              <Image resizeMode="center" source={noData} style={{ height: 100 }} />
-              <Text style={{ color: colors.palette.neutral400 }}>No Data</Text>
+            <View style={$emptyComponentContainer}>
+              <Image resizeMode="center" source={noData} style={$image} />
+              <Text style={$emptyComponentText}>No Data</Text>
             </View>
           }
-          contentContainerStyle={{ paddingBottom: 80 }}
+          contentContainerStyle={$contentContainer}
         />
-        <View
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            // height: 100,
-            width: "100%",
-            backgroundColor: colors.background,
-          }}
-        >
+        <View style={$buttonContainer}>
           <Button
             preset="filled"
-            style={{
-              margin: 10,
-              borderRadius: 10,
-              backgroundColor: "white",
-              height: 60,
-            }}
-            textStyle={{ color: "skyblue" }}
+            style={$button}
+            textStyle={$buttonText}
             LeftAccessory={(props) => (
               <MaterialCommunityIcons
                 style={props.style}
@@ -230,9 +208,79 @@ export const CardsScreen: FC<any> = observer(function CardsScreen(props) {
   )
 })
 
+const $resetButton: TextStyle = {
+  color: "white",
+}
+
 const $screenContentContainer: ViewStyle = {
   // paddingVertical: spacing.medium,
   // paddingHorizontal: spacing.medium,
   justifyContent: "space-between",
   height: "100%",
+}
+
+const $ListItemContainer: ViewStyle = {
+  width: "100%",
+}
+
+const $avatarContainer: ViewStyle = {
+  backgroundColor: "skyblue",
+}
+
+const $titleContainer: ViewStyle = {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  width: "100%",
+  minWidth: 260,
+}
+
+const $title: TextStyle = {
+  fontSize: 18,
+}
+
+const $validity: TextStyle = {
+  color: "red",
+}
+
+const $info: TextStyle = {
+  color: colors.palette.neutral300,
+  fontSize: 13,
+}
+
+const $emptyComponentContainer: ViewStyle = {
+  height: 400,
+  justifyContent: "center",
+  alignItems: "center",
+}
+
+const $image: ImageStyle = {
+  height: 100,
+}
+
+const $emptyComponentText: TextStyle = {
+  color: colors.palette.neutral400,
+}
+
+const $contentContainer: ViewStyle = {
+  paddingBottom: 80,
+}
+
+const $buttonContainer: ViewStyle = {
+  position: "absolute",
+  bottom: 0,
+  left: 0,
+  width: "100%",
+  backgroundColor: colors.background,
+}
+
+const $button: ViewStyle = {
+  margin: 10,
+  borderRadius: 10,
+  backgroundColor: "white",
+  height: 60,
+}
+
+const $buttonText: TextStyle = {
+  color: "skyblue",
 }

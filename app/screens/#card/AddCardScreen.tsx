@@ -1,5 +1,5 @@
 import React, { FC, useRef, useState } from "react"
-import { Keyboard, View, ViewStyle } from "react-native"
+import { Keyboard, TextStyle, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react"
 import { ListItem, Tab } from "@rneui/themed"
 import DateTimePickerModal from "react-native-modal-datetime-picker"
@@ -40,19 +40,19 @@ export const AddCardScreen: FC<any> = observer(function AddCardScreen(props) {
           value={index}
           onChange={setIndex}
           dense
-          indicatorStyle={{ backgroundColor: "skyblue" }}
-          style={{ backgroundColor: "white" }}
+          indicatorStyle={$tabIndicator}
+          style={$tab}
         >
           <Tab.Item
-            titleStyle={{ color: index === 0 ? "skyblue" : colors.text }}
+            titleStyle={index === 0 ? $tabTitleHighlight : $tabTitle}
             title="Permanent"
           />
           <Tab.Item
-            titleStyle={{ color: index === 1 ? "skyblue" : colors.text }}
+            titleStyle={index === 1 ? $tabTitleHighlight : $tabTitle}
             title="Timed"
           />
           <Tab.Item
-            titleStyle={{ color: index === 2 ? "skyblue" : colors.text }}
+            titleStyle={index === 2 ? $tabTitleHighlight : $tabTitle}
             title="Recurring"
           />
         </Tab>
@@ -159,7 +159,7 @@ export const AddCardScreen: FC<any> = observer(function AddCardScreen(props) {
 
         <CustomButton
           preset="filled"
-          style={{ margin: 20 }}
+          style={$customButton}
           disabled={name === ""}
           onPress={async () => {
             Keyboard.dismiss()
@@ -247,4 +247,24 @@ const $screenContentContainer: ViewStyle = {
   // paddingHorizontal: spacing.medium,
   justifyContent: "space-between",
   height: "100%",
+}
+
+const $tabIndicator: ViewStyle = {
+  backgroundColor: "skyblue",
+}
+
+const $tab: ViewStyle = {
+  backgroundColor: "white",
+}
+
+const $tabTitle: TextStyle = {
+  color: colors.text,
+}
+
+const $tabTitleHighlight: TextStyle = {
+  color: "skyblue",
+}
+
+const $customButton: ViewStyle = {
+  margin: 20,
 }

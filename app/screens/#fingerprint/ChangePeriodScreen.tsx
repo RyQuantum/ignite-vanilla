@@ -60,7 +60,7 @@ export const ChangePeriodScreen: FC<any> = observer(function ChangePeriodScreen(
       </ListItem>
       <Button
         preset="filled"
-        style={{ margin: 20, backgroundColor: "skyblue" }}
+        style={$button}
         textStyle={{ color: "white" }}
         onPress={async () => {
           const res = await updateFingerprint(new Date(`${startDate} ${startTime}`).getTime(), new Date(`${endDate} ${endTime}`).getTime())
@@ -136,4 +136,9 @@ const $screenContentContainer: ViewStyle = {
   // paddingHorizontal: spacing.medium,
   // justifyContent: "space-between",
   height: "100%",
+}
+
+const $button: ViewStyle = {
+  margin: 20,
+  backgroundColor: "skyblue",
 }

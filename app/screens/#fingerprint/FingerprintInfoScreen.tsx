@@ -1,7 +1,7 @@
 import React, { FC, useCallback, useEffect } from "react"
 import { observer } from "mobx-react"
 import { useStores } from "../../models"
-import { Text, View, ViewStyle } from "react-native"
+import { Text, TextStyle, View, ViewStyle } from "react-native"
 import { ListItem } from "react-native-elements"
 import { fire } from "react-native-alertbox"
 import { DemoDivider } from "../DemoShowroomScreen/DemoDivider"
@@ -24,12 +24,12 @@ export const FingerprintInfoScreen: FC<any> = observer(function FingerprintInfoS
     switch (fingerprint.fingerprintType) {
       case 1:
         if (fingerprint.startDate === 0 && fingerprint.endDate === 0) {
-          return <Text style={{ fontSize: 16 }}>Permanent</Text>
+          return <Text style={$formalText}>Permanent</Text>
         }
         return (
           <View>
-            <Text style={{ fontSize: 12 }}>{moment(fingerprint.startDate).format("YYYY-MM-DD HH:mm")}</Text>
-            <Text style={{ fontSize: 12 }}>{moment(fingerprint.endDate).format("YYYY-MM-DD HH:mm")}</Text>
+            <Text style={$smallText}>{moment(fingerprint.startDate).format("YYYY-MM-DD HH:mm")}</Text>
+            <Text style={$smallText}>{moment(fingerprint.endDate).format("YYYY-MM-DD HH:mm")}</Text>
           </View>
         )
       case 4:
@@ -169,7 +169,7 @@ export const FingerprintInfoScreen: FC<any> = observer(function FingerprintInfoS
         <ListItem
           topDivider
           bottomDivider
-          containerStyle={{ justifyContent: "center" }}
+          containerStyle={$ListItemContainer}
           onPress={() =>
             fire({
               title: "Delete?",
@@ -190,7 +190,7 @@ export const FingerprintInfoScreen: FC<any> = observer(function FingerprintInfoS
             })
           }
         >
-          <ListItem.Title style={{ color: "red" }}>Delete</ListItem.Title>
+          <ListItem.Title style={$ListItemTitle}>Delete</ListItem.Title>
         </ListItem>
       </View>
     </Screen>
@@ -203,4 +203,20 @@ const $screenContentContainer: ViewStyle = {
   // paddingHorizontal: spacing.medium,
   // justifyContent: "space-between",
   height: "100%",
+}
+
+const $formalText: TextStyle = {
+  fontSize: 16,
+}
+
+const $smallText: TextStyle = {
+  fontSize: 12,
+}
+
+const $ListItemContainer: ViewStyle = {
+  justifyContent: "center",
+}
+
+const $ListItemTitle: TextStyle = {
+  color: "red",
 }

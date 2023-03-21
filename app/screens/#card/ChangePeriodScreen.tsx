@@ -1,5 +1,5 @@
 import React, { FC, useRef, useState } from "react"
-import { ViewStyle } from "react-native"
+import { TextStyle, ViewStyle } from "react-native"
 import { ListItem } from "@rneui/themed"
 import { observer } from "mobx-react"
 import { useStores } from "../../models"
@@ -60,8 +60,8 @@ export const ChangePeriodScreen: FC<any> = observer(function ChangePeriodScreen(
       </ListItem>
       <Button
         preset="filled"
-        style={{ margin: 20, backgroundColor: "skyblue" }}
-        textStyle={{ color: "white" }}
+        style={$button}
+        textStyle={$buttonText}
         onPress={async () => {
           const res = await updateCard(new Date(`${startDate} ${startTime}`).getTime(), new Date(`${endDate} ${endTime}`).getTime())
           if (res) props.navigation.goBack()
@@ -136,4 +136,10 @@ const $screenContentContainer: ViewStyle = {
   // paddingHorizontal: spacing.medium,
   // justifyContent: "space-between",
   height: "100%",
+}
+
+const $button: ViewStyle = { margin: 20, backgroundColor: "skyblue" }
+
+const $buttonText: TextStyle = {
+  color: "white",
 }

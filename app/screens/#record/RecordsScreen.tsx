@@ -7,7 +7,8 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   TextStyle,
-  ImageStyle, Platform,
+  ImageStyle,
+  Platform,
 } from "react-native"
 import { observer } from "mobx-react"
 import { ListItem } from "react-native-elements"
@@ -97,8 +98,6 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
   useEffect(() => {
     removeAllRecordsFromStore() // clean card store at the beginning
     saveLockId(props.route.params.lockId)
-    Keyboard.addListener("keyboardWillShow", () => setOptionsVisible(true))
-    Keyboard.addListener("keyboardWillHide", () => setOptionsVisible(false))
     props.navigation.setOptions({
       headerRight: () => (
         <HeaderButtons>
@@ -138,10 +137,6 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
       ),
     })
     getRecordList(undefined, undefined, 1)
-    return () => {
-      Keyboard.removeAllListeners("keyboardWillShow")
-      Keyboard.removeAllListeners("keyboardWillHide")
-    }
   }, [])
 
   const [startDate, setStartDate] = useState<string>(new Date().toLocaleDateString("en-CA"))
@@ -176,6 +171,7 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
   )
 
   const getRecordListByRecordType = useCallback(async (recordType: number) => {
+    setOptionsVisible(false)
     Keyboard.dismiss()
     const res = await getRecordList(undefined, recordType, 1)
     scrollView.current?.scrollToOffset(0)
@@ -193,7 +189,13 @@ export const RecordsScreen: FC<any> = observer(function RecordsScreen(props) {
         onChangeText={setSearchText}
         value={searchText}
         returnKeyType="search"
+        onTouchStart={() => setOptionsVisible(true)}
+        onClear={() => setOptionsVisible(true)}
+        onKeyPress={() => setOptionsVisible(false)}
+        onCancel={() => setOptionsVisible(false)}
+        onKeyboardHide={() => setOptionsVisible(false)}
         onSubmitEditing={async () => {
+          setOptionsVisible(false)
           const res = await getRecordList(searchText, undefined, 1)
           scrollView.current?.scrollToOffset(0)
         }}

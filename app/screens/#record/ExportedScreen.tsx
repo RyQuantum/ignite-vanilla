@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useRef, useState } from "react"
+import React, { FC, useEffect } from "react"
 import { TextStyle, View, ViewStyle } from "react-native"
 import { observer } from "mobx-react"
 import { useStores } from "../../models"
@@ -24,22 +24,22 @@ export const ExportedScreen: FC<any> = observer(function ExportedScreen(props) {
       safeAreaEdges={["bottom"]}
       contentContainerStyle={$screenContentContainer}
     >
-      <View style={{ paddingVertical: 70, paddingHorizontal: 50 }}>
-        <Icon style={{ alignSelf: "center" }} name="check-circle" color="limegreen" size={80} />
+      <View style={$container}>
+        <Icon style={$icon} name="check-circle" color="limegreen" size={80} />
         <DemoDivider />
-        <Text style={$textSecondary}>Exported successfully.</Text>
+        <Text style={$text}>Exported successfully.</Text>
       </View>
-      <Button
-        style={{ backgroundColor: "skyblue", borderWidth: 0 }}
-        textStyle={{ color: "white" }}
-        onPress={() => FileViewer.open(path)}
-      >
+      <Button style={$button} textStyle={$buttonText} onPress={() => FileViewer.open(path)}>
         View
       </Button>
       <DemoDivider />
-      <Button style={{ borderColor: "skyblue" }} textStyle={{ color: "skyblue" }} onPress={() => {
-        Share.open({ url: `file://${path}` })
-      }}>
+      <Button
+        style={$button2}
+        textStyle={$button2Text}
+        onPress={() => {
+          Share.open({ url: `file://${path}` })
+        }}
+      >
         Share
       </Button>
     </Screen>
@@ -53,16 +53,34 @@ const $screenContentContainer: ViewStyle = {
   height: "100%",
 }
 
-
-const $textPrimary: TextStyle = {
-  margin: 20,
-  textAlign: "center",
-  fontSize: 24,
-  fontWeight: "bold",
+const $container: ViewStyle = {
+  paddingVertical: 70,
+  paddingHorizontal: 50,
 }
 
-const $textSecondary: TextStyle = {
+const $icon: ViewStyle = {
+  alignSelf: "center",
+}
+
+const $text: TextStyle = {
   marginBottom: 10,
   textAlign: "center",
   fontSize: 17,
+}
+
+const $button: ViewStyle = {
+  backgroundColor: "skyblue",
+  borderWidth: 0,
+}
+
+const $buttonText: TextStyle = {
+  color: "white",
+}
+
+const $button2: ViewStyle = {
+  borderColor: "skyblue",
+}
+
+const $button2Text: TextStyle = {
+  color: "skyblue",
 }

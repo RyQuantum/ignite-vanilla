@@ -12,7 +12,7 @@ type Title = {
 export const RecordStoreModel = types
   .model("RecordStore")
   .props({
-    isRefreshing: false,
+    isRefreshing: false, // Deprecated
     isLoading: false,
     lockId: 0,
     searchText: "",
@@ -87,7 +87,7 @@ export const RecordStoreModel = types
           store.recordType = 0
         }
         store.pageNo = 1
-        store.pages = -1 // TODO needs to verify whether it's needed
+        store.pages = 0
       } else {
         if (store.pages < store.pageNo + 1) return null
         store.pageNo += 1
@@ -127,7 +127,7 @@ export const RecordStoreModel = types
           if (!records) {
             store.setProp("isLoading", false)
             setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
-            return "No new record"
+            return null
           }
           const res: any = await api.uploadRecords(lock.lockId, records)
           store.setProp("isLoading", false)
@@ -200,7 +200,7 @@ export const RecordStoreModel = types
   .preProcessSnapshot((snapshot) => {
     // remove sensitive data from snapshot to avoid secrets
     // being stored in AsyncStorage in plain text if backing up store
-    const { isLoading, searchText, pageNo, pages, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
+    const { isLoading, searchText, recordType, pageNo, pages, ...rest } = snapshot // eslint-disable-line @typescript-eslint/no-unused-vars
 
     // see the following for strategies to consider storing secrets on device
     // https://reactnative.dev/docs/security#storing-sensitive-info
