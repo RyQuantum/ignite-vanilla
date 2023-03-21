@@ -18,7 +18,7 @@ export const RecordStoreModel = types
     searchText: "",
     recordType: 0,
     pageNo: 1,
-    pages: -1,
+    pages: 0,
     records: types.array(RecordModel),
     path: "",
   })
@@ -168,6 +168,23 @@ export const RecordStoreModel = types
       return null
     },
 
+    async deleteAllRecords() {
+      store.isLoading = true
+      const res: any = await api.deleteAllRecords(store.lockId)
+      store.setProp("isLoading", false)
+      switch (res.kind) {
+        case "ok":
+          store.removeAllRecordsFromStore()
+          setTimeout(() => Toast.showWithGravity("Operation Successful", Toast.SHORT, Toast.CENTER), 200)
+          return res.data
+        case "bad":
+          Alert.alert(`code: ${res.code}`, res.msg)
+          break
+        default:
+          Alert.alert(res.kind, res.msg)
+      }
+      return null
+    },
 
     async exportExcel(startDate: number, endDate: number) {
       store.isLoading = true

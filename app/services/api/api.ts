@@ -629,19 +629,24 @@ export class Api {
 
   async deleteRecords(lockId: number, recordIds: number[]) {
     // const params = { lockId, recordIds: arr }
-    // const formData = new FormData()
-    // formData.append("lockId", lockId.toString())
-    // formData.append("recordIds", recordIds.toString())
     const response = await this.apisauce.delete( // TODO ApiLoginResponse => ApiGetKeyListResponse
-      // `lockRecordCall/${recordIds}`,
       `lockRecordCall/${recordIds}`,
-      // formData,
-      // { ...params }
+      // params
+    )
+    return parseResponse(response)
+  }
+
+  async deleteAllRecords(lockId: number) {
+    const params = { lockId }
+    const response = await this.apisauce.delete(
+      `lockRecordCall/removeAll`,
+      params,
     )
     return parseResponse(response)
   }
 
   async exportExcel(lockId: number, beginLockDate: number, endLockDate: number) {
+    console.log(`Request:[get] ${this.apisauce.getBaseURL()}lockRecordCall/export?lockId=${lockId}&beginLockDate=${beginLockDate}&endLockDate=${endLockDate} Authorization:${this.apisauce.headers.Authorization}`)
     const localFile = `${RNFS.DocumentDirectoryPath}/records.xlsx`;
     try {
       const res = await RNFS.downloadFile({
@@ -651,6 +656,7 @@ export class Api {
           Authorization: this.apisauce.headers.Authorization
         },
       }).promise;
+      console.log(`Response: ${this.apisauce.getBaseURL()}lockRecordCall ${JSON.stringify(res)}`)
     } catch (err) {
       console.log('err', err)
       return err
