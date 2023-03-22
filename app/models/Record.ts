@@ -14,7 +14,7 @@ export const RecordModel = types
       recordType: types.number,
       success: types.number,
       keyName: types.maybe(types.string),
-      keyboardPwd: types.string,
+      keyboardPwd: types.maybeNull(types.string),
       lockDate: types.number,
       username: types.maybeNull(types.string),
       recordTypeDescribe: types.string,

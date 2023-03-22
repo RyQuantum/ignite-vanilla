@@ -20,7 +20,7 @@ function getValidity(fingerprint) {
         return ""
       }
       // Timed
-      return fingerprint.startDate > currentTime ? "Inactive" : (fingerprint.endDate < currentTime ? "Invalid" : "")
+      return fingerprint.startDate > currentTime ? "Inactive" : (fingerprint.endDate + 60000 < currentTime ? "Invalid" : "") // TODO check whether others need to plus this 60000
     case 4: // Recurring
       const startDate = new Date(fingerprint.startDate).toLocaleDateString("en-CA")
       const endDate = new Date(fingerprint.endDate).toLocaleDateString("en-CA")

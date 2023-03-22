@@ -6,7 +6,7 @@
  * documentation for more details.
  */
 import {
-  ApiResponse, // @demo remove-current-line
+  ApiResponse,
   ApisauceInstance,
   create,
 } from "apisauce"
@@ -14,7 +14,7 @@ import qs from 'qs';
 import { getUniqueId } from 'react-native-device-info';
 import RNFS from "react-native-fs"
 import Config from "../../config"
-import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem" // @demo remove-current-line
+import { GeneralApiProblem, getGeneralApiProblem } from "./apiProblem"
 import type {
   ApiConfig,
   ApiFeedResponse,
@@ -22,7 +22,7 @@ import type {
   ApiLoginResponse, // @demo remove-current-line
 } from "./api.types"
 import type { EpisodeSnapshotIn } from "../../models/Episode"
-import * as Constants from "constants" // @demo remove-current-line
+import { CardFingerprintCycleParam } from "react-native-ttlock"
 
 /**
  * Configuring the apisauce instance.
@@ -481,7 +481,7 @@ export class Api {
     return parseResponse(response)
   }
 
-  async uploadFingerprint(lockId: number, fingerprintNumber: number, fingerprintType: number, fingerprintName: string, startDate: number, endDate: number, cyclicConfig: object[] | null) {
+  async uploadFingerprint(lockId: number, fingerprintNumber: number, fingerprintType: number, fingerprintName: string, startDate: number, endDate: number, cyclicConfig: CardFingerprintCycleParam[] | null) {
     const body: { lockId: number, fingerprintNumber: number, fingerprintType: number, fingerprintName: string, startDate: number, endDate: number, date: number, cyclicConfig?: string } = {
       lockId,
       fingerprintNumber,
@@ -506,7 +506,7 @@ export class Api {
     return parseResponse(response)
   }
 
-  async updateFingerprint(lockId: number, fingerprintId: number, startDate: number, endDate: number, changeType: number, cyclicConfig?: object[]) {
+  async updateFingerprint(lockId: number, fingerprintId: number, startDate: number, endDate: number, changeType: number, cyclicConfig?: CardFingerprintCycleParam[]) {
     const body: { lockId: number, fingerprintId: number, startDate: number, endDate: number, changeType: number, date: number, cyclicConfig?: string } = {
       lockId,
       fingerprintId,

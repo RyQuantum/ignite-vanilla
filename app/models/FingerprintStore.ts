@@ -1,10 +1,11 @@
 import { Alert } from "react-native"
 import { destroy, getRoot, Instance, SnapshotOut, types } from "mobx-state-tree"
+import Toast from 'react-native-simple-toast';
+import { CardFingerprintCycleParam } from "react-native-ttlock/src/types"
+import { Ttlock } from "react-native-ttlock"
 import { api } from "../services/api"
 import { FingerprintModel } from "./Fingerprint"
 import { withSetPropAction } from "./helpers/withSetPropAction"
-import { Ttlock } from "react-native-ttlock"
-import Toast from 'react-native-simple-toast';
 
 export const FingerprintStoreModel = types
   .model("FingerprintStore")
@@ -73,7 +74,7 @@ export const FingerprintStoreModel = types
       store.fingerprints.find((f) => f.fingerprintId === fingerprintId)!.fingerprintName = fingerprintName
     },
 
-    updateFingerprintPeriodToStore(fingerprintId: number, startDate: number, endDate: number, cyclicConfig?: object[]) {
+    updateFingerprintPeriodToStore(fingerprintId: number, startDate: number, endDate: number, cyclicConfig?: CardFingerprintCycleParam[]) {
       const fingerprint = store.fingerprints.find((f) => f.fingerprintId === fingerprintId)!
       fingerprint.startDate = startDate
       fingerprint.endDate = endDate
@@ -141,12 +142,12 @@ export const FingerprintStoreModel = types
       return []
     },
 
-    async updateFingerprint(startDate: number, endDate: number, cyclicConfig?: object[], changeType = 1) { // TODO changeType can be 2 for gateway
+    async updateFingerprint(startDate: number, endDate: number, cyclicConfig?: CardFingerprintCycleParam[], changeType = 1) { // TODO changeType can be 2 for gateway
       store.isLoading = true
       const fingerprint = store.fingerprints.find((f) => f.fingerprintId === store.fingerprintId)!
       const lock = getRoot(store).lockStore.locks.find((l) => l.lockId === store.lockId)
       return new Promise((resolve) => {
-        Ttlock.modifyFingerprintValidityPeriod(fingerprint.fingerprintNumber, null, startDate, endDate, lock.lockData, async () => {
+        Ttlock.modifyFingerprintValidityPeriod(fingerprint.fingerprintNumber, cyclicConfig || null, startDate, endDate, lock.lockData, async () => {
           console.log("TTLock: modify fingerprint success")
           const res: any = await api.updateFingerprint(lock.lockId, fingerprint.fingerprintId, startDate, endDate, changeType, cyclicConfig)
           store.setProp("isLoading", false)

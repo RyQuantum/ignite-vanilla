@@ -37,12 +37,22 @@ const iconMap = { // TODO verify all record type
   8: "fingerprint",           // unlock by fingerprint
   11: "account",              // lock by app
   12: "router-wireless",      // unlock by gateway
+    15: "credit-card-wireless", // add card success
+    16: "credit-card-wireless", // clear cards
+    17: "credit-card-wireless", // unlock by card success
+    20: "fingerprint",          // unlock by fingerprint success
+    21: "fingerprint",          // add fingerprint
+    22: "fingerprint",          // unlock by fingerprint failed—fingerprint expired
+    24: "fingerprint",          // clear fingerprint
+    25: "credit-card-wireless", // unlock by card failed—card expired
   47: "lock",                 // lock by lock key
   48: "alert-outline",        // System locked
   55: "remote",               // Unlock with key fob
 }
 
 const titleMap = {
+  // 16: "Clean all card",
+  // 24: "Clean all fingerprint",
   // 47: "Lock",
   // 48: "WARNING!",
 }
@@ -79,6 +89,7 @@ const RecordListItem = ({ item, onLongPress }) => {
         <ListItem.Subtitle style={$recordListSubtitle}>
           {item.lockDateDescribe.slice(11)} {item.recordTypeDescribe}{" "}
           {item.recordType === 4 && item.keyboardPwd.slice(0, item.keyboardPwd.length - 3) + "*** "}
+          {/* {item.recordType === 4 && item.keyboardPwd + " "} */}
           {item.success === 0 && "failed"}
         </ListItem.Subtitle>
       </ListItem.Content>
