@@ -20,7 +20,7 @@ function getValidity(card) {
         return ""
       }
       // Timed
-      return card.startDate > currentTime ? "Inactive" : (card.endDate < currentTime ? "Invalid" : "")
+      return card.startDate > currentTime ? "Inactive" : (card.endDate + 60000 < currentTime ? "Invalid" : "")
     case 4: // Recurring
       return (card.startDate < currentTime && card.endDate > currentTime) || "Invalid"
     default:

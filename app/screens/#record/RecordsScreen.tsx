@@ -40,11 +40,14 @@ const iconMap = { // TODO verify all record type
     15: "credit-card-wireless", // add card success
     16: "credit-card-wireless", // clear cards
     17: "credit-card-wireless", // unlock by card success
+    18: "credit-card-wireless", // delete an card
     20: "fingerprint",          // unlock by fingerprint success
     21: "fingerprint",          // add fingerprint
     22: "fingerprint",          // unlock by fingerprint failed—fingerprint expired
-    24: "fingerprint",          // clear fingerprint
+    23: "fingerprint",          // delete a fingerprint
+    24: "fingerprint",          // clear fingerprints
     25: "credit-card-wireless", // unlock by card failed—card expired
+    26: "account",               // lock by app
   47: "lock",                 // lock by lock key
   48: "alert-outline",        // System locked
   55: "remote",               // Unlock with key fob
